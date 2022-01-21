@@ -8,6 +8,7 @@ import * as purpleRain from './004-purple-rain';
 import * as spaceInvader from './005-space-invader';
 import * as mitosis from './006-mitosis';
 import * as solarSystem2D from './007-solar-system-2d';
+import * as reactionDiffusion from './013-reaction-diffusion';
 import * as dithering from './090-dithering';
 
-new p5(solarSystem2D.sketch);
+new p5(reactionDiffusion.sketch);
