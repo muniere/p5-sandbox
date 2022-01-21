@@ -2,6 +2,9 @@
 // see http://www.karlsims.com/rd.html for details
 import * as p5 from "p5";
 
+// This process uses mutable operations with primitive structures,
+// to reduce memory allocation costs for too many small objects.
+
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
   DIFFUSION_A: 1.0,
@@ -9,198 +12,152 @@ const Params = Object.freeze({
   FEED_RATE: 0.055,
   KILL_RATE: 0.062,
   SEED_RADIUS: 4,
-  GENERATION_INTERVAL: 1,
+  GENERATION_INTERVAL: 10,
 });
-
-class Cell {
-
-  constructor(
-    public a: number,
-    public b: number,
-  ) {
-    // no-op
-  }
-
-  static create({a, b}: {
-    a: number,
-    b: number,
-  }): Cell {
-    return new Cell(a, b);
-  }
-
-  static random(): Cell {
-    return Cell.create({
-      a: Math.random(),
-      b: Math.random(),
-    });
-  }
-
-  static zero(): Cell {
-    return new Cell(0, 0);
-  }
-
-  static fold(cells: Cell[]): Cell {
-    return cells.reduce((acc, cell) => acc.plus(cell), Cell.zero());
-  }
-
-  plus(other: Cell): Cell {
-    return Cell.create({
-      a: this.a + other.a,
-      b: this.b + other.b,
-    });
-  }
-
-  minus(other: Cell): Cell {
-    return Cell.create({
-      a: this.a - other.a,
-      b: this.b - other.b,
-    });
-  }
-
-  times(r: number): Cell {
-    return Cell.create({
-      a: this.a * r,
-      b: this.b * r,
-    });
-  }
-
-  copy(): Cell {
-    return new Cell(this.a, this.b);
-  }
-}
 
 class Grid {
 
   constructor(
-    private cells: Cell[][]
+    public readonly width: number,
+    public readonly height: number,
+    private valuesA: number[],
+    private valuesB: number[],
   ) {
     // no-op
   }
 
-  static random({width, height}: {
+  static zero({width, height}: {
     width: number,
     height: number,
   }): Grid {
-    return this.generate({
-      width: width,
-      height: height,
-      create: () => Cell.random(),
-    });
+    const valuesA = [...Array(width * height)].map(_ => 0);
+    const valuesB = [...Array(width * height)].map(_ => 0);
+    return new Grid(width, height, valuesA, valuesB);
   }
 
-  static generate({width, height, create}: {
+  static fillA({width, height}: {
     width: number,
     height: number,
-    create: (x: number, y: number) => Cell,
   }): Grid {
-    return new Grid(
-      [...Array(height)].map(
-        (_, y) => [...Array(width)].map(
-          (_, x) => create(x, y)
-        )
-      )
-    );
+    const valuesA = [...Array(width * height)].map(_ => 1);
+    const valuesB = [...Array(width * height)].map(_ => 0);
+    return new Grid(width, height, valuesA, valuesB);
   }
 
-  map(transform: (cell: Cell, x: number, y: number) => Cell) {
-    return new Grid(
-      [...Array(this.height)].map(
-        (_, y) => [...Array(this.width)].map(
-          (_, x) => transform(this.cell(x, y).copy(), x, y),
-        )
-      )
-    );
+  static fillB({width, height}: {
+    width: number,
+    height: number,
+  }): Grid {
+    const valuesA = [...Array(width * height)].map(_ => 0);
+    const valuesB = [...Array(width * height)].map(_ => 1);
+    return new Grid(width, height, valuesA, valuesB);
   }
 
-  copy(): Grid {
-    return this.map(it => it);
+  getValue(x: number, y: number): { a: number, b: number } {
+    const index = y * this.width + x;
+    return {
+      a: this.valuesA[index],
+      b: this.valuesB[index],
+    };
   }
 
-  replace(x: number, y: number, transform: (cell: Cell) => Cell) {
-    this.cells[y][x] = transform(this.cells[y][x]);
+  setValue(x: number, y: number, {a, b}: { a: number, b: number }) {
+    const index = y * this.width + x;
+    this.valuesA[index] = a;
+    this.valuesB[index] = b;
   }
 
-  cell(x: number, y: number): Cell {
-    return this.cells[y][x];
-  }
-
-  cellOrDefault(x: number, y: number, defValue: Cell = Cell.zero()): Cell {
-    if (x < 0 || this.width <= x) {
-      return defValue;
+  laplace(x: number, y: number): { a: number, b: number } {
+    let {a, b} = this.getValue(x, y);
+    {
+      a *= -1;
+      b *= -1;
     }
-    if (y < 0 || this.height <= y) {
-      return defValue;
+    {
+      const v = this.getValue(x + 1, y);
+      a += v.a * 0.2;
+      b += v.b * 0.2;
     }
-    return this.cells[y][x];
-  }
-
-  laplace(x: number, y: number): Cell {
-    const cells = [
-      this.cell(x, y).times(-1),
-      this.cellOrDefault(x + 1, y).times(0.2),
-      this.cellOrDefault(x - 1, y).times(0.2),
-      this.cellOrDefault(x, y + 1).times(0.2),
-      this.cellOrDefault(x, y - 1).times(0.2),
-      this.cellOrDefault(x - 1, y - 1).times(0.05),
-      this.cellOrDefault(x - 1, y + 1).times(0.05),
-      this.cellOrDefault(x + 1, y - 1).times(0.05),
-      this.cellOrDefault(x + 1, y + 1).times(0.05),
-    ];
-
-    return Cell.fold(cells);
-  }
-
-  get width(): number {
-    return this.cells.length > 0 ? this.cells[0].length : 0;
-  }
-
-  get height(): number {
-    return this.cells.length;
+    {
+      const v = this.getValue(x - 1, y);
+      a += v.a * 0.2;
+      b += v.b * 0.2;
+    }
+    {
+      const v = this.getValue(x, y - 1);
+      a += v.a * 0.2;
+      b += v.b * 0.2;
+    }
+    {
+      const v = this.getValue(x, y + 1);
+      a += v.a * 0.2;
+      b += v.b * 0.2;
+    }
+    {
+      const v = this.getValue(x - 1, y - 1);
+      a += v.a * 0.05;
+      b += v.b * 0.05;
+    }
+    {
+      const v = this.getValue(x - 1, y + 1);
+      a += v.a * 0.05;
+      b += v.b * 0.05;
+    }
+    {
+      const v = this.getValue(x + 1, y - 1);
+      a += v.a * 0.05;
+      b += v.b * 0.05;
+    }
+    {
+      const v = this.getValue(x + 1, y + 1);
+      a += v.a * 0.05;
+      b += v.b * 0.05;
+    }
+    return {a, b};
   }
 }
 
 class Diffusion {
 
-  static next(grid: Grid): Grid {
-    return grid.map(
-      (cell, x, y) => {
+  static next(grid: Grid, result: Grid) {
+    for (let y = 0; y < grid.height; y++) {
+      for (let x = 0; x < grid.width; x++) {
+        const {a, b} = grid.getValue(x, y);
+
         if (x <= 0 || grid.width - 1 <= x) {
-          return cell;
+          result.setValue(x, y, {a, b});
+          continue;
         }
+
         if (y <= 0 || grid.height - 1 <= y) {
-          return cell;
+          result.setValue(x, y, {a, b});
+          continue;
         }
+
         const lap = grid.laplace(x, y);
 
-        const a = cell.a
+        const newA = a
           + (Params.DIFFUSION_A * lap.a)
-          - (cell.a * cell.b * cell.b)
-          + (Params.FEED_RATE * (1.0 - cell.a));
+          - (a * b * b)
+          + (Params.FEED_RATE * (1.0 - a));
 
-        const b = cell.b
+        const newB = b
           + (Params.DIFFUSION_B * lap.b)
-          + (cell.a * cell.b * cell.b)
-          - (Params.KILL_RATE + Params.FEED_RATE) * cell.b
+          + (a * b * b)
+          - (Params.KILL_RATE + Params.FEED_RATE) * b
 
-        return Cell.create({a, b});
+        result.setValue(x, y, {a: newA, b: newB});
       }
-    );
-  }
-
-  static forward(grid: Grid, n: number): Grid {
-    if (n <= 0) {
-      return grid.copy();
     }
-
-    return [...Array(n)].reduce((acc, _) => this.next(acc), grid);
   }
 }
 
 function sketch(self: p5) {
   let grid: Grid;
+  let buf: Grid;
 
   self.setup = function () {
-    self.createCanvas(400, 400);
+    self.createCanvas(self.windowWidth, self.windowHeight);
     self.pixelDensity(1);
 
     const dropLeft = Math.floor(self.width / 2) - Params.SEED_RADIUS;
@@ -208,40 +165,48 @@ function sketch(self: p5) {
     const dropTop = Math.floor(self.height / 2) - Params.SEED_RADIUS;
     const dropBottom = Math.floor(self.height / 2) + Params.SEED_RADIUS;
 
-    grid = Grid.generate({
+    grid = Grid.fillA({
       width: self.width,
       height: self.height,
-      create: (x, y) => {
-        if (dropLeft <= x && x <= dropRight && dropTop <= y && y <= dropBottom) {
-          return Cell.create({a: 0, b: 1});
-        } else {
-          return Cell.create({a: 1, b: 0});
-        }
-      }
     });
+
+    buf = Grid.zero({
+      width: self.width,
+      height: self.height,
+    });
+
+    for (let x = dropLeft; x < dropRight; x++) {
+      for (let y = dropTop; y < dropBottom; y++) {
+        grid.setValue(x, y, {a: 0, b: 1});
+      }
+    }
   };
 
   self.draw = function () {
     // draw
     self.loadPixels();
 
-    for (let x = 0; x < self.width; x++) {
-      for (let y = 0; y < self.height; y++) {
-        const idx = (x + y * self.width) * 4;
-        const cell = grid.cell(x, y);
-        const value = Math.floor((cell.a - cell.b) * 255);
+    for (let y = 0; y < self.height; y++) {
+      for (let x = 0; x < self.width; x++) {
+        const index = (x + y * self.width) * 4;
+        const {a, b} = grid.getValue(x, y);
+        const value = Math.floor((a - b) * 255);
         const color = Math.min(Math.max(value, 0), 255);
-        self.pixels[idx + 0] = color;
-        self.pixels[idx + 1] = color;
-        self.pixels[idx + 2] = color;
-        self.pixels[idx + 3] = 255;
+        self.pixels[index + 0] = color;
+        self.pixels[index + 1] = color;
+        self.pixels[index + 2] = color;
+        self.pixels[index + 3] = 255;
       }
     }
 
     self.updatePixels();
 
     // update
-    grid = Diffusion.forward(grid, Params.GENERATION_INTERVAL);
+    for (let i = 0; i < Params.GENERATION_INTERVAL; i++) {
+      Diffusion.next(grid, buf);
+
+      grid = buf;
+    }
   };
 }
 
