@@ -12,5 +12,6 @@ import * as reactionDiffusion from './013-reaction-diffusion';
 import * as fractalRecursive from './014-fractal-recursive';
 import * as fractalObjective from './015-fractal-objective';
 import * as dithering from './090-dithering';
+import * as sortVisualization from './114-sort-visualization';
 
-new p5(fractalObjective.sketch);
+new p5(sortVisualization.sketch);
