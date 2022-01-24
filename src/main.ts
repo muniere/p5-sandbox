@@ -11,8 +11,9 @@ import * as solarSystem2D from './007-solar-system-2d';
 import * as reactionDiffusion from './013-reaction-diffusion';
 import * as fractalRecursive from './014-fractal-recursive';
 import * as fractalObjective from './015-fractal-objective';
+import * as pathfinding from './051-pathfinding';
 import * as nearestNeighbors from './070-nearest-neighbors';
 import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
 
-new p5(nearestNeighbors.sketch);
+new p5(pathfinding.sketch);
