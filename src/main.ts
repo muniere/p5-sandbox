@@ -16,5 +16,6 @@ import * as nearestNeighbors from './070-nearest-neighbors';
 import * as circleMorphing from './081-circle-morphing';
 import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
+import * as sevenSegment from './117-seven-segment';
 
-new p5(circleMorphing.sketch);
+new p5(sevenSegment.sketch);
