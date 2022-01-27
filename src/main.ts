@@ -11,6 +11,7 @@ import * as solarSystem2D from './007-solar-system-2d';
 import * as reactionDiffusion from './013-reaction-diffusion';
 import * as fractalRecursive from './014-fractal-recursive';
 import * as fractalObjective from './015-fractal-objective';
+import * as markovChain from './042-markov-chain';
 import * as pathfinding from './051-pathfinding';
 import * as nearestNeighbors from './070-nearest-neighbors';
 import * as circleMorphing from './081-circle-morphing';
@@ -18,4 +19,4 @@ import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
 import * as sevenSegment from './117-seven-segment';
 
-new p5(sevenSegment.sketch);
+new p5(markovChain.sketch);
