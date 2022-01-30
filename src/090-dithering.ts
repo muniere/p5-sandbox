@@ -6,6 +6,26 @@ const Params = Object.freeze({
   SCALE: 2,
 });
 
+class Coordinate {
+  constructor(
+    public x: number,
+    public y: number,
+  ) {
+    // no-op
+  }
+
+  static zero(): Coordinate {
+    return new Coordinate(0, 0);
+  }
+
+  static of({x, y}: {
+    x: number,
+    y: number,
+  }): Coordinate {
+    return new Coordinate(x, y);
+  }
+}
+
 class Pixel {
   constructor(
     private _values: number[]
@@ -86,75 +106,136 @@ class Relay {
     // no-op
   }
 
-  apply(image: p5.Image, err: Pixel): boolean {
-    if (this.x < 0 || image.width < this.x) {
-      return false;
-    }
-    if (this.y < 0 || image.width < this.y) {
-      return false;
-    }
-
-    const base = Pixel.of(image.get(this.x, this.y));
-    const delta = err.multiply(this.rate);
-    const result = base.plus(delta);
-    image.set(this.x, this.y, result.values);
-    return true;
+  static of({x, y, rate}: {
+    x: number,
+    y: number,
+    rate: number,
+  }): Relay {
+    return new Relay(x, y, rate);
   }
 }
 
-class Dithering {
+class Machine {
 
   constructor(
-    private relays: Relay[]
+    public image: p5.Image,
   ) {
     // no-op
   }
 
-  static of(x: number, y: number): Dithering {
-    return new Dithering([
-      new Relay(x + 1, y + 0, 7 / 16),
-      new Relay(x - 1, y + 1, 3 / 16),
-      new Relay(x + 0, y + 1, 5 / 16),
-      new Relay(x + 1, y + 1, 1 / 16),
-    ]);
+  static create({image}: {
+    image: p5.Image,
+  }): Machine {
+    return new Machine(image);
   }
 
-  apply(image: p5.Image, err: Pixel) {
-    this.relays.forEach(it => it.apply(image, err));
+  dither({x, y}: {
+    x: number,
+    y: number,
+  }) {
+    const oldPixel = Pixel.of(this.image.get(x, y));
+    const newPixel = oldPixel.quantize(Params.SCALE - 1);
+    const error = oldPixel.minus(newPixel);
+
+    this.image.set(x, y, newPixel.values);
+
+    // noinspection PointlessArithmeticExpressionJS
+    [
+      Relay.of({x: x + 1, y: y + 0, rate: 7 / 16}),
+      Relay.of({x: x - 1, y: y + 1, rate: 3 / 16}),
+      Relay.of({x: x + 0, y: y + 1, rate: 5 / 16}),
+      Relay.of({x: x + 1, y: y + 1, rate: 1 / 16}),
+    ].forEach((relay) => {
+      if (relay.x < 0 || this.image.width < relay.x) {
+        return;
+      }
+      if (relay.y < 0 || this.image.width < relay.y) {
+        return;
+      }
+
+      const base = Pixel.of(this.image.get(relay.x, relay.y));
+      const delta = error.multiply(relay.rate);
+      const result = base.plus(delta);
+      this.image.set(relay.x, relay.y, result.values);
+    });
+  }
+
+  update() {
+    this.image.updatePixels();
   }
 }
 
-function sketch(self: p5) {
-  let image: p5.Image;
+class View {
 
-  self.preload = function () {
-    image = self.loadImage(Params.PATH);
+  constructor(
+    public context: p5,
+    public origin: Coordinate,
+    public machine: Machine,
+  ) {
+    // no-op
   }
 
-  self.setup = function () {
-    self.createCanvas(image.width * 2, image.height);
+  static create({context, origin, processor}: {
+    context: p5,
+    origin: Coordinate,
+    processor: Machine,
+  }): View {
+    return new View(context, origin, processor);
+  }
 
-    self.image(image, 0, 0);
+  get image(): p5.Image {
+    return this.machine.image;
+  }
 
-    for (let y = 0; y < image.height; y++) {
-      for (let x = 0; x < image.width; x++) {
-        const old_px = Pixel.of(image.get(x, y));
-        const new_px = old_px.quantize(Params.SCALE - 1);
-        const err = old_px.minus(new_px);
+  draw() {
+    this.context.image(this.machine.image, this.origin.x, this.origin.y);
+  }
+}
 
-        image.set(x, y, new_px.values);
+function sketch(context: p5) {
+  let sourceView: View;
+  let resultView: View;
 
-        Dithering.of(x, y).apply(image, err);
+  context.preload = function () {
+    sourceView = View.create({
+      context: context,
+      origin: Coordinate.zero(),
+      processor: Machine.create({
+        image: context.loadImage(Params.PATH),
+      })
+    });
+
+    resultView = View.create({
+      context: context,
+      origin: Coordinate.zero(),
+      processor: Machine.create({
+        image: context.loadImage(Params.PATH),
+      })
+    });
+  }
+
+  context.setup = function () {
+    context.createCanvas(context.windowWidth, context.windowHeight);
+    context.pixelDensity(1);
+    context.noLoop();
+
+    sourceView.origin.x = 0;
+    resultView.origin.x = sourceView.image.width;
+
+    for (let y = 0; y < resultView.image.height; y++) {
+      for (let x = 0; x < resultView.image.width; x++) {
+        resultView.machine.dither({x, y});
       }
     }
 
-    image.updatePixels();
+    resultView.machine.update();
 
-    self.image(image, image.width, 0);
+    sourceView.draw();
+    resultView.draw();
   };
 
-  self.draw = function () {
-    // update image only once, at startup
+  context.draw = function () {
+    // no-op
   }
 }
 

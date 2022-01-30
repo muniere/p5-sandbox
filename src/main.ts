@@ -21,4 +21,4 @@ import * as sortVisualization from './114-sort-visualization';
 import * as sevenSegment from './117-seven-segment';
 import * as fourierSeries from './125-fourier-series';
 
-new p5(fourierSeries.sketch);
+new p5(dithering.sketch);
