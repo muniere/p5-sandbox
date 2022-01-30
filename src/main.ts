@@ -19,5 +19,6 @@ import * as circleMorphing from './081-circle-morphing';
 import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
 import * as sevenSegment from './117-seven-segment';
+import * as fourierSeries from './125-fourier-series';
 
-new p5(contextFreeGrammer.sketch);
+new p5(fourierSeries.sketch);
