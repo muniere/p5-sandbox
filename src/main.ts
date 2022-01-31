@@ -20,5 +20,6 @@ import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
 import * as sevenSegment from './117-seven-segment';
 import * as fourierSeries from './125-fourier-series';
+import * as ticTacToe from './149-tic-tac-toe';
 
-new p5(dithering.sketch);
+new p5(ticTacToe.sketch);
