@@ -18,6 +18,7 @@ import * as circlePacking from './050-circle-packing';
 import * as pathfinding from './051-pathfinding';
 import * as nearestNeighbors from './070-nearest-neighbors';
 import * as circleMorphing from './081-circle-morphing';
+import * as gameOfLife from './085-game-of-life';
 import * as dithering from './090-dithering';
 import * as sortVisualization from './114-sort-visualization';
 import * as sevenSegment from './117-seven-segment';
@@ -26,4 +27,4 @@ import * as fourierTransform from './130-fourier-transform';
 import * as ticTacToe from './149-tic-tac-toe';
 import * as parrondoParadox from './_01-parrondo-paradox';
 
-new p5(parrondoParadox.sketch);
+new p5(gameOfLife.sketch);
