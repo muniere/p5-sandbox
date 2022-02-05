@@ -11,6 +11,7 @@ import * as solarSystem2D from './007-solar-system-2d';
 import * as reactionDiffusion from './013-reaction-diffusion';
 import * as fractalRecursive from './014-fractal-recursive';
 import * as fractalObjective from './015-fractal-objective';
+import * as travelingSalesperson from './035-traveling-salesperson';
 import * as markovChain from './042-markov-chain';
 import * as contextFreeGrammer from './043-context-free-grammer';
 import * as pathfinding from './051-pathfinding';
@@ -23,4 +24,4 @@ import * as fourierSeries from './125-fourier-series';
 import * as fourierTransform from './130-fourier-transform';
 import * as ticTacToe from './149-tic-tac-toe';
 
-new p5(fourierTransform.sketch);
+new p5(travelingSalesperson.sketch);
