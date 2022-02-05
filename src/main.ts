@@ -14,6 +14,7 @@ import * as fractalObjective from './015-fractal-objective';
 import * as travelingSalesperson from './035-traveling-salesperson';
 import * as markovChain from './042-markov-chain';
 import * as contextFreeGrammer from './043-context-free-grammer';
+import * as circlePacking from './050-circle-packing';
 import * as pathfinding from './051-pathfinding';
 import * as nearestNeighbors from './070-nearest-neighbors';
 import * as circleMorphing from './081-circle-morphing';
@@ -24,4 +25,4 @@ import * as fourierSeries from './125-fourier-series';
 import * as fourierTransform from './130-fourier-transform';
 import * as ticTacToe from './149-tic-tac-toe';
 
-new p5(travelingSalesperson.sketch);
+new p5(circlePacking.sketch);
