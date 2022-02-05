@@ -24,5 +24,6 @@ import * as sevenSegment from './117-seven-segment';
 import * as fourierSeries from './125-fourier-series';
 import * as fourierTransform from './130-fourier-transform';
 import * as ticTacToe from './149-tic-tac-toe';
+import * as parrondoParadox from './_01-parrondo-paradox';
 
-new p5(circlePacking.sketch);
+new p5(parrondoParadox.sketch);
