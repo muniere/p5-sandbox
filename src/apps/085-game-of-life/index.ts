@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=FWSR_7kZuYg
 import * as p5 from 'p5';
+import { Spot } from '../../lib/dmath';
 import { Point, Size, Rect } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
@@ -17,33 +18,17 @@ enum State {
   dead,
 }
 
-class Coordinate {
-  constructor(
-    public row: number,
-    public column: number,
-  ) {
-    // no-op
-  }
-
-  static of({row, column}: {
-    row: number,
-    column: number,
-  }): Coordinate {
-    return new Coordinate(row, column);
-  }
-}
-
 class World {
   private readonly states: State[][];
 
   constructor(
     public readonly width: number,
     public readonly height: number,
-    factory?: (coord: Coordinate) => State
+    factory?: (coord: Spot) => State
   ) {
     this.states = [...Array(height)].map(
       (_, row) => [...Array(width)].map(
-        (_, column) => factory ? factory(Coordinate.of({row, column})) : State.dead,
+        (_, column) => factory ? factory(Spot.of({row, column})) : State.dead,
       )
     );
   }
@@ -51,15 +36,15 @@ class World {
   static create({width, height, factory}: {
     width: number,
     height: number,
-    factory?: (coord: Coordinate) => State,
+    factory?: (coord: Spot) => State,
   }) : World {
     return new World(width, height, factory);
   }
 
-  walk(callback: (state: State, coord: Coordinate) => void) {
+  walk(callback: (state: State, coord: Spot) => void) {
     for (let row = 0; row < this.height; row++) {
       for (let column = 0; column < this.width; column++) {
-        callback(this.states[row][column], Coordinate.of({row, column}));
+        callback(this.states[row][column], Spot.of({row, column}));
       }
     }
   }
@@ -68,7 +53,7 @@ class World {
     return World.create({
       width: this.width,
       height: this.height,
-      factory: (coord: Coordinate) => this.next(coord),
+      factory: (coord: Spot) => this.next(coord),
     });
   }
 
@@ -157,10 +142,10 @@ class WorldView {
 
     this.context.push();
 
-    this.model.walk((state: State, coord: Coordinate) => {
+    this.model.walk((state: State, spot: Spot) => {
       const origin = Point.of({
-        x: this.frame.origin.x + coord.column * cellSize.width,
-        y: this.frame.origin.y + coord.row * cellSize.height,
+        x: this.frame.origin.x + spot.column * cellSize.width,
+        y: this.frame.origin.y + spot.row * cellSize.height,
       });
 
       const strokeColor = this.strokeColor;

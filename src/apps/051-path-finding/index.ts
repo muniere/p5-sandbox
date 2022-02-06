@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=aKYlikFAV4k
 import * as p5 from 'p5';
+import { Spot } from '../../lib/dmath';
 import { Size } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
@@ -12,26 +13,6 @@ const Params = Object.freeze({
   GRID_WIDTH: 50,
   GRID_HEIGHT: 50,
 });
-
-class Coordinate {
-  constructor(
-    public row: number,
-    public column: number,
-  ) {
-    // no-op
-  }
-
-  static create({row, column}: {
-    row: number,
-    column: number,
-  }): Coordinate {
-    return new Coordinate(row, column);
-  }
-
-  static dist(a: Coordinate, b: Coordinate): number {
-    return Math.abs(a.row - b.row) + Math.abs(a.column - b.column);
-  }
-}
 
 class Cost {
   constructor(
@@ -62,31 +43,31 @@ enum Kind {
   wall,
 }
 
-class Spot {
-  public previous?: Spot;
+class Node {
+  public previous?: Node;
 
   constructor(
     public kind: Kind,
-    public coord: Coordinate,
-    public bounds: Size,
+    public spot: Spot,
+    public size: Size,
     public cost: Cost,
   ) {
     // no-op
   }
 
-  static create({kind, coord, size, cost}: {
+  static create({kind, spot, size, cost}: {
     kind: Kind,
-    coord: Coordinate,
+    spot: Spot,
     size: Size,
     cost: Cost,
-  }): Spot {
-    return new Spot(kind, coord, size, cost);
+  }): Node {
+    return new Node(kind, spot, size, cost);
   }
 
-  trace(): Spot[] {
-    const chain = [] as Spot[];
+  trace(): Node[] {
+    const chain = [] as Node[];
 
-    let cursor: Spot = this;
+    let cursor: Node = this;
 
     while (cursor.previous) {
       chain.push(cursor);
@@ -102,17 +83,17 @@ class Spot {
     p.noStroke();
     p.fill(color);
     p.rect(
-      this.coord.column * this.bounds.width,
-      this.coord.row * this.bounds.height,
-      this.bounds.width - 1,
-      this.bounds.height - 1,
+      this.spot.column * this.size.width,
+      this.spot.row * this.size.height,
+      this.size.width - 1,
+      this.size.height - 1,
     );
   }
 }
 
 class Grid {
   constructor(
-    public spots: Spot[][],
+    public nodes: Node[][],
   ) {
     // no-op
   }
@@ -133,9 +114,9 @@ class Grid {
 
     const spots = [...Array(Params.GRID_HEIGHT)].map(
       (_, row) => [...Array(Params.GRID_WIDTH)].map(
-        (_, column) => Spot.create({
+        (_, column) => Node.create({
           kind: kindFactory({row: row, column: column}),
-          coord: Coordinate.create({row: row, column: column}),
+          spot: Spot.of({row: row, column: column}),
           size: Size.of({width: w, height: h}),
           cost: Cost.zero(),
         })
@@ -145,60 +126,60 @@ class Grid {
     return new Grid(spots);
   }
 
-  getSpot(coord: Coordinate): Spot {
-    return this.spots[coord.row][coord.column];
+  getNode(spot: Spot): Node {
+    return this.nodes[spot.row][spot.column];
   }
 
-  getSpotOrNull(coord: Coordinate): Spot | undefined {
-    if (coord.row < 0 || this.spots.length - 1 < coord.row) {
+  getNodeOrNull(spot: Spot): Node | undefined {
+    if (spot.row < 0 || this.nodes.length - 1 < spot.row) {
       return undefined;
     }
 
-    const row = this.spots[coord.row];
-    if (coord.column < 0 || row.length - 1 < coord.column) {
+    const row = this.nodes[spot.row];
+    if (spot.column < 0 || row.length - 1 < spot.column) {
       return undefined;
     }
 
-    return row[coord.column];
+    return row[spot.column];
   }
 
-  getNeighbors(coord: Coordinate): Spot[] {
-    const row = coord.row;
-    const column = coord.column;
+  getNeighbors(spot: Spot): Node[] {
+    const row = spot.row;
+    const column = spot.column;
 
-    const coordinates = [
-      Coordinate.create({row: row, column: column - 1}),
-      Coordinate.create({row: row, column: column + 1}),
-      Coordinate.create({row: row - 1, column: column}),
-      Coordinate.create({row: row + 1, column: column}),
-      Coordinate.create({row: row - 1, column: column - 1}),
-      Coordinate.create({row: row - 1, column: column + 1}),
-      Coordinate.create({row: row + 1, column: column - 1}),
-      Coordinate.create({row: row + 1, column: column + 1}),
+    const spots = [
+      Spot.of({row: row, column: column - 1}),
+      Spot.of({row: row, column: column + 1}),
+      Spot.of({row: row - 1, column: column}),
+      Spot.of({row: row + 1, column: column}),
+      Spot.of({row: row - 1, column: column - 1}),
+      Spot.of({row: row - 1, column: column + 1}),
+      Spot.of({row: row + 1, column: column - 1}),
+      Spot.of({row: row + 1, column: column + 1}),
     ];
 
-    return coordinates
-      .map(coord => this.getSpotOrNull(coord))
-      .filter(spotOrNull => spotOrNull)
-      .map(spotOrNull => spotOrNull!)
+    return spots
+      .map(spot => this.getNodeOrNull(spot))
+      .filter(spot => spot)
+      .map(spot => spot!)
       .filter(spot => spot.kind == Kind.path);
   }
 
-  first(): Spot {
-    return this.spots[0][0];
+  first(): Node {
+    return this.nodes[0][0];
   }
 
-  last(): Spot {
-    const row = this.spots[this.spots.length - 1];
+  last(): Node {
+    const row = this.nodes[this.nodes.length - 1];
     return row[row.length - 1];
   }
 }
 
 function sketch(self: p5) {
   let grid: Grid;
-  let openSet: Spot[];
-  let closedSet: Spot[];
-  let shortestPath: Spot[];
+  let openSet: Node[];
+  let closedSet: Node[];
+  let shortestPath: Node[];
 
   self.setup = function () {
     const size = Math.min(self.windowWidth, self.windowHeight);
@@ -228,7 +209,7 @@ function sketch(self: p5) {
     closedSet = closedSet.concat(current);
 
     const neighbors = grid
-      .getNeighbors(current.coord)
+      .getNeighbors(current.spot)
       .filter((spot) => !closedSet.includes(spot));
 
     neighbors.forEach((neighbor) => {
@@ -256,14 +237,14 @@ function sketch(self: p5) {
 
     self.background(Params.CANVAS_COLOR);
 
-    grid.spots.forEach(
+    grid.nodes.forEach(
       (row) => row.forEach(
         (spot) => spot.draw(self, {color: colorize(spot)})
       )
     );
   }
 
-  function colorize(spot: Spot) {
+  function colorize(spot: Node) {
     if (spot.kind == Kind.wall) {
       return Params.SPOT_WALL_COLOR;
     }
@@ -279,8 +260,8 @@ function sketch(self: p5) {
     return Params.SPOT_BASE_COLOR;
   }
 
-  function heuristic(a: Spot, b: Spot): number {
-    return Coordinate.dist(a.coord, b.coord);
+  function heuristic(a: Node, b: Node): number {
+    return Spot.dist(a.spot, b.spot);
   }
 }
 

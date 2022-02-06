@@ -1,27 +1,12 @@
 // https://www.youtube.com/watch?v=GTWrWM1UsnA
 import * as p5 from 'p5';
+import { Spot } from '../../lib/dmath';
 import { Point, Size } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#FFFFFF',
   THINKING_TIME: 500,
 });
-
-class Spot {
-  constructor(
-    public column: number,
-    public row: number,
-  ) {
-    // no-op
-  }
-
-  static of({column, row}: {
-    column: number,
-    row: number,
-  }): Spot {
-    return new Spot(column, row);
-  }
-}
 
 enum State {
   circle,
