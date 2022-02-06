@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=Mm2eYfj0SgA
 import * as p5 from 'p5';
+import { Point } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -32,56 +33,6 @@ class Clock {
   }
 }
 
-class Coordinate {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Coordinate {
-    return new Coordinate(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Coordinate {
-    return new Coordinate(x, y);
-  }
-
-  plus({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: this.x + (x ?? 0),
-      y: this.y + (y ?? 0),
-    });
-  }
-
-  minus({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: this.x - (x ?? 0),
-      y: this.y - (y ?? 0),
-    });
-  }
-
-  with({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: x ?? this.x,
-      y: y ?? this.y,
-    });
-  }
-}
-
 class Circle {
   public color: string = Params.SHAPE_COLOR;
   public angle: number = 0;
@@ -91,7 +42,7 @@ class Circle {
 
   constructor(
     public context: p5,
-    public center: Coordinate,
+    public center: Point,
     public radius: number,
   ) {
     // no-op
@@ -99,14 +50,14 @@ class Circle {
 
   static create({context, center, radius}: {
     context: p5,
-    center: Coordinate,
+    center: Point,
     radius: number,
   }): Circle {
     return new Circle(context, center, radius);
   }
 
-  get pointCenter(): Coordinate {
-    return Coordinate.of({
+  get epicycleCenter(): Point {
+    return Point.of({
       x: this.center.x + this.radius * Math.cos(this.angle),
       y: this.center.y + this.radius * Math.sin(this.angle),
     });
@@ -120,7 +71,7 @@ class Circle {
   draw() {
     this.context.push()
 
-    const pointCenter = this.pointCenter;
+    const pointCenter = this.epicycleCenter;
 
     if (this.trackWeight > 0) {
       this.context.stroke(this.color);
@@ -174,7 +125,7 @@ class Series {
       const n = i * 2 + 1;
       return Circle.create({
         context: context,
-        center: Coordinate.zero(),
+        center: Point.zero(),
         radius: amplitude / n,
       }).also(it => {
         it.trackWeight = i == 0 ? 1 : 0;
@@ -198,13 +149,13 @@ class Series {
   update(clock: Clock) {
     const time = clock.time();
 
-    let center = Coordinate.zero();
+    let center = Point.zero();
 
     this.circles.forEach((circle, i) => {
       const n = i * 2 + 1;
       circle.center = center;
       circle.angle = n * time;
-      center = circle.pointCenter;
+      center = circle.epicycleCenter;
     });
   }
 
@@ -221,7 +172,7 @@ class Graph {
 
   constructor(
     public context: p5,
-    public origin: Coordinate,
+    public origin: Point,
     public values: number[],
   ) {
     // no-op
@@ -229,19 +180,19 @@ class Graph {
 
   static create({context, origin, values}: {
     context: p5,
-    origin: Coordinate,
+    origin: Point,
     values: number[],
   }): Graph {
     return new Graph(context, origin, values);
   }
 
-  get first(): Coordinate {
+  get first(): Point {
     return this.origin.with({
       y: this.values[0]
     });
   }
 
-  get last(): Coordinate {
+  get last(): Point {
     return this.origin.with({
       y: this.values[this.values.length - 1]
     });
@@ -252,7 +203,7 @@ class Graph {
     return this;
   }
 
-  coordinate(index: number): Coordinate {
+  point(index: number): Point {
     return this.origin.with({
       x: this.origin.x + index * this.scaleX,
       y: this.origin.y + this.values[index] * this.scaleY
@@ -292,18 +243,18 @@ class Line {
 
   constructor(
     public context: p5,
-    public start: Coordinate,
-    public end: Coordinate,
+    public start: Point,
+    public end: Point,
   ) {
     // no-op
   }
 
   static create({context, start, end}: {
     context: p5,
-    start?: Coordinate,
-    end?: Coordinate,
+    start?: Point,
+    end?: Point,
   }): Line {
-    return new Line(context, start ?? Coordinate.zero(), end ?? Coordinate.zero());
+    return new Line(context, start ?? Point.zero(), end ?? Point.zero());
   }
 
   also(mutate: (line: Line) => void): Line {
@@ -320,7 +271,7 @@ class Line {
 }
 
 function sketch(context: p5) {
-  let origin: Coordinate;
+  let origin: Point;
   let clock: Clock;
   let series: Series;
   let graph: Graph;
@@ -329,7 +280,7 @@ function sketch(context: p5) {
   context.setup = function () {
     context.createCanvas(context.windowWidth, context.windowHeight);
 
-    origin = Coordinate.of({
+    origin = Point.of({
       x: Params.ORIGIN_X + Params.SERIES_RADIUS,
       y: Params.ORIGIN_Y + Params.SERIES_RADIUS,
     });
@@ -348,7 +299,7 @@ function sketch(context: p5) {
 
     graph = Graph.create({
       context: context,
-      origin: Coordinate.zero().plus({x: Params.SERIES_RADIUS + Params.MARGIN_X}),
+      origin: Point.zero().plus({x: Params.SERIES_RADIUS + Params.MARGIN_X}),
       values: [],
     }).also(it => {
       it.color = Params.SHAPE_COLOR;
@@ -367,8 +318,8 @@ function sketch(context: p5) {
   context.draw = function () {
     // update
     series.update(clock);
-    graph.push(series.last.pointCenter.y);
-    line.start = series.last.pointCenter;
+    graph.push(series.last.epicycleCenter.y);
+    line.start = series.last.epicycleCenter;
     line.end = graph.first;
 
     // draw

@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=LG8ZK-rRkXo
-import * as p5 from "p5";
+import * as p5 from 'p5';
 
 class Box {
   constructor(

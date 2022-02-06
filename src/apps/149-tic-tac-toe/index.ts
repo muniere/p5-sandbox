@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=GTWrWM1UsnA
 import * as p5 from 'p5';
+import { Point, Size } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#FFFFFF',
@@ -19,46 +20,6 @@ class Spot {
     row: number,
   }): Spot {
     return new Spot(column, row);
-  }
-}
-
-class Point {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Point {
-    return new Point(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Point {
-    return new Point(x, y);
-  }
-}
-
-class Size {
-  constructor(
-    public width: number,
-    public height: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Size {
-    return new Size(0, 0);
-  }
-
-  static of({width, height}: {
-    width: number,
-    height: number,
-  }): Size {
-    return new Size(width, height);
   }
 }
 

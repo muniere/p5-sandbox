@@ -1,30 +1,11 @@
 // https://www.youtube.com/watch?v=0L2n8Tg2FwI
-import * as p5 from "p5";
+import * as p5 from 'p5';
+import { Point } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   PATH: '/image.jpg',
   SCALE: 2,
 });
-
-class Coordinate {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Coordinate {
-    return new Coordinate(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Coordinate {
-    return new Coordinate(x, y);
-  }
-}
 
 class Pixel {
   constructor(
@@ -169,7 +150,7 @@ class View {
 
   constructor(
     public context: p5,
-    public origin: Coordinate,
+    public origin: Point,
     public machine: Machine,
   ) {
     // no-op
@@ -177,7 +158,7 @@ class View {
 
   static create({context, origin, processor}: {
     context: p5,
-    origin: Coordinate,
+    origin: Point,
     processor: Machine,
   }): View {
     return new View(context, origin, processor);
@@ -199,7 +180,7 @@ function sketch(context: p5) {
   context.preload = function () {
     sourceView = View.create({
       context: context,
-      origin: Coordinate.zero(),
+      origin: Point.zero(),
       processor: Machine.create({
         image: context.loadImage(Params.PATH),
       })
@@ -207,7 +188,7 @@ function sketch(context: p5) {
 
     resultView = View.create({
       context: context,
-      origin: Coordinate.zero(),
+      origin: Point.zero(),
       processor: Machine.create({
         image: context.loadImage(Params.PATH),
       })
@@ -219,8 +200,8 @@ function sketch(context: p5) {
     context.pixelDensity(1);
     context.noLoop();
 
-    sourceView.origin.x = 0;
-    resultView.origin.x = sourceView.image.width;
+    sourceView.origin = sourceView.origin.with({x: 0});
+    resultView.origin = resultView.origin.with({x: sourceView.image.width});
 
     for (let y = 0; y < resultView.image.height; y++) {
       for (let x = 0; x < resultView.image.width; x++) {

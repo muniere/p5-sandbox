@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=BV9ny785UNc
 // see http://www.karlsims.com/rd.html for details
-import * as p5 from "p5";
+import * as p5 from 'p5';
 
 // This process uses mutable operations with primitive structures,
 // to reduce memory allocation costs for too many small objects.

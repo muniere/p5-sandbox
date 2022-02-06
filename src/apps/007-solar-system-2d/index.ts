@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=l8SiJ-RmeHU
-import * as p5 from "p5";
+import * as p5 from 'p5';
 
 class Planet {
   private parent?: Planet;

@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=aKYlikFAV4k
 import * as p5 from 'p5';
+import { Size } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
@@ -29,22 +30,6 @@ class Coordinate {
 
   static dist(a: Coordinate, b: Coordinate): number {
     return Math.abs(a.row - b.row) + Math.abs(a.column - b.column);
-  }
-}
-
-class Bounds {
-  constructor(
-    public width: number,
-    public height: number,
-  ) {
-    // no-op
-  }
-
-  static create({width, height}: {
-    width: number,
-    height: number,
-  }): Bounds {
-    return new Bounds(width, height);
   }
 }
 
@@ -83,19 +68,19 @@ class Spot {
   constructor(
     public kind: Kind,
     public coord: Coordinate,
-    public bounds: Bounds,
+    public bounds: Size,
     public cost: Cost,
   ) {
     // no-op
   }
 
-  static create({kind, coord, bounds, cost}: {
+  static create({kind, coord, size, cost}: {
     kind: Kind,
     coord: Coordinate,
-    bounds: Bounds,
+    size: Size,
     cost: Cost,
   }): Spot {
-    return new Spot(kind, coord, bounds, cost);
+    return new Spot(kind, coord, size, cost);
   }
 
   trace(): Spot[] {
@@ -151,7 +136,7 @@ class Grid {
         (_, column) => Spot.create({
           kind: kindFactory({row: row, column: column}),
           coord: Coordinate.create({row: row, column: column}),
-          bounds: Bounds.create({width: w, height: h}),
+          size: Size.of({width: w, height: h}),
           cost: Cost.zero(),
         })
       )

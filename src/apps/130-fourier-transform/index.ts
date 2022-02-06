@@ -1,6 +1,7 @@
 // https://www.youtube.com/watch?v=MY4luNgGfms
 import * as p5 from 'p5';
 import * as data from './data';
+import { Point } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -113,56 +114,6 @@ class Clock {
   }
 }
 
-class Coordinate {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Coordinate {
-    return new Coordinate(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Coordinate {
-    return new Coordinate(x, y);
-  }
-
-  plus({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: this.x + (x ?? 0),
-      y: this.y + (y ?? 0),
-    });
-  }
-
-  minus({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: this.x - (x ?? 0),
-      y: this.y - (y ?? 0),
-    });
-  }
-
-  with({x, y}: {
-    x?: number,
-    y?: number,
-  }): Coordinate {
-    return Coordinate.of({
-      x: x ?? this.x,
-      y: y ?? this.y,
-    });
-  }
-}
-
 class Genome {
 
   constructor(
@@ -198,23 +149,23 @@ class Graph {
 
   constructor(
     public context: p5,
-    public plots: Coordinate[],
+    public plots: Point[],
   ) {
     // no-op
   }
 
   static create({context, plots}: {
     context: p5,
-    plots: Coordinate[],
+    plots: Point[],
   }): Graph {
     return new Graph(context, plots);
   }
 
-  get first(): Coordinate {
+  get first(): Point {
     return this.plots[0];
   }
 
-  get last(): Coordinate {
+  get last(): Point {
     return this.plots[this.plots.length - 1];
   }
 
@@ -223,7 +174,7 @@ class Graph {
     return this;
   }
 
-  push(plot: Coordinate) {
+  push(plot: Point) {
     this.plots.unshift(plot);
 
     if (this.maxLength > 0 && this.plots.length > this.maxLength) {
@@ -257,7 +208,7 @@ class Circle {
 
   constructor(
     public context: p5,
-    public center: Coordinate,
+    public center: Point,
     public genome: Genome,
   ) {
     // no-op
@@ -265,7 +216,7 @@ class Circle {
 
   static create({context, center, genome}: {
     context: p5,
-    center: Coordinate,
+    center: Point,
     genome: Genome,
   }): Circle {
     return new Circle(context, center, genome);
@@ -275,8 +226,8 @@ class Circle {
     return this.genome.amplitude;
   }
 
-  get pointCenter(): Coordinate {
-    return Coordinate.of({
+  get epicycleCenter(): Point {
+    return Point.of({
       x: this.center.x + this.radius * Math.cos(this.angle),
       y: this.center.y + this.radius * Math.sin(this.angle),
     });
@@ -287,7 +238,7 @@ class Circle {
     return this;
   }
 
-  coordinate(radian: number): Coordinate {
+  point(radian: number): Point {
     return this.center.plus({
       x: this.radius * Math.cos(radian),
       y: this.radius * Math.sin(radian),
@@ -297,7 +248,7 @@ class Circle {
   draw() {
     this.context.push()
 
-    const pointCenter = this.pointCenter;
+    const pointCenter = this.epicycleCenter;
 
     if (this.trackWeight > 0) {
       this.context.stroke(this.color);
@@ -344,7 +295,7 @@ class Series {
 
   static create({context, center, values, decorate}: {
     context: p5,
-    center: Coordinate,
+    center: Point,
     values: Complex[],
     decorate?: (circle: Circle, i: number) => void
   }): Series {
@@ -394,7 +345,7 @@ class Series {
       const phase = circle.genome.phase;
       circle.center = center;
       circle.angle = freq * time + phase + offset;
-      center = circle.pointCenter;
+      center = circle.epicycleCenter;
     });
   }
 
@@ -410,18 +361,18 @@ class Line {
 
   constructor(
     public context: p5,
-    public start: Coordinate,
-    public end: Coordinate,
+    public start: Point,
+    public end: Point,
   ) {
     // no-op
   }
 
   static create({context, start, end}: {
     context: p5,
-    start?: Coordinate,
-    end?: Coordinate,
+    start?: Point,
+    end?: Point,
   }): Line {
-    return new Line(context, start ?? Coordinate.zero(), end ?? Coordinate.zero());
+    return new Line(context, start ?? Point.zero(), end ?? Point.zero());
   }
 
   also(mutate: (line: Line) => void): Line {
@@ -444,7 +395,7 @@ class Line {
 // complex plane edition; with single complex numbers
 // noinspection JSUnusedLocalSymbols
 function sketchComplex(context: p5) {
-  let origin: Coordinate;
+  let origin: Point;
   let clock: Clock;
   let series: Series;
   let graph: Graph;
@@ -456,7 +407,7 @@ function sketchComplex(context: p5) {
       .filter((it, i) => i % 10 == 0)
       .map((it) => Complex.of(it.x, it.y));
 
-    origin = Coordinate.of({
+    origin = Point.of({
       x: Params.ORIGIN_X,
       y: Params.ORIGIN_Y + Params.MARGIN_Y / 2,
     });
@@ -491,9 +442,9 @@ function sketchComplex(context: p5) {
     // update
     series.update({clock: clock, offset: 0});
     graph.push(
-      Coordinate.of({
-        x: series.last.pointCenter.x,
-        y: series.last.pointCenter.y,
+      Point.of({
+        x: series.last.epicycleCenter.x,
+        y: series.last.epicycleCenter.y,
       })
     );
 
@@ -509,7 +460,7 @@ function sketchComplex(context: p5) {
 // x-y plan edition; with combinations of real numbers
 // noinspection JSUnusedLocalSymbols
 function sketchReal(context: p5) {
-  let origin: Coordinate;
+  let origin: Point;
   let clock: Clock;
   let seriesX: Series;
   let seriesY: Series;
@@ -522,9 +473,9 @@ function sketchReal(context: p5) {
 
     const coords = data.path
       .filter((it, i) => i % 10 == 0)
-      .map((it) => Coordinate.of(it));
+      .map((it) => Point.of(it));
 
-    origin = Coordinate.of({
+    origin = Point.of({
       x: Params.ORIGIN_X,
       y: Params.ORIGIN_Y,
     });
@@ -586,14 +537,14 @@ function sketchReal(context: p5) {
     seriesX.update({clock: clock, offset: 0});
     seriesY.update({clock: clock, offset: Math.PI / 2});
     graph.push(
-      Coordinate.of({
-        x: seriesX.last.pointCenter.x,
-        y: seriesY.last.pointCenter.y,
+      Point.of({
+        x: seriesX.last.epicycleCenter.x,
+        y: seriesY.last.epicycleCenter.y,
       })
     );
-    lineX.start = seriesX.last.pointCenter;
+    lineX.start = seriesX.last.epicycleCenter;
     lineX.end = graph.first;
-    lineY.start = seriesY.last.pointCenter;
+    lineY.start = seriesY.last.epicycleCenter;
     lineY.end = graph.first;
 
     // draw

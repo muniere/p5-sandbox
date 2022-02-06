@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=FWSR_7kZuYg
 import * as p5 from 'p5';
+import { Point, Size, Rect } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -120,86 +121,6 @@ class World {
       return undefined;
     }
     return this.states[row][column];
-  }
-}
-
-class Point {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Point {
-    return new Point(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Point {
-    return new Point(x, y);
-  };
-}
-
-class Size {
-  constructor(
-    public width: number,
-    public height: number,
-  ) {
-    // no-op
-  }
-
-  static square(size: number): Size {
-    return new Size(size, size);
-  }
-
-  static of({width, height}: {
-    width: number,
-    height: number,
-  }): Size {
-    return new Size(width, height);
-  }
-}
-
-class Rect {
-  constructor(
-    public origin: Point,
-    public size: Size,
-  ) {
-    // no-op
-  }
-
-  static of({origin, size}: {
-    origin: Point,
-    size: Size,
-  }): Rect {
-    return new Rect(origin, size);
-  }
-
-  get top(): number {
-    return this.origin.y;
-  }
-
-  get left(): number {
-    return this.origin.x;
-  }
-
-  get right(): number {
-    return this.origin.x + this.size.width;
-  }
-
-  get bottom(): number {
-    return this.origin.y + this.size.height;
-  }
-
-  get width(): number {
-    return this.size.width;
-  }
-
-  get height(): number {
-    return this.size.height;
   }
 }
 

@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=BAejnwN4Ccw
 import * as p5 from 'p5';
+import { Point, Size, Rect } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -73,87 +74,6 @@ class List {
     const body = this.values.slice(start, end).reverse();
     const tail = this.values.slice(end);
     this.values = head.concat(body).concat(tail);
-  }
-}
-
-
-class Point {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Point {
-    return new Point(0, 0);
-  }
-
-  static of({x, y}: {
-    x: number,
-    y: number,
-  }): Point {
-    return new Point(x, y);
-  }
-
-  static dist(a: Point, b: Point): number {
-    return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0));
-  }
-
-  equals(other: Point): boolean {
-    return this.x == other.x && this.y == other.y;
-  }
-}
-
-class Size {
-  constructor(
-    public width: number,
-    public height: number,
-  ) {
-    // no-op
-  }
-
-  static zero(): Size {
-    return new Size(0, 0);
-  }
-
-  static of({width, height}: {
-    width: number,
-    height: number,
-  }): Size {
-    return new Size(width, height);
-  }
-}
-
-class Rect {
-  constructor(
-    public origin: Point,
-    public size: Size,
-  ) {
-    // no-op
-  }
-
-  static create({origin, size}: {
-    origin: Point,
-    size: Size,
-  }): Rect {
-    return new Rect(origin, size);
-  }
-
-  get top(): number {
-    return this.origin.y;
-  }
-
-  get left(): number {
-    return this.origin.x;
-  }
-
-  get right(): number {
-    return this.origin.x + this.size.width;
-  }
-
-  get bottom(): number {
-    return this.origin.y + this.size.height;
   }
 }
 
@@ -308,7 +228,7 @@ class Progress {
     size: Size,
     total: number,
   }): Progress {
-    return new Progress(context, Rect.create({origin, size}), total);
+    return new Progress(context, Rect.of({origin, size}), total);
   }
 
   increment(delta: number = 1) {

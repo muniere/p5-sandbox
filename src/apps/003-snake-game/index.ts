@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=AaGK-fj-BAM
-import * as p5 from "p5";
+import * as p5 from 'p5';
 
 class Snake {
   private body: p5.Vector[] = [];

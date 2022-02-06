@@ -1,28 +1,11 @@
 // https://www.youtube.com/watch?v=17WoOqgXsRM
-import * as p5 from "p5";
+import * as p5 from 'p5';
+import { Size } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
   STAR_SIZE : 4,
   STAR_COUNT : 1000,
 });
-
-class Size {
-
-  constructor(
-    public width: number,
-    public height: number,
-  ) {
-    // no-op
-  }
-
-  copy(): Size {
-    return new Size(this.width, this.height);
-  }
-
-  multiply(value: number): Size {
-    return new Size(this.width * value, this.height * value);
-  }
-}
 
 class Star {
   private origin: p5.Vector;

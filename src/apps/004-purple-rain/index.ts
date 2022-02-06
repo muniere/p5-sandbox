@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=KkyIDI6rQJI
-import * as p5 from "p5";
+import * as p5 from 'p5';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#E6E6FA',
