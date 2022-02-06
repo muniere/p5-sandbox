@@ -1,4 +1,4 @@
-class Point {
+export class Point {
   public constructor(
     public readonly x: number,
     public readonly y: number,
@@ -42,7 +42,7 @@ class Point {
   }
 }
 
-class Size {
+export class Size {
   public constructor(
     public readonly width: number,
     public readonly height: number,
@@ -86,7 +86,7 @@ class Size {
   }
 }
 
-class Rect {
+export class Rect {
   public constructor(
     public origin: Point,
     public size: Size,
@@ -133,5 +133,3 @@ class Rect {
     return this.origin.equals(other.origin) && this.size.equals(other.size);
   }
 }
-
-export { Point, Size, Rect };

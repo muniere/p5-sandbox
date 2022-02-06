@@ -1,4 +1,4 @@
-class Complex {
+export class Complex {
   constructor(
     public re: number,
     public im: number,
@@ -62,5 +62,3 @@ class Complex {
     );
   }
 }
-
-export { Complex };

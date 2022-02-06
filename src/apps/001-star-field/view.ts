@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Numeric } from '../../lib/numeric';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { StarFieldState, StarState } from './model';
 
@@ -23,31 +24,35 @@ class StarWidget {
   }
 
   draw(): void {
-    const currentX = this.context.map(
-      /* value */ this.center.x / this.center.z,
-      /* from  */ 0, 1,
-      /* to    */ 0, this.context.width,
-    );
-    const currentY = this.context.map(
-      /* value */ this.center.y / this.center.z,
-      /* from  */ 0, 1,
-      /* to    */ 0, this.context.height,
-    );
-    const currentRadius = this.context.map(
-      /* value */ this.center.z,
-      /* from  */ this.context.width, 0,
-      /* to    */ 0, this.radius,
-    );
-    const originX = this.context.map(
-      /* value */ this.center.x / this.origin.z,
-      /* from  */ 0, 1,
-      /* to    */ 0, this.context.width,
-    );
-    const originY = this.context.map(
-      /* value */ this.center.y / this.origin.z,
-      /* from  */ 0, 1,
-      /* to    */ 0, this.context.height,
-    );
+    const currentX = Numeric.map({
+      value: this.center.x / this.center.z,
+      domain: Numeric.range(0, 1),
+      target: Numeric.range(0, this.context.width)
+    });
+
+    const currentY = Numeric.map({
+      value: this.center.y / this.center.z,
+      domain: Numeric.range(0, 1),
+      target: Numeric.range(0, this.context.height)
+    });
+
+    const currentRadius = Numeric.map({
+      value: this.center.z,
+      domain: Numeric.range(this.context.width, 0),
+      target: Numeric.range(0, this.radius)
+    });
+
+    const originX = Numeric.map({
+      value: this.center.x / this.origin.z,
+      domain: Numeric.range(0, 1),
+      target: Numeric.range(0, this.context.width),
+    });
+
+    const originY = Numeric.map({
+      value: this.center.y / this.origin.z,
+      domain: Numeric.range(0, 1),
+      target: Numeric.range(0, this.context.height)
+    });
 
     this.context.push();
 

@@ -1,4 +1,4 @@
-class Spot {
+export class Spot {
   constructor(
     public row: number,
     public column: number,
@@ -17,6 +17,3 @@ class Spot {
     return Math.abs(a.row - b.row) + Math.abs(a.column - b.column);
   }
 }
-
-export { Spot };
-

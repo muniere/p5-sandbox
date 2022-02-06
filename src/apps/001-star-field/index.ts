@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=17WoOqgXsRM
 import * as p5 from 'p5';
+import { Numeric } from '../../lib/numeric';
 import { Point as Point2D, Size as Size2D } from '../../lib/graphics2d';
 import { StarFieldState } from './model';
 import { StarFieldWidget } from './view';
@@ -64,10 +65,10 @@ export function sketch(context: p5) {
       y: context.mouseY,
     });
 
-    state.speed = context.map(
-      /* value */ Point2D.dist(mousePoint, canvasCenter),
-      /* from  */ 0, Point2D.dist(canvasOrigin, canvasCenter),
-      /* to    */ Params.STAR_SPEED_MIN, Params.STAR_SPEED_MAX,
-    );
+    state.speed = Numeric.map({
+      value: Point2D.dist(mousePoint, canvasCenter),
+      domain: Numeric.range(0, Point2D.dist(canvasOrigin, canvasCenter)),
+      target: Numeric.range(Params.STAR_SPEED_MIN, Params.STAR_SPEED_MAX),
+    });
   }
 }
