@@ -211,6 +211,14 @@ function sketch(context: p5) {
       context.loop();
     }
   }
+
+  context.mouseClicked = function () {
+    if (context.isLooping()) {
+      context.noLoop();
+    } else {
+      context.loop();
+    }
+  }
 }
 
 export { sketch };
