@@ -14,7 +14,11 @@ export class NumericRange {
   }
 
   coerce(n: number): number {
-    return  Math.max(this.start, Math.min(this.stop, n));
+    return Math.max(this.start, Math.min(this.stop, n));
+  }
+
+  sample(): number {
+    return this.start + Math.random() * (this.stop - this.start);
   }
 }
 
