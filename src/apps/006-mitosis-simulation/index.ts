@@ -1,105 +1,57 @@
 // https://www.youtube.com/watch?v=jxGS3fKPKJA
 import * as p5 from 'p5';
+import { Point, Size } from '../../lib/graphics2d';
+import { WorldState } from './model';
+import { WorldWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
   CELL_RADIUS: 50,
   CELL_GROWTH: 1.01,
-  CELL_COUNT: 5,
+  CELL_COUNT: 10,
 });
 
+export function sketch(context: p5) {
+  let state: WorldState;
+  let widget: WorldWidget;
 
-class Cell {
-  constructor(
-    public center: p5.Vector,
-    public radius: number,
-    public limit: number,
-    public growth: number,
-    public color: p5.Color,
-  ) {
-    // no-op
-  }
+  context.setup = function () {
+    context.createCanvas(
+      context.windowWidth,
+      context.windowHeight,
+      context.P2D,
+    );
 
-  static create({center, radius, color}: {
-    center: p5.Vector,
-    radius: number,
-    color: p5.Color
-  }): Cell {
-    return new Cell(center, radius, Params.CELL_RADIUS, Params.CELL_GROWTH, color);
-  }
-
-  draw(p: p5) {
-    p.fill(this.color);
-    p.ellipse(this.center.x, this.center.y, this.radius * 2);
-  }
-
-  update() {
-    const vector = p5.Vector.random2D();
-    this.center = p5.Vector.add(this.center, vector);
-    this.radius = Math.min(this.radius * this.growth, this.limit);
-  }
-
-  split(): Cell[] {
-    return [
-      Cell.create({
-        center: this.center.copy().sub(this.radius / 4),
-        radius: this.radius / 2,
-        color: this.color,
-      }),
-      Cell.create({
-        center: this.center.copy().add(this.radius / 4),
-        radius: this.radius / 2,
-        color: this.color,
-      }),
-    ];
-  }
-
-  hitTest(point: p5.Vector): boolean {
-    return p5.Vector.dist(this.center, point) < this.radius;
-  }
-}
-
-function sketch(self: p5) {
-  let cells: Cell[];
-
-  self.setup = function () {
-    self.createCanvas(self.windowWidth, self.windowHeight);
-
-    cells = [...Array(Params.CELL_COUNT)].map(_ => Cell.create({
-      center: new p5.Vector().add(
-        self.windowWidth * Math.random(),
-        self.windowHeight * Math.random()
-      ),
+    state = WorldState.random({
+      bounds: Size.of(context),
       radius: Params.CELL_RADIUS,
-      color: self.color(
-        255 * Math.random(),
-        255 * Math.random(),
-        255 * Math.random(),
-        128,
-      ),
-    }));
-  }
-
-  self.draw = function () {
-    self.background(Params.CANVAS_COLOR);
-
-    [...cells].reverse().forEach((cell) => {
-      cell.draw(self);
-      cell.update();
+      growth: Params.CELL_GROWTH,
+      count: Params.CELL_COUNT,
     });
+
+    widget = new WorldWidget(context, state);
   }
 
-  self.mouseClicked = function () {
-    const point = new p5.Vector().add(self.mouseX, self.mouseY);
-    const index = cells.findIndex(it => it.hitTest(point));
-    if (index < 0) {
-      return;
-    }
+  context.draw = function () {
+    // canvas
+    context.background(Params.CANVAS_COLOR);
 
-    const cell = cells[index];
-    cells.splice(index, 1);
-    cells = [...cells, ...cell.split()];
+    // widget
+    widget.draw();
+
+    // update
+    state.update();
+  }
+
+  context.mouseClicked = function () {
+    const point = Point.of({
+      x: context.mouseX,
+      y: context.mouseY,
+    });
+
+    const index = state.findIndex(point);
+    if (index >= 0) {
+      state.split(index);
+    }
   }
 }
-
-export { sketch };

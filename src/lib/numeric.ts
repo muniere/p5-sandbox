@@ -12,6 +12,10 @@ export class NumericRange {
   }): NumericRange {
     return new NumericRange(start, stop);
   }
+
+  coerce(n: number): number {
+    return  Math.max(this.start, Math.min(this.stop, n));
+  }
 }
 
 export class NumericMap {
@@ -29,8 +33,8 @@ export class NumericMap {
     return new NumericMap(domain, target);
   }
 
-  apply(x: number): number {
-    const percent = (x - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
+  apply(n: number): number {
+    const percent = (n - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
     const scaled = percent * Math.abs(this.target.stop - this.target.start);
     return scaled + this.target.start;
   }
