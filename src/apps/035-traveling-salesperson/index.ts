@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=BAejnwN4Ccw
 import * as p5 from 'p5';
+import { Generators } from '../../lib/stdlib';
 import { Point, Size, Rect } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
@@ -16,66 +17,6 @@ const Params = Object.freeze({
   MUTATION_DEPTH: 5,
   GENERATION_LIMIT: 1200,
 });
-
-class List {
-
-  constructor(
-    public values: number[],
-  ) {
-    // no-op
-  }
-
-  static* permutation(values: number[]): Generator<number[]> {
-    const seq = new List(values);
-
-    yield [...seq.values];
-
-    while (true) {
-      let x = -1;
-      for (let i = seq.values.length - 2; i >= 0; i--) {
-        if (seq.values[i] < seq.values[i + 1]) {
-          x = i;
-          break;
-        }
-      }
-
-      if (x < 0) {
-        break;
-      }
-
-      let y = -1;
-      for (let j = seq.values.length - 1; j > x; j--) {
-        if (seq.values[x] < seq.values[j]) {
-          y = j;
-          break;
-        }
-      }
-      if (y < 0) {
-        break;
-      }
-
-      seq.swap(x, y);
-      seq.reverse(x + 1);
-
-      yield [...seq.values];
-    }
-  }
-
-  private swap(i: number, j: number) {
-    const tmp = this.values[i];
-    this.values[i] = this.values[j];
-    this.values[j] = tmp;
-  }
-
-  private reverse(start?: number, end?: number) {
-    start ??= 0;
-    end ??= this.values.length;
-    const head = this.values.slice(0, start);
-    const body = this.values.slice(start, end).reverse();
-    const tail = this.values.slice(end);
-    this.values = head.concat(body).concat(tail);
-  }
-}
 
 class Path {
   public color: string = Params.SHAPE_COLOR;
@@ -169,7 +110,7 @@ class PathFinder {
       (a, b) => Point.dist(a, Point.zero()) - Point.dist(b, Point.zero())
     );
     this._size = points.map((_, i) => i + 1).reduce((acc, n) => acc * n, 1);
-    this._indexer = List.permutation(points.map((_, i) => i));
+    this._indexer = Generators.permutation(points.map((_, i) => i));
   }
 
   static create({context, points}: {
