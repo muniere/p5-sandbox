@@ -1,3 +1,5 @@
+import { NumericRange } from './numeric';
+
 export class Point {
   public constructor(
     public readonly x: number,
@@ -16,6 +18,23 @@ export class Point {
   }): Point {
     return new Point(x, y);
   };
+
+  public static rect({x, y}: {
+    x: number,
+    y: number,
+  }) : Point {
+    return new Point(x, y);
+  }
+
+  public static polar({radius, angle}: {
+    radius: number,
+    angle: number,
+  }) : Point {
+    return new Point(
+      radius * Math.cos(angle),
+      radius * Math.sin(angle),
+    );
+  }
 
   static dist(a: Point, b: Point): number {
     return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0));
@@ -39,6 +58,33 @@ export class Point {
 
   equals(other: Point): boolean {
     return this.x == other.x && this.y == other.y;
+  }
+}
+
+export class PointRange {
+  constructor(
+    public readonly start: Point,
+    public readonly stop: Point,
+  ) {
+    // no-op
+  }
+
+  static of({start, stop}: {
+    start: Point,
+    stop: Point,
+  }): PointRange {
+    return new PointRange(start, stop);
+  }
+
+  lerp(amount: number): Point {
+    return Point.of({
+      x: new NumericRange(this.start.x, this.stop.x).lerp(amount),
+      y: new NumericRange(this.start.y, this.stop.y).lerp(amount),
+    });
+  }
+
+  sample(): Point {
+    return this.lerp(Math.random());
   }
 }
 

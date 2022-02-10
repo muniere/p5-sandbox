@@ -1,3 +1,10 @@
+export namespace Arrays {
+
+  export function zip<T, U>(a: T[], b: U[]): Array<[T, U]> {
+    return a.map((it, i) => [it, b[i]]);
+  }
+}
+
 export namespace Generators {
 
   export function* permutation(values: number[]): Generator<number[]> {

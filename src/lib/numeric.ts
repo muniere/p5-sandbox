@@ -17,8 +17,12 @@ export class NumericRange {
     return Math.max(this.start, Math.min(this.stop, n));
   }
 
+  lerp(amount: number): number {
+    return this.start + amount * (this.stop - this.start);
+  }
+
   sample(): number {
-    return this.start + Math.random() * (this.stop - this.start);
+    return this.lerp(Math.random());
   }
 }
 
