@@ -1,7 +1,7 @@
 import { Vector } from 'p5';
 import { NumericRange } from '../../lib/numeric';
 import { Point, Size } from '../../lib/graphics2d';
-import { RandomColorFactory } from '../../lib/drawing';
+import { Colors } from '../../lib/drawing';
 
 export class CellState {
   public fillColor: string = '#FFFFFF';
@@ -103,8 +103,6 @@ export class WorldState {
     growth: number,
     count: number,
   }): WorldState {
-    const colors = RandomColorFactory.create({alpha: 128});
-
     const cells = [...Array(count)].map(
       _ => CellState.create({
         center: Point.of({
@@ -118,7 +116,7 @@ export class WorldState {
     );
 
     cells.forEach(it => {
-      it.fillColor = colors.create();
+      it.fillColor = Colors.sample({alpha: 128});
     });
 
     return new WorldState(bounds, cells);

@@ -1,81 +1,12 @@
 // https://www.youtube.com/watch?v=0L2n8Tg2FwI
 import * as p5 from 'p5';
 import { Point } from '../../lib/graphics2d';
+import { Pixel } from '../../lib/drawing';
 
 const Params = Object.freeze({
   PATH: '/image.jpg',
   SCALE: 2,
 });
-
-class Pixel {
-  constructor(
-    private _values: number[]
-  ) {
-    if (_values.length != 4) {
-      throw new Error('invalid values format');
-    }
-  }
-
-  static of(values: number[]): Pixel {
-    return new Pixel(values);
-  }
-
-  quantize(factor: number): Pixel {
-    return new Pixel([
-      Math.round(factor * this.r / 255) * 255 / factor,
-      Math.round(factor * this.g / 255) * 255 / factor,
-      Math.round(factor * this.b / 255) * 255 / factor,
-      this.a,
-    ]);
-  }
-
-  plus(other: Pixel): Pixel {
-    return new Pixel([
-      this._values[0] + other._values[0],
-      this._values[1] + other._values[1],
-      this._values[2] + other._values[2],
-      this._values[3] + other._values[3],
-    ]);
-  }
-
-  minus(other: Pixel): Pixel {
-    return new Pixel([
-      this._values[0] - other._values[0],
-      this._values[1] - other._values[1],
-      this._values[2] - other._values[2],
-      this._values[3] - other._values[3],
-    ]);
-  }
-
-  multiply(factor: number): Pixel {
-    return new Pixel([
-      this._values[0] * factor,
-      this._values[1] * factor,
-      this._values[2] * factor,
-      this._values[3] * factor,
-    ]);
-  }
-
-  get values(): number[] {
-    return [...this._values];
-  }
-
-  get r(): number {
-    return this._values[0];
-  }
-
-  get g(): number {
-    return this._values[1];
-  }
-
-  get b(): number {
-    return this._values[2];
-  }
-
-  get a(): number {
-    return this._values[3];
-  }
-}
 
 class Relay {
 

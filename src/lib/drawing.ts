@@ -1,29 +1,88 @@
-export class RandomColorFactory {
-  constructor(
-    public readonly red?: number,
-    public readonly green?: number,
-    public readonly blue?: number,
-    public readonly alpha?: number,
-  ) {
-    // no-op
-  }
+export interface ColorValues {
+  red?: number
+  green?: number
+  blue?: number
+  alpha?: number
+}
 
-  static create({red, green, blue, alpha}: {
-    red?: number,
-    green?: number,
-    blue?: number,
-    alpha?: number,
-  }): RandomColorFactory {
-    return new RandomColorFactory(red, green, blue, alpha);
-  }
-
-  create(): string {
+export namespace Colors {
+  export function sample(values?: ColorValues): string {
     const components = [
-      Math.floor(this.red ?? Math.random() * 255).toString(16),
-      Math.floor(this.green ?? Math.random() * 255).toString(16),
-      Math.floor(this.blue ?? Math.random() * 255).toString(16),
-      Math.floor(this.alpha ?? Math.random() * 255).toString(16),
+      Math.floor(values?.red ?? Math.random() * 255).toString(16),
+      Math.floor(values?.green ?? Math.random() * 255).toString(16),
+      Math.floor(values?.blue ?? Math.random() * 255).toString(16),
+      Math.floor(values?.alpha ?? Math.random() * 255).toString(16),
     ];
     return '#' + components.join('');
+  }
+}
+
+export class Pixel {
+  constructor(
+    private _values: number[]
+  ) {
+    if (_values.length != 4) {
+      throw new Error('invalid values format');
+    }
+  }
+
+  static of(values: number[]): Pixel {
+    return new Pixel(values);
+  }
+
+  quantize(factor: number): Pixel {
+    return new Pixel([
+      Math.round(factor * this.r / 255) * 255 / factor,
+      Math.round(factor * this.g / 255) * 255 / factor,
+      Math.round(factor * this.b / 255) * 255 / factor,
+      this.a,
+    ]);
+  }
+
+  plus(other: Pixel): Pixel {
+    return new Pixel([
+      this._values[0] + other._values[0],
+      this._values[1] + other._values[1],
+      this._values[2] + other._values[2],
+      this._values[3] + other._values[3],
+    ]);
+  }
+
+  minus(other: Pixel): Pixel {
+    return new Pixel([
+      this._values[0] - other._values[0],
+      this._values[1] - other._values[1],
+      this._values[2] - other._values[2],
+      this._values[3] - other._values[3],
+    ]);
+  }
+
+  multiply(factor: number): Pixel {
+    return new Pixel([
+      this._values[0] * factor,
+      this._values[1] * factor,
+      this._values[2] * factor,
+      this._values[3] * factor,
+    ]);
+  }
+
+  get values(): number[] {
+    return [...this._values];
+  }
+
+  get r(): number {
+    return this._values[0];
+  }
+
+  get g(): number {
+    return this._values[1];
+  }
+
+  get b(): number {
+    return this._values[2];
+  }
+
+  get a(): number {
+    return this._values[3];
   }
 }
