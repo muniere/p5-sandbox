@@ -1,6 +1,6 @@
-import { Generators } from '../../lib/stdlib';
-import { Point } from '../../lib/graphics2d';
-import { PathState } from './model.shared';
+import { Generators } from '../../../lib/stdlib';
+import { Point } from '../../../lib/graphics2d';
+import { PathState } from '../shared/model';
 
 export class PathGenerator {
   public color: string = '#FFFFFF';

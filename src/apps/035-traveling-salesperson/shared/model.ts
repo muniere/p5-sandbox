@@ -1,5 +1,4 @@
-import { Arrays, Numeric } from '../../lib/stdlib';
-import { Point } from '../../lib/graphics2d';
+import { Point } from '../../../lib/graphics2d';
 
 export class PathState {
   private _length: number = -1;

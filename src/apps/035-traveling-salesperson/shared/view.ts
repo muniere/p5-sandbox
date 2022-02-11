@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
-import { Point, Rect, Size } from '../../lib/graphics2d';
-import { PathState, ProgressState } from './model.shared';
+import { Point, Rect, Size } from '../../../lib/graphics2d';
+import { PathState, ProgressState } from './model';
 
 export class PathWidget {
   public color: string = '#FFFFFF';

@@ -1,6 +1,6 @@
-import { Arrays } from '../../lib/stdlib';
-import { Point } from '../../lib/graphics2d';
-import { PathState } from './model.shared';
+import { Arrays } from '../../../lib/stdlib';
+import { Point } from '../../../lib/graphics2d';
+import { PathState } from '../shared/model';
 
 export abstract class Cross {
   abstract perform(a: PathState, b: PathState): PathState
