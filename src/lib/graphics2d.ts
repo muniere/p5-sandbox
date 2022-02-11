@@ -1,4 +1,4 @@
-import { NumericRange } from './numeric';
+import { Numeric } from './stdlib';
 
 export class Point {
   public constructor(
@@ -22,14 +22,14 @@ export class Point {
   public static rect({x, y}: {
     x: number,
     y: number,
-  }) : Point {
+  }): Point {
     return new Point(x, y);
   }
 
   public static polar({radius, angle}: {
     radius: number,
     angle: number,
-  }) : Point {
+  }): Point {
     return new Point(
       radius * Math.cos(angle),
       radius * Math.sin(angle),
@@ -78,8 +78,8 @@ export class PointRange {
 
   lerp(amount: number): Point {
     return Point.of({
-      x: new NumericRange(this.start.x, this.stop.x).lerp(amount),
-      y: new NumericRange(this.start.y, this.stop.y).lerp(amount),
+      x: Numeric.range(this.start.x, this.stop.x).lerp(amount),
+      y: Numeric.range(this.start.y, this.stop.y).lerp(amount),
     });
   }
 

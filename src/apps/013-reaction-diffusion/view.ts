@@ -1,7 +1,7 @@
 import * as p5 from 'p5';
+import { Numeric } from '../../lib/stdlib';
 import { Spot } from '../../lib/dmath';
 import { WorldState } from './model';
-import { NumericRange } from '../../lib/numeric';
 
 export class WorldWidget {
   constructor(
@@ -17,7 +17,7 @@ export class WorldWidget {
 
     context.loadPixels();
 
-    const valueRange = new NumericRange(0, 255);
+    const valueRange = Numeric.range(0, 255);
 
     for (let row = 0; row < context.height; row++) {
       for (let column = 0; column < context.width; column++) {

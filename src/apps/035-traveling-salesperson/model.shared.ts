@@ -1,4 +1,4 @@
-import { NumericRange } from '../../lib/numeric';
+import { Numeric } from '../../lib/stdlib';
 import { Point } from '../../lib/graphics2d';
 
 export class PathState {
@@ -35,7 +35,7 @@ export class PathState {
   }
 
   noise() {
-    const range = new NumericRange(0, this.points.length);
+    const range = Numeric.range(0, this.points.length);
     const i = Math.floor(range.sample());
     const j = Math.floor(range.sample());
     const tmp = this.points[i];

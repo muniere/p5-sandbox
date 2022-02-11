@@ -1,6 +1,5 @@
 import { Vector } from 'p5';
-import { Arrays } from '../../lib/stdlib';
-import { NumericRange } from '../../lib/numeric';
+import { Arrays, Numeric } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 import { Colors } from '../../lib/drawing';
 
@@ -75,11 +74,11 @@ export class CellState {
   }
 
   constraint(bounds: Size) {
-    const xs = NumericRange.of({
+    const xs = Numeric.rangeOf({
       start: this.radius,
       stop: bounds.width - this.radius,
     });
-    const ys = NumericRange.of({
+    const ys = Numeric.rangeOf({
       start: this.radius,
       stop: bounds.height - this.radius,
     });

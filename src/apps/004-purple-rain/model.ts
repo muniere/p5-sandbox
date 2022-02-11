@@ -1,6 +1,5 @@
 import { Vector } from 'p5';
-import { Arrays } from '../../lib/stdlib';
-import { Numeric } from '../../lib/numeric';
+import { Arrays, Numeric } from '../../lib/stdlib';
 import { Size as Size2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
 

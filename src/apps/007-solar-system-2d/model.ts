@@ -1,4 +1,4 @@
-import { NumericRange } from '../../lib/numeric';
+import { Numeric } from '../../lib/stdlib';
 
 export class PlanetState {
   public color: string = '#FFFFFF';
@@ -57,7 +57,7 @@ export class SolarSystemState {
   }
 
   static assemble(): SolarSystemState {
-    const angles = NumericRange.of({
+    const angles = Numeric.rangeOf({
       start: 0,
       stop: Math.PI * 2,
     });

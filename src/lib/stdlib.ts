@@ -182,3 +182,72 @@ export class MutableList<T> {
     return new MutableList([...this._values]);
   }
 }
+
+export namespace Numeric {
+
+  export function range(start: number, stop: number): NumberRange {
+    return new NumberRange(start, stop);
+  }
+
+  export function rangeOf({start, stop}: {start: number, stop: number}): NumberRange {
+    return new NumberRange(start, stop);
+  }
+
+  export function map({value, domain, target}: {
+    value: number,
+    domain: NumberRange,
+    target: NumberRange,
+  }): number {
+    return NumberRangeMap.of({domain, target}).apply(value);
+  }
+}
+
+export class NumberRange {
+  constructor(
+    public readonly start: number,
+    public readonly stop: number,
+  ) {
+    // no-op
+  }
+
+  static of({start, stop}: {
+    start: number,
+    stop: number,
+  }): NumberRange {
+    return new NumberRange(start, stop);
+  }
+
+  coerce(n: number): number {
+    return Math.max(this.start, Math.min(this.stop, n));
+  }
+
+  lerp(amount: number): number {
+    return this.start + amount * (this.stop - this.start);
+  }
+
+  sample(): number {
+    return this.lerp(Math.random());
+  }
+}
+
+export class NumberRangeMap {
+  constructor(
+    public readonly domain: NumberRange,
+    public readonly target: NumberRange,
+  ) {
+    // no-op
+  }
+
+  static of({domain, target}: {
+    domain: NumberRange,
+    target: NumberRange,
+  }): NumberRangeMap {
+    return new NumberRangeMap(domain, target);
+  }
+
+  apply(n: number): number {
+    const percent = (n - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
+    const scaled = percent * Math.abs(this.target.stop - this.target.start);
+    return scaled + this.target.start;
+  }
+}

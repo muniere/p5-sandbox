@@ -1,5 +1,5 @@
 import * as p5 from 'p5';
-import { Numeric } from '../../lib/numeric';
+import { Numeric } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { StarFieldState, StarState } from './model';
 

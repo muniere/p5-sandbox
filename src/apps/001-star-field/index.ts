@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=17WoOqgXsRM
 import * as p5 from 'p5';
-import { Numeric } from '../../lib/numeric';
+import { Numeric } from '../../lib/stdlib';
 import { Point as Point2D, Size as Size2D } from '../../lib/graphics2d';
 import { StarFieldState } from './model';
 import { StarFieldWidget } from './view';
