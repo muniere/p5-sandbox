@@ -92,7 +92,7 @@ export class PathCrowdState {
   }): PathCrowdState {
     const paths = Arrays.generate(breadth, () => {
       return PathState.create({
-        points: Arrays.shuffled(points),
+        points: points.shuffled(),
       });
     });
 

@@ -183,7 +183,7 @@ export class ShapeState {
   }
 
   sample(): Point {
-    return Arrays.sample(this.points);
+    return this.points.sample();
   }
 
   also(mutate: (shape: ShapeState) => void): ShapeState {

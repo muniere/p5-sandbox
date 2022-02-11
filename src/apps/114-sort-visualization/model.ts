@@ -32,8 +32,7 @@ export class BubbleSortMachine implements SortMachine {
 
   static create({count}: { count: number }): BubbleSortMachine {
     const sequence = Arrays.sequence(count, {start: 1});
-    const shuffled = Arrays.shuffled(sequence);
-    return new BubbleSortMachine(shuffled);
+    return new BubbleSortMachine(sequence.shuffled());
   }
 
   get values(): number[] {
@@ -88,8 +87,7 @@ export class InsertionSortMachine implements SortMachine {
 
   static create({count}: { count: number }): InsertionSortMachine {
     const sequence = Arrays.sequence(count, {start: 1});
-    const shuffled = Arrays.shuffled(sequence);
-    return new InsertionSortMachine(shuffled);
+    return new InsertionSortMachine(sequence.shuffled());
   }
 
   get values(): number[] {
@@ -149,8 +147,7 @@ export class SelectionSortMachine implements SortMachine {
 
   static create({count}: { count: number }): SelectionSortMachine {
     const sequence = Arrays.sequence(count, {start: 1});
-    const shuffled = Arrays.shuffled(sequence);
-    return new SelectionSortMachine(shuffled);
+    return new SelectionSortMachine(sequence.shuffled());
   }
 
   get values(): number[] {

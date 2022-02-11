@@ -54,8 +54,7 @@ export class Grammar {
       return [];
     }
 
-    const index = Arrays.sampleIndex(phrases);
-    const phrase = phrases[index];
+    const phrase = phrases.sample();
     return [...phrase.values];
   }
 }

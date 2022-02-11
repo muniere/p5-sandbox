@@ -35,8 +35,8 @@ export class PathState {
   }
 
   noise() {
-    const i = Arrays.sampleIndex(this.points);
-    const j = Arrays.sampleIndex(this.points);
+    const i = this.points.sampleIndex();
+    const j = this.points.sampleIndex();
     const tmp = this.points[i];
     this.points[i] = this.points[j];
     this.points[j] = tmp;
