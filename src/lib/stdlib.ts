@@ -8,6 +8,38 @@ export namespace Arrays {
     return [...Array(length)].map((_, i) => factory(i));
   }
 
+  export function shuffled<T>(array: T[]): T[] {
+    const result = [...array];
+
+    let cursor = result.length;
+
+    while (cursor) {
+      const i = Math.floor(Math.random() * cursor);
+
+      cursor -= 1;
+
+      const tmp = result[cursor];
+      result[cursor] = result[i];
+      result[i] = tmp;
+    }
+
+    return result;
+  }
+
+  export function shuffle<T>(array: T[]): void {
+    let cursor = array.length;
+
+    while (cursor) {
+      const i = Math.floor(Math.random() * cursor);
+
+      cursor -= 1;
+
+      const tmp = array[cursor];
+      array[cursor] = array[i];
+      array[i] = tmp;
+    }
+  }
+
   export function zip<T, U>(a: T[], b: U[]): Array<[T, U]> {
     return a.map((it, i) => [it, b[i]]);
   }
@@ -97,21 +129,7 @@ export class List<T> {
   }
 
   shuffled(): List<T> {
-    const result = [...this._values];
-
-    let cursor = result.length;
-
-    while (cursor) {
-      const i = Math.floor(Math.random() * cursor);
-
-      cursor -= 1;
-
-      const tmp = result[cursor];
-      result[cursor] = result[i];
-      result[i] = tmp;
-    }
-
-    return List.of(result);
+    return List.of(Arrays.shuffled(this._values));
   }
 
   reversed(start?: number, end?: number) {
@@ -151,17 +169,7 @@ export class MutableList<T> {
   }
 
   shuffle() {
-    let cursor = this._values.length;
-
-    while (cursor) {
-      const i = Math.floor(Math.random() * cursor);
-
-      cursor -= 1;
-
-      const tmp = this._values[cursor];
-      this._values[cursor] = this._values[i];
-      this._values[i] = tmp;
-    }
+    Arrays.shuffle(this._values);
   }
 
   reverse(start?: number, end?: number) {
@@ -189,7 +197,7 @@ export namespace Numeric {
     return new NumberRange(start, stop);
   }
 
-  export function rangeOf({start, stop}: {start: number, stop: number}): NumberRange {
+  export function rangeOf({start, stop}: { start: number, stop: number }): NumberRange {
     return new NumberRange(start, stop);
   }
 

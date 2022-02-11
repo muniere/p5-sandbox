@@ -1,4 +1,4 @@
-import { Arrays, List } from '../../lib/stdlib';
+import { Arrays } from '../../lib/stdlib';
 import { Point } from '../../lib/graphics2d';
 import { PathState } from './model.shared';
 
@@ -92,7 +92,7 @@ export class PathCrowdState {
   }): PathCrowdState {
     const paths = Arrays.generate(breadth, () => {
       return PathState.create({
-        points: List.of(points).shuffled().values,
+        points: Arrays.shuffled(points),
       });
     });
 

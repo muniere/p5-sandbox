@@ -41,9 +41,9 @@ class BubbleSortMachine implements SortMachine {
   }
 
   static create({count}: { count: number }): BubbleSortMachine {
-    return new BubbleSortMachine(
-      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
-    );
+    const sequence = Arrays.sequence(count, {start: 1});
+    const shuffled = Arrays.shuffled(sequence);
+    return new BubbleSortMachine(shuffled);
   }
 
   get values(): number[] {
@@ -97,9 +97,9 @@ class InsertionSortMachine implements SortMachine {
   }
 
   static create({count}: { count: number }): InsertionSortMachine {
-    return new InsertionSortMachine(
-      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
-    );
+    const sequence = Arrays.sequence(count, {start: 1});
+    const shuffled = Arrays.shuffled(sequence);
+    return new InsertionSortMachine(shuffled);
   }
 
   get values(): number[] {
@@ -158,9 +158,9 @@ class SelectionSortMachine implements SortMachine {
   }
 
   static create({count}: { count: number }): SelectionSortMachine {
-    return new SelectionSortMachine(
-      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
-    );
+    const sequence = Arrays.sequence(count, {start: 1});
+    const shuffled = Arrays.shuffled(sequence);
+    return new SelectionSortMachine(shuffled);
   }
 
   get values(): number[] {
@@ -244,22 +244,6 @@ class Painter {
     return i == machine.cursor
       ? Params.DATA_COLOR_CURSOR
       : Params.DATA_COLOR_DEFAULT;
-  }
-}
-
-class Sequence {
-
-  static shuffled<T>(array: T[]): T[] {
-    const source = [...array];
-    const result = [] as T[];
-
-    while (source.length > 0) {
-      const index = Math.floor(Math.random() * source.length);
-      const [value] = source.splice(index, 1);
-      result.push(value);
-    }
-
-    return result;
   }
 }
 
