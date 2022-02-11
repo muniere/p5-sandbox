@@ -178,6 +178,13 @@ export class Rect {
     return this.size.height;
   }
 
+  public get center(): Point {
+    return Point.of({
+      x: this.origin.x + this.size.width / 2,
+      y: this.origin.y + this.size.height / 2
+    });
+  }
+
   copy(): Rect {
     return new Rect(this.origin.copy(), this.size.copy());
   }

@@ -84,6 +84,16 @@ export class Matrix<T> {
     return new Matrix<Spot>(Dimen.of(dimen), spots);
   }
 
+  static fill<T>(dimen: { width: number, height: number }, value: T): Matrix<T> {
+    const values = [...Array(dimen.height)].map(
+      (_, row) => [...Array(dimen.width)].map(
+        (_, column) => value
+      )
+    );
+
+    return new Matrix<T>(Dimen.of(dimen), values);
+  }
+
   static generate<T>(dimen: { width: number, height: number }, factory: (spot: Spot) => T): Matrix<T> {
     const values = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
@@ -140,6 +150,18 @@ export class Matrix<T> {
     });
   }
 
+  filter(predicate: (value: T, spot: Spot) => boolean): Array<T> {
+    const result = [] as T[];
+
+    this.forEach((value, spot) => {
+      if (predicate(value, spot)) {
+        result.push(value);
+      }
+    })
+
+    return result;
+  }
+
   map<U>(transform: (value: T, spot: Spot) => U): Matrix<U> {
     const values = this.values.map((values, row) => {
       return values.map((value, column) => {
@@ -150,7 +172,7 @@ export class Matrix<T> {
     return new Matrix<U>(this.dimen, values);
   }
 
-  flatten(): T[] {
+  flatten(): Array<T> {
     return this.values.reduce((acc, v) => acc.concat(v));
   }
 }
