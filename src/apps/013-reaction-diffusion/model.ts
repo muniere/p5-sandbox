@@ -1,4 +1,4 @@
-import { Spot } from '../../lib/dmath';
+import { Dimen, Matrix, Spot } from '../../lib/dmath';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 
 // This process uses mutable operations with primitive structures,
@@ -10,38 +10,39 @@ export type CellState = {
 };
 
 export class GridState {
-
   constructor(
-    public readonly width: number,
-    public readonly height: number,
-    private cells: CellState[],
+    public readonly matrix: Matrix<CellState>
   ) {
     // no-op
   }
 
-  static create({width, height, factory}: {
-    width: number,
-    height: number,
+  static create({dimen, factory}: {
+    dimen: Dimen,
     factory: (spot: Spot) => CellState,
   }): GridState {
-    const spots = [...Array(width * height)].map(
-      (_, i) => Spot.of({
-        row: Math.floor(i / height),
-        column: Math.floor(i % width),
-      }),
+    return new GridState(
+      Matrix.generate(dimen, factory)
     );
-    const cells = spots.map(factory);
-    return new GridState(width, height, cells);
+  }
+
+  get width(): number {
+    return this.matrix.width;
+  }
+
+  get height(): number {
+    return this.matrix.height;
+  }
+
+  get dimen(): Dimen {
+    return this.matrix.dimen;
   }
 
   getValue(spot: Spot): CellState {
-    const index = spot.row * this.width + spot.column;
-    return this.cells[index];
+    return this.matrix.get(spot);
   }
 
   setValue(spot: Spot, cell: CellState) {
-    const index = spot.row * this.width + spot.column;
-    this.cells[index] = cell;
+    this.matrix.set(spot, cell);
   }
 
   laplace(spot: Spot): CellState {
@@ -159,7 +160,7 @@ export class Diffusion {
 
 export class WorldState {
   private _grid: GridState;
-  private _work: GridState;
+  private readonly _work: GridState;
 
   constructor(
     seed: GridState,
@@ -167,9 +168,8 @@ export class WorldState {
   ) {
     this._grid = seed;
     this._work = GridState.create({
-      width: seed.width,
-      height: seed.height,
-      factory: _ => ({a: 0, b: 0})
+      dimen: seed.dimen,
+      factory: () => ({a: 0, b: 0})
     });
   }
 
@@ -177,7 +177,7 @@ export class WorldState {
     bounds: Size,
     drop: Size,
     diffusion: Diffusion,
-  }) : WorldState {
+  }): WorldState {
     const frame = Rect.of({
       origin: Point.of({
         x: Math.floor(bounds.width / 2) - drop.width,
@@ -187,9 +187,8 @@ export class WorldState {
     });
 
     const grid = GridState.create({
-      width: bounds.width,
-      height: bounds.height,
-      factory: _ => ({a: 1, b: 0}),
+      dimen: Dimen.of(bounds),
+      factory: () => ({a: 1, b: 0}),
     });
 
     for (let row = frame.top; row < frame.bottom; row++) {

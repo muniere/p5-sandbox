@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=FWSR_7kZuYg
 import * as p5 from 'p5';
+import { Dimen } from '../../lib/dmath';
 import { Point, Size } from '../../lib/graphics2d';
 import { CellState, WorldState } from './model';
 import { WorldWidget } from './view';
@@ -28,9 +29,8 @@ export function sketch(context: p5) {
     context.noLoop();
 
     state = WorldState.create({
-      width: Params.WORLD_SIZE,
-      height: Params.WORLD_SIZE,
-      factory: _ => Math.random() < Params.SEED_RATE ? CellState.alive : CellState.dead,
+      dimen: Dimen.square(Params.WORLD_SIZE),
+      factory: () => Math.random() < Params.SEED_RATE ? CellState.alive : CellState.dead,
     });
 
     widget = WorldWidget.create({

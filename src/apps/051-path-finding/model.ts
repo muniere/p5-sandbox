@@ -1,4 +1,4 @@
-import { Spot } from '../../lib/dmath';
+import { Dimen, Matrix, Spot } from '../../lib/dmath';
 import { Size } from '../../lib/graphics2d';
 
 export class CostState {
@@ -69,7 +69,7 @@ export class NodeState {
 
 export class GraphState {
   constructor(
-    public nodes: NodeState[][],
+    public readonly nodes: Matrix<NodeState>,
   ) {
     // no-op
   }
@@ -79,38 +79,28 @@ export class GraphState {
     scale: number,
     kind: (spot: Spot) => NodeKind,
   }): GraphState {
+    const dimen = Dimen.square(scale);
     const itemWidth = bounds.width / scale;
     const itemHeight = bounds.height / scale;
 
-    const nodes = [...Array(scale)].map(
-      (_, row) => [...Array(scale)].map(
-        (_, column) => NodeState.create({
-          kind: kind(Spot.of({row, column})),
-          spot: Spot.of({row: row, column: column}),
-          size: Size.of({width: itemWidth, height: itemHeight}),
-          cost: CostState.zero(),
-        })
-      )
-    );
+    const nodes = Matrix.generate(dimen, (spot) => {
+      return NodeState.create({
+        kind: kind(spot),
+        spot: spot,
+        size: Size.of({width: itemWidth, height: itemHeight}),
+        cost: CostState.zero(),
+      });
+    });
 
     return new GraphState(nodes);
   }
 
   getNode(spot: Spot): NodeState {
-    return this.nodes[spot.row][spot.column];
+    return this.nodes.get(spot);
   }
 
   getNodeOrNull(spot: Spot): NodeState | undefined {
-    if (spot.row < 0 || this.nodes.length - 1 < spot.row) {
-      return undefined;
-    }
-
-    const row = this.nodes[spot.row];
-    if (spot.column < 0 || row.length - 1 < spot.column) {
-      return undefined;
-    }
-
-    return row[spot.column];
+    return this.nodes.getOrNull(spot)
   }
 
   getNeighbors(spot: Spot): NodeState[] {
@@ -136,16 +126,15 @@ export class GraphState {
   }
 
   first(): NodeState {
-    return this.nodes[0][0];
+    return this.nodes.first();
   }
 
   last(): NodeState {
-    const row = this.nodes[this.nodes.length - 1];
-    return row[row.length - 1];
+    return this.nodes.last();
   }
 
   walk(callback: (node: NodeState) => void) {
-    this.nodes.forEach(it => it.forEach(callback))
+    this.nodes.forEach(callback)
   }
 }
 

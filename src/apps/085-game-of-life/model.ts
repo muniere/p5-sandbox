@@ -1,4 +1,4 @@
-import { Spot } from '../../lib/dmath';
+import { Dimen, Matrix, Spot } from '../../lib/dmath';
 
 export enum CellState {
   alive,
@@ -6,41 +6,39 @@ export enum CellState {
 }
 
 export class GridState {
-  private readonly cells: CellState[][];
-
   constructor(
-    public readonly width: number,
-    public readonly height: number,
-    factory?: (coord: Spot) => CellState
+    public readonly matrix: Matrix<CellState>,
   ) {
-    this.cells = [...Array(height)].map(
-      (_, row) => [...Array(width)].map(
-        (_, column) => factory ? factory(Spot.of({row, column})) : CellState.dead,
-      )
-    );
+    // no-op
   }
 
-  static create({width, height, factory}: {
-    width: number,
-    height: number,
+  static create({dimen, factory}: {
+    dimen: Dimen,
     factory?: (coord: Spot) => CellState,
   }): GridState {
-    return new GridState(width, height, factory);
+    const matrix = Matrix.generate(dimen, (spot) => {
+      return factory ? factory(spot) : CellState.dead;
+    });
+
+    return new GridState(matrix);
   }
 
-  walk(callback: (state: CellState, coord: Spot) => void) {
-    for (let row = 0; row < this.height; row++) {
-      for (let column = 0; column < this.width; column++) {
-        callback(this.cells[row][column], Spot.of({row, column}));
-      }
-    }
+  get width(): number {
+    return this.matrix.width;
+  }
+
+  get height(): number {
+    return this.matrix.height;
+  }
+
+  walk(callback: (state: CellState, spot: Spot) => void) {
+    this.matrix.forEach(callback)
   }
 
   next(): GridState {
     return GridState.create({
-      width: this.width,
-      height: this.height,
-      factory: (coord: Spot) => this._next(coord),
+      dimen: this.matrix.dimen,
+      factory: (spot: Spot) => this._next(spot),
     });
   }
 
@@ -48,18 +46,18 @@ export class GridState {
     row: number,
     column: number,
   }): CellState {
-    const current = this.get({row, column});
+    const current = this.getOrNull({row, column});
 
     // noinspection PointlessArithmeticExpressionJS
     const neighbors = [
-      this.get({row: row - 1, column: column - 1}),
-      this.get({row: row - 1, column: column + 0}),
-      this.get({row: row - 1, column: column + 1}),
-      this.get({row: row + 0, column: column - 1}),
-      this.get({row: row + 0, column: column + 1}),
-      this.get({row: row + 1, column: column - 1}),
-      this.get({row: row + 1, column: column + 0}),
-      this.get({row: row + 1, column: column + 1}),
+      this.getOrNull({row: row - 1, column: column - 1}),
+      this.getOrNull({row: row - 1, column: column + 0}),
+      this.getOrNull({row: row - 1, column: column + 1}),
+      this.getOrNull({row: row + 0, column: column - 1}),
+      this.getOrNull({row: row + 0, column: column + 1}),
+      this.getOrNull({row: row + 1, column: column - 1}),
+      this.getOrNull({row: row + 1, column: column + 0}),
+      this.getOrNull({row: row + 1, column: column + 1}),
     ].filter(it => it != undefined) as CellState[];
 
     const density = neighbors.filter(it => it == CellState.alive).length;
@@ -82,17 +80,11 @@ export class GridState {
     }
   }
 
-  private get({row, column}: {
+  private getOrNull({row, column}: {
     row: number,
     column: number,
   }): CellState | undefined {
-    if (row < 0 || this.height <= row) {
-      return undefined;
-    }
-    if (column < 0 || this.width <= column) {
-      return undefined;
-    }
-    return this.cells[row][column];
+    return this.matrix.getOrNull(Spot.of({row, column}))
   }
 }
 
@@ -105,13 +97,13 @@ export class WorldState {
     this._grid = seed;
   }
 
-  static create({width, height, factory}: {
-    width: number,
-    height: number,
+  static create({dimen, factory}: {
+    dimen: Dimen,
     factory?: (coord: Spot) => CellState,
   }): WorldState {
-    const grid = new GridState(width, height, factory);
-    return new WorldState(grid);
+    return new WorldState(
+      GridState.create({dimen, factory})
+    );
   }
 
   get grid(): GridState {
