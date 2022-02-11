@@ -1,6 +1,7 @@
 // https://www.youtube.com/watch?v=MY4luNgGfms
 import * as p5 from 'p5';
 import * as data from './data';
+import { Arrays } from '../../lib/stdlib';
 import { Complex } from '../../lib/cmath';
 import { Point } from '../../lib/graphics2d';
 
@@ -20,13 +21,13 @@ class Formula {
     const N = xs.length;
     const t = -(2 * Math.PI) / N;
 
-    return [...Array(N)].map(
-      (_, k) => xs.reduce(
+    return Arrays.generate(N, (k) => {
+      return xs.reduce(
         (acc, x, n) => acc.plus(
           x.times(Complex.unit(k * n * t))
         )
-      )
-    );
+      );
+    });
   }
 }
 

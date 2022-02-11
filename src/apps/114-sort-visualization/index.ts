@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=67k3I2GxTH8
 import * as p5 from 'p5';
+import { Arrays } from '../../lib/stdlib';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
@@ -41,9 +42,7 @@ class BubbleSortMachine implements SortMachine {
 
   static create({count}: { count: number }): BubbleSortMachine {
     return new BubbleSortMachine(
-      Sequence.shuffled(
-        Sequence.generate(count, {start: 1})
-      )
+      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
     );
   }
 
@@ -99,9 +98,7 @@ class InsertionSortMachine implements SortMachine {
 
   static create({count}: { count: number }): InsertionSortMachine {
     return new InsertionSortMachine(
-      Sequence.shuffled(
-        Sequence.generate(count, {start: 1})
-      )
+      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
     );
   }
 
@@ -162,9 +159,7 @@ class SelectionSortMachine implements SortMachine {
 
   static create({count}: { count: number }): SelectionSortMachine {
     return new SelectionSortMachine(
-      Sequence.shuffled(
-        Sequence.generate(count, {start: 1})
-      )
+      Sequence.shuffled(Arrays.sequence(count, {start: 1}))
     );
   }
 
@@ -253,11 +248,6 @@ class Painter {
 }
 
 class Sequence {
-
-  static generate(count: number, {start}: { start?: number }): number[] {
-    const offset = start || 0;
-    return [...Array(count)].map((_, i) => i + offset);
-  }
 
   static shuffled<T>(array: T[]): T[] {
     const source = [...array];

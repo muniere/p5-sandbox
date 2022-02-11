@@ -1,3 +1,4 @@
+import { Arrays } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { Size as Size2D } from '../../lib/graphics2d';
 
@@ -49,16 +50,16 @@ export class StarFieldState {
     radius: number,
     count: number,
   }): StarFieldState {
-    const stars = [...Array(count)].map(
-      _ => StarState.create({
+    const stars = Arrays.generate(count, () => {
+      return StarState.create({
         center: Point3D.of({
           x: Math.floor(bounds.width * (Math.random() - 0.5)),
           y: Math.floor(bounds.height * (Math.random() - 0.5)),
           z: Math.random() * bounds.width,
         }),
         radius: radius,
-      })
-    );
+      });
+    });
     return new StarFieldState(stars);
   }
 

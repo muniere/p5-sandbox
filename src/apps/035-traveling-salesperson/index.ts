@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=BAejnwN4Ccw
 import * as p5 from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 import { ProgressState } from './model.shared';
 import { LexicographicSolver } from './model.brute';
@@ -29,13 +30,13 @@ function sketchLexicographic(context: p5) {
     context.createCanvas(context.windowWidth, context.windowHeight);
 
     solver = LexicographicSolver.create({
-      points: [...Array(Params.POINT_COUNT)].map(
-        _ => Point.of({
+      points: Arrays.generate(Params.POINT_COUNT, () => {
+        return Point.of({
           x: Math.random() * context.width,
           y: Math.random() * context.height,
-        })
-      )
-    })
+        });
+      })
+    });
 
     progress = ProgressWidget.create({
       context: context,
@@ -100,12 +101,12 @@ function sketchGenetic(context: p5) {
 
     solver = GeneticSolver.create({
       breadth: Params.CROWD_BREADTH,
-      points: [...Array(Params.POINT_COUNT)].map(
-        _ => Point.of({
+      points: Arrays.generate(Params.POINT_COUNT, () => {
+        return Point.of({
           x: Math.random() * context.width,
           y: Math.random() * context.height,
-        })
-      ),
+        });
+      }),
       cross: JointCross.create(),
       mutation: NoiseMutation.create({
         rate: Params.MUTATION_RATE,

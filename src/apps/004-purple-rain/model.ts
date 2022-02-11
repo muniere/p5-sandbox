@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { Numeric } from '../../lib/numeric';
 import { Size as Size2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
@@ -60,7 +61,7 @@ export class RainState {
     bounds: Size2D,
     count: number,
   }) : RainState {
-    const drops = [...Array(count)].map(_ => {
+    const drops = Arrays.generate(count, () => {
       const origin = Point3D.of({
         x: bounds.width * Math.random(),
         y: -500 * Math.random(),

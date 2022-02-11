@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=Mm2eYfj0SgA
 import * as p5 from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { Point } from '../../lib/graphics2d';
 
 const Params = Object.freeze({
@@ -121,7 +122,7 @@ class Series {
     color: string,
     depth: number,
   }): Series {
-    const circles = [...Array(depth)].map((_, i) => {
+    const circles = Arrays.generate(depth, (i) => {
       const n = i * 2 + 1;
       return Circle.create({
         context: context,

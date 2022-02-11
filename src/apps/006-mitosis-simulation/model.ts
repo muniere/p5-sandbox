@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { NumericRange } from '../../lib/numeric';
 import { Point, Size } from '../../lib/graphics2d';
 import { Colors } from '../../lib/drawing';
@@ -103,8 +104,8 @@ export class WorldState {
     growth: number,
     count: number,
   }): WorldState {
-    const cells = [...Array(count)].map(
-      _ => CellState.create({
+    const cells = Arrays.generate(count, () => {
+      return CellState.create({
         center: Point.of({
           x: bounds.width * Math.random(),
           y: bounds.height * Math.random()
@@ -112,8 +113,8 @@ export class WorldState {
         radius: radius,
         growth: growth,
         limit: radius,
-      })
-    );
+      });
+    });
 
     cells.forEach(it => {
       it.fillColor = Colors.sample({alpha: 128});

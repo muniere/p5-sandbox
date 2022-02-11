@@ -1,11 +1,39 @@
 export namespace Arrays {
 
+  export function sequence(length: number, option?: { start?: number }): number[] {
+    return [...Array(length)].map((_, i) => i + (option?.start ?? 0));
+  }
+
+  export function generate<T>(length: number, factory: (index: number) => T): T[] {
+    return [...Array(length)].map((_, i) => factory(i));
+  }
+
   export function zip<T, U>(a: T[], b: U[]): Array<[T, U]> {
     return a.map((it, i) => [it, b[i]]);
   }
 }
 
 export namespace Generators {
+
+  export function* sequence(option?: {
+    start?: number,
+    end?: number,
+    step?: number
+  }): Generator<number> {
+    const start = option?.start ?? 0;
+    const end = option?.end;
+    const step = option?.step ?? 1;
+
+    if (end) {
+      for (let i = start; i < end; i += step) {
+        yield i;
+      }
+    } else {
+      for (let i = start; ; i += step) {
+        yield  i;
+      }
+    }
+  }
 
   export function* permutation(values: number[]): Generator<number[]> {
     const seq = MutableList.of(values);

@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=GTWrWM1UsnA
 import * as p5 from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { Spot } from '../../lib/dmath';
 import { Point, Size } from '../../lib/graphics2d';
 
@@ -179,12 +180,12 @@ class Board {
   }
 
   collectLines(): Line[] {
-    const horizons = [...Array(this.scale)].map(
-      (_, row) => Line.of(this.cells.filter(it => it.spot.row == row))
-    );
-    const verticals = [...Array(this.scale)].map(
-      (_, column) => Line.of(this.cells.filter(it => it.spot.column == column))
-    );
+    const horizons = Arrays.generate(this.scale, (row) => {
+      return Line.of(this.cells.filter(it => it.spot.row == row));
+    });
+    const verticals = Arrays.generate(this.scale, (column) => {
+      return Line.of(this.cells.filter(it => it.spot.column == column));
+    });
     const diagonals = [
       Line.of(this.cells.filter(it => it.spot.row == it.spot.column)),
       Line.of(this.cells.filter(it => it.spot.row + it.spot.column == this.scale - 1))
