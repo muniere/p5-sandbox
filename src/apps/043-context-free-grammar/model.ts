@@ -1,3 +1,5 @@
+import { Arrays } from '../../lib/stdlib';
+
 export class Token {
   constructor(
     public readonly value: string,
@@ -52,7 +54,7 @@ export class Grammar {
       return [];
     }
 
-    const index = Math.floor(phrases.length * Math.random());
+    const index = Arrays.sampleIndex(phrases);
     const phrase = phrases[index];
     return [...phrase.values];
   }

@@ -1,4 +1,5 @@
 import { Image } from 'p5';
+import { Arrays } from '../../lib/stdlib';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 
 export class CircleState {
@@ -182,7 +183,7 @@ export class ShapeState {
   }
 
   sample(): Point {
-    return this.points[Math.floor(Math.random() * this.points.length)];
+    return Arrays.sample(this.points);
   }
 
   also(mutate: (shape: ShapeState) => void): ShapeState {

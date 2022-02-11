@@ -401,7 +401,7 @@ class Manager {
       return;
     }
 
-    const cell = cells[Math.floor(cells.length * Math.random())];
+    const cell = Arrays.sample(cells);
     const marked = this.mark(cell.spot);
     if (!marked) {
       return;

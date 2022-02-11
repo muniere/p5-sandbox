@@ -149,12 +149,11 @@ export class RandomSwapMorphing implements Morphing {
   forward() {
     const table = this._indices.reduce((acc, i) => acc.set(i, true), new Map<number, boolean>());
     const candidates = this.src.points.map((_, i) => i).filter(i => !table.has(i));
-    const selected = candidates[Math.floor(candidates.length * Math.random())];
-    this._indices.push(selected);
+    this._indices.push(Arrays.sample(candidates));
   }
 
   backward() {
-    this._indices.splice(Math.floor(this._indices.length * Math.random()), 1);
+    this._indices.splice(Arrays.sampleIndex(this._indices), 1);
   }
 
   path() {

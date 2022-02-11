@@ -8,6 +8,14 @@ export namespace Arrays {
     return [...Array(length)].map((_, i) => factory(i));
   }
 
+  export function sampleIndex<T>(array: T[]): number {
+    return Math.floor(Math.random() * array.length);
+  }
+
+  export function sample<T>(array: T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
   export function shuffled<T>(array: T[]): T[] {
     const result = [...array];
 
