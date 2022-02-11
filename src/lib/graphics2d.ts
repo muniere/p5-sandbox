@@ -140,6 +140,13 @@ export class Rect {
     // no-op
   }
 
+  public static zero(): Rect {
+    return Rect.of({
+      origin: Point.zero(),
+      size: Size.zero(),
+    });
+  }
+
   public static of({origin, size}: {
     origin: Point,
     size: Size,
