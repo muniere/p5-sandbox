@@ -196,6 +196,10 @@ export class NumberRange {
     return new NumberRange(start, stop);
   }
 
+  get length(): number {
+    return this.stop - this.start;
+  }
+
   coerce(n: number): number {
     return Math.max(this.start, Math.min(this.stop, n));
   }
@@ -228,5 +232,29 @@ export class NumberRangeMap {
     const percent = (n - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
     const scaled = percent * Math.abs(this.target.stop - this.target.start);
     return scaled + this.target.start;
+  }
+}
+
+export class IntegerRange {
+  constructor(
+    public readonly start: number,
+    public readonly stop: number,
+  ) {
+    // no-op
+  }
+
+  static of({start, stop}: {
+    start: number,
+    stop: number,
+  }): NumberRange {
+    return new NumberRange(start, stop);
+  }
+
+  get length(): number {
+    return this.stop - this.start + 1;
+  }
+
+  sample(): number {
+    return this.start + Math.floor(Math.random() * (this.stop - this.start))
   }
 }
