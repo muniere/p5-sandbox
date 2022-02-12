@@ -1,19 +1,19 @@
 // https://www.youtube.com/watch?v=67k3I2GxTH8
 import * as p5 from 'p5';
-import { InsertionSortMachine, ProcessState, SortMachine } from './model';
-import { MachineWidget } from './view';
+import { Arrays } from '../../lib/stdlib';
+import { ProcessMode, ProcessState, SortMachine, SortMachines, SortStrategy } from './model';
+import { SortMachineWidget, SortMachineWidgets } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
-  DATA_COLOR_DEFAULT: '#FFFFFF',
-  DATA_COLOR_CURSOR: '#FFFF88',
-  DATA_COLOR_ANSWER: '#AAFFAA',
-  DATA_COUNT: 100,
+  DATA_COUNT: 10,
+  STRATEGY: SortStrategy.selection,
+  PROCESS_MODE: ProcessMode.manual,
 });
 
 export function sketch(context: p5) {
   let machine: SortMachine;
-  let widget: MachineWidget;
+  let widget: SortMachineWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -22,18 +22,30 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    machine = InsertionSortMachine.create({
-      count: Params.DATA_COUNT,
+    const sequence = Arrays.sequence(Params.DATA_COUNT, {start: 1});
+
+    machine = SortMachines.create({
+      strategy: Params.STRATEGY,
+      values: sequence.shuffled(),
     });
 
-    widget = new MachineWidget(context, machine);
-    widget.valueColor = Params.DATA_COLOR_DEFAULT;
-    widget.cursorColor = Params.DATA_COLOR_CURSOR;
-    widget.answerColor = Params.DATA_COLOR_ANSWER;
+    widget = SortMachineWidgets.create({
+      context: context,
+      machine: machine,
+    });
+
+    switch (Params.PROCESS_MODE) {
+      case ProcessMode.auto:
+        break;
+
+      case ProcessMode.manual:
+        context.noLoop();
+        break;
+    }
   }
 
   context.draw = function () {
-    if (machine.state == ProcessState.done) {
+    if (machine.processState == ProcessState.done) {
       context.noLoop();
     }
 
@@ -45,5 +57,21 @@ export function sketch(context: p5) {
 
     // update
     machine.cycle();
+  }
+
+  context.mouseClicked = function () {
+    switch (Params.PROCESS_MODE) {
+      case ProcessMode.auto:
+        if (context.isLooping()) {
+          context.noLoop();
+        } else {
+          context.loop();
+        }
+        break;
+
+      case ProcessMode.manual:
+        context.redraw();
+        break;
+    }
   }
 }
