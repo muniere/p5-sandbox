@@ -6,9 +6,9 @@ import { SortMachineWidget, SortMachineWidgets } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
-  DATA_COUNT: 10,
-  STRATEGY: SortStrategy.selection,
-  PROCESS_MODE: ProcessMode.manual,
+  DATA_COUNT: 50,
+  STRATEGY: SortStrategy.quick,
+  PROCESS_MODE: ProcessMode.auto,
 });
 
 export function sketch(context: p5) {
@@ -49,14 +49,26 @@ export function sketch(context: p5) {
       context.noLoop();
     }
 
-    // canvas
-    context.background(Params.CANVAS_COLOR);
+    switch (Params.PROCESS_MODE) {
+      case ProcessMode.auto:
+        // canvas
+        context.background(Params.CANVAS_COLOR);
 
-    // widget
-    widget.draw();
+        // widget
+        widget.draw();
 
-    // update
-    machine.cycle();
+        // update
+        machine.cycle();
+        break;
+
+      case ProcessMode.manual:
+        // canvas
+        context.background(Params.CANVAS_COLOR);
+
+        // widget
+        widget.draw();
+        break;
+    }
   }
 
   context.mouseClicked = function () {
@@ -70,6 +82,7 @@ export function sketch(context: p5) {
         break;
 
       case ProcessMode.manual:
+        machine.cycle();
         context.redraw();
         break;
     }

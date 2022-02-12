@@ -4,6 +4,7 @@ import {
   BubbleSortMachine,
   InsertionSortMachine,
   ProcessState,
+  QuickSortMachine,
   SelectionSortMachine,
   SortMachine,
   ValueState
@@ -15,6 +16,8 @@ export namespace SortMachineWidgets {
     default: '#FFFFFF',
     cursor: '#FFEA86',
     pivot: '#FFCC93',
+    low: '#ccfbff',
+    high: '#ffbebe',
     answer: '#AAFFAA',
   };
 
@@ -43,6 +46,17 @@ export namespace SortMachineWidgets {
         it.defaultColor = ColorPalette.default;
         it.pivotColor = ColorPalette.pivot;
         it.cursorColor = ColorPalette.cursor;
+        it.answerColor = ColorPalette.answer;
+      });
+    }
+
+    if (machine instanceof QuickSortMachine) {
+      return new QuickSortMachineWidget(context, machine).also(it => {
+        it.defaultColor = ColorPalette.default;
+        it.pivotColor = ColorPalette.pivot;
+        it.cursorColor = ColorPalette.cursor;
+        it.lowColor = ColorPalette.low;
+        it.highColor = ColorPalette.high;
         it.answerColor = ColorPalette.answer;
       });
     }
@@ -184,6 +198,46 @@ export class InsertionSortMachineWidget extends SortMachineWidget {
     }
     if (i == this.machine.pivot) {
       return this.pivotColor;
+    }
+    return this.defaultColor;
+  }
+}
+
+export class QuickSortMachineWidget extends SortMachineWidget {
+  public pivotColor: string = '#FFFFFF';
+  public lowColor: string = '#FFFFFF';
+  public highColor: string = '#FFFFFF';
+
+  constructor(
+    public readonly context: p5,
+    public readonly machine: QuickSortMachine,
+  ) {
+    super(context, machine);
+  }
+
+  also(mutate: (widget: QuickSortMachineWidget) => void): QuickSortMachineWidget {
+    mutate(this);
+    return this;
+  }
+
+  protected color(i: number): string {
+    if (this.machine.processState == ProcessState.done) {
+      return this.answerColor;
+    }
+    if (this.machine.valueState(i) == ValueState.fixed) {
+      return this.answerColor;
+    }
+    if (i == this.machine.cursor) {
+      return this.cursorColor;
+    }
+    if (i == this.machine.pivotIndex) {
+      return this.pivotColor;
+    }
+    if (i == this.machine.lowIndex) {
+      return this.lowColor;
+    }
+    if (i == this.machine.highIndex) {
+      return this.highColor;
     }
     return this.defaultColor;
   }
