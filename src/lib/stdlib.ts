@@ -328,11 +328,17 @@ export class NumberRange {
   }
 
   public get length(): number {
-    return this.stop - this.start;
+    return Math.abs(this.stop - this.start);
   }
 
   public coerce(n: number): number {
-    return Math.max(this.start, Math.min(this.stop, n));
+    const upper = Math.max(this.start, this.stop);
+    const lower = Math.min(this.start, this.stop);
+    return Math.max(lower, Math.min(upper, n));
+  }
+
+  public amount(n: number): number {
+    return (n - this.start) / (this.stop - this.start);
   }
 
   public lerp(amount: number): number {
@@ -360,9 +366,8 @@ export class NumberRangeMap {
   }
 
   public apply(n: number): number {
-    const percent = (n - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
-    const scaled = percent * Math.abs(this.target.stop - this.target.start);
-    return scaled + this.target.start;
+    const amount = this.domain.amount(n);
+    return this.target.lerp(amount);
   }
 }
 
