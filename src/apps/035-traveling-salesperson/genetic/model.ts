@@ -108,11 +108,11 @@ export class PathCrowdState {
   }
 
   best(): PathState {
-    return [...this._paths].sort((a, b) => a.measure() - b.measure())[0];
+    return this._paths.minBy(it => it.measure());
   }
 
   cycle() {
-    const sorted = [...this._paths].sort((a, b) => a.measure() - b.measure());
+    const sorted = this._paths.sortedAsc(it => it.measure());
     const scores = sorted.map(it => 1 / (it.measure() + 1));
     const total = scores.reduce((acc, score) => acc + score);
 

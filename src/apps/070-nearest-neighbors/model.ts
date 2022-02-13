@@ -161,7 +161,7 @@ export class Solver {
         : Neighbor.create({evaluation: it, similarity: Evaluation.similarity(base, it)}),
       )
       .filter(it => it.similarity >= 0)
-      .sort((a, b) => b.similarity - a.similarity)
+      .sortedDesc((it) => it.similarity)
       .slice(0, count);
   }
 }

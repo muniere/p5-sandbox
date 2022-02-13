@@ -1,5 +1,9 @@
 declare global {
   interface Array<T> {
+    first(): T
+
+    last(): T
+
     sample(): T
 
     sampleIndex(): number
@@ -15,7 +19,25 @@ declare global {
     reverseBetween(option?: { start?: number, end?: number }): void
 
     reversedBetween(option?: { start?: number, end?: number }): Array<T>
+
+    sorted(compare?: (a: T, b: T) => number): Array<T>
+
+    sortedAsc(selector: (obj: T) => any): Array<T>
+
+    sortedDesc(selector: (obj: T) => any): Array<T>
+
+    minBy(selector: (obj: T) => any): T
+
+    maxBy(selector: (obj: T) => any): T
   }
+}
+
+Array.prototype.first = function () {
+  return this[0];
+}
+
+Array.prototype.last = function () {
+  return this[this.length - 1];
 }
 
 Array.prototype.sample = function () {
@@ -86,6 +108,26 @@ Array.prototype.reversedBetween = function (option?: { start?: number, end?: num
   const body = this.slice(start, end).reverse();
   const tail = this.slice(end);
   return head.concat(body).concat(tail);
+}
+
+Array.prototype.sorted = function (compare?: (a: any, b: any) => number) {
+  return [...this].sort(compare);
+}
+
+Array.prototype.sortedAsc = function (selector: (obj: any) => any) {
+  return [...this].sort((a, b) => selector(a) < selector(b) ? -1 : 1);
+}
+
+Array.prototype.sortedDesc = function (selector: (obj: any) => any) {
+  return [...this].sort((a, b) => selector(a) > selector(b) ? -1 : 1);
+}
+
+Array.prototype.minBy = function(selector: (obj: any) => any) {
+  return this.sortedAsc(selector).first();
+}
+
+Array.prototype.maxBy = function(selector: (obj: any) => any) {
+  return this.sortedDesc(selector).first();
 }
 
 export namespace Arrays {

@@ -6,15 +6,14 @@ export class PathGenerator {
   public color: string = '#FFFFFF';
   public weight: number = 1;
 
+  private readonly _points: Point[];
   private readonly _size: number;
   private readonly _permutation: Generator<number[]>;
 
   constructor(
-    public readonly points: Point[],
+    points: Point[],
   ) {
-    this.points = points.sort(
-      (a, b) => Point.dist(a, Point.zero()) - Point.dist(b, Point.zero())
-    );
+    this._points = points.sortedAsc(it => Point.dist(it, Point.zero()));
     this._size = points.map((_, i) => i + 1).reduce((acc, n) => acc * n, 1);
     this._permutation = Generators.permutation(points.map((_, i) => i));
   }
@@ -40,7 +39,7 @@ export class PathGenerator {
       return undefined;
     }
     return PathState.create({
-      points: result.value.map(i => this.points[i])
+      points: result.value.map(i => this._points[i])
     });
   }
 }

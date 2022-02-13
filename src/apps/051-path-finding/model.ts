@@ -203,7 +203,7 @@ export class Solver {
       return SolverState.noSolution;
     }
     const terminal = this.graph.last();
-    const current = [...this._openSet].sort((a, b) => a.cost.f - b.cost.f)[0];
+    const current = this._openSet.minBy(it => it.cost.f);
     if (current == terminal) {
       return SolverState.solved;
     } else {
@@ -213,7 +213,7 @@ export class Solver {
 
   next() {
     const terminal = this.graph.last();
-    const current = [...this._openSet].sort((a, b) => a.cost.f - b.cost.f)[0];
+    const current = this._openSet.minBy(it => it.cost.f);
 
     if (current == terminal) {
       return;

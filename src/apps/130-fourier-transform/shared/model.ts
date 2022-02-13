@@ -138,7 +138,7 @@ export class ChainState {
       })
     );
 
-    return new ChainState(circles.sort((a, b) => b.seed.amplitude - a.seed.amplitude));
+    return new ChainState(circles.sortedDesc(it => it.seed.amplitude));
   }
 
   get first(): CircleState {
