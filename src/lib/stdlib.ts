@@ -144,7 +144,7 @@ export namespace Generators {
       }
 
       let y = -1;
-      for (let j = seq.values.length - 1; j > x; j--) {
+      for (let j = seq.length - 1; j > x; j--) {
         if (seq[x] < seq[j]) {
           y = j;
           break;
