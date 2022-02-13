@@ -182,53 +182,53 @@ export namespace Numeric {
 }
 
 export class NumberRange {
-  constructor(
+  public constructor(
     public readonly start: number,
     public readonly stop: number,
   ) {
     // no-op
   }
 
-  static of({start, stop}: {
+  public static of({start, stop}: {
     start: number,
     stop: number,
   }): NumberRange {
     return new NumberRange(start, stop);
   }
 
-  get length(): number {
+  public get length(): number {
     return this.stop - this.start;
   }
 
-  coerce(n: number): number {
+  public coerce(n: number): number {
     return Math.max(this.start, Math.min(this.stop, n));
   }
 
-  lerp(amount: number): number {
+  public lerp(amount: number): number {
     return this.start + amount * (this.stop - this.start);
   }
 
-  sample(): number {
+  public sample(): number {
     return this.lerp(Math.random());
   }
 }
 
 export class NumberRangeMap {
-  constructor(
+  public constructor(
     public readonly domain: NumberRange,
     public readonly target: NumberRange,
   ) {
     // no-op
   }
 
-  static of({domain, target}: {
+  public static of({domain, target}: {
     domain: NumberRange,
     target: NumberRange,
   }): NumberRangeMap {
     return new NumberRangeMap(domain, target);
   }
 
-  apply(n: number): number {
+  public apply(n: number): number {
     const percent = (n - this.domain.start) / Math.abs(this.domain.stop - this.domain.start);
     const scaled = percent * Math.abs(this.target.stop - this.target.start);
     return scaled + this.target.start;
@@ -236,25 +236,25 @@ export class NumberRangeMap {
 }
 
 export class IntegerRange {
-  constructor(
+  public constructor(
     public readonly start: number,
     public readonly stop: number,
   ) {
     // no-op
   }
 
-  static of({start, stop}: {
+  public static of({start, stop}: {
     start: number,
     stop: number,
   }): NumberRange {
     return new NumberRange(start, stop);
   }
 
-  get length(): number {
+  public get length(): number {
     return this.stop - this.start + 1;
   }
 
-  sample(): number {
+  public sample(): number {
     return this.start + Math.floor(Math.random() * (this.stop - this.start))
   }
 }
