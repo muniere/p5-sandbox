@@ -1,15 +1,24 @@
+export type SpotCompat = {
+  row: number,
+  column: number,
+}
+
+export type SpotMaybe = {
+  row?: number,
+  column?: number,
+}
+
+export type SpotFactory<T> = (spot: Spot) => T;
+
 export class Spot {
-  constructor(
-    public row: number,
-    public column: number,
+  public constructor(
+    private _row: number,
+    private _column: number,
   ) {
     // no-op
   }
 
-  static of({row, column}: {
-    row: number,
-    column: number,
-  }): Spot {
+  public static of({row, column}: SpotCompat): Spot {
     return new Spot(row, column);
   }
 
@@ -17,15 +26,41 @@ export class Spot {
     return Math.abs(a.row - b.row) + Math.abs(a.column - b.column);
   }
 
-  shift({row, column}: { row?: number, column?: number }): Spot {
-    return new Spot(this.row + (row ?? 0), this.column + (column ?? 0));
+  public get row(): number {
+    return this._row;
   }
+
+  public get column(): number {
+    return this._column;
+  }
+
+  shift({row, column}: SpotMaybe): Spot {
+    return new Spot(
+      this.row + (row ?? 0),
+      this.column + (column ?? 0),
+    );
+  }
+
+  assign({row, column}: SpotMaybe): void {
+    this._row += (row ?? 0);
+    this._column += (column ?? 0);
+  }
+}
+
+export type DimenCompat = {
+  width: number,
+  height: number,
+}
+
+export type DimenMaybe = {
+  width?: number,
+  height?: number,
 }
 
 export class Dimen {
   public constructor(
-    public readonly width: number,
-    public readonly height: number,
+    private _width: number,
+    private _height: number,
   ) {
     // no-op
   }
@@ -38,30 +73,56 @@ export class Dimen {
     return new Dimen(size, size);
   }
 
-  public static of({width, height}: {
-    width: number,
-    height: number,
-  }): Dimen {
+  public static of({width, height}: DimenCompat): Dimen {
     return new Dimen(width, height);
   }
 
-  plus(other: Dimen): Dimen {
-    return new Dimen(this.width + other.width, this.height + other.height);
+  public get width(): number {
+    return this._width;
   }
 
-  minus(other: Dimen): Dimen {
-    return new Dimen(this.width - other.width, this.height - other.height);
+  public get height(): number {
+    return this._height;
   }
 
-  times(value: number): Dimen {
+  public plus(delta: DimenMaybe): Dimen {
+    return new Dimen(
+      this.width + (delta.width ?? 0),
+      this.height + (delta.height ?? 0),
+    );
+  }
+
+  public plusAssign(delta: DimenMaybe): void {
+    this._width += (delta.width ?? 0);
+    this._height += (delta.height ?? 0);
+  }
+
+  public minus(other: DimenMaybe): Dimen {
+    return new Dimen(
+      this.width - (other.width ?? 0),
+      this.height - (other.height ?? 0),
+    );
+  }
+
+  public minusAssign(delta: DimenMaybe): void {
+    this._width -= (delta.width ?? 0);
+    this._height -= (delta.height ?? 0);
+  }
+
+  public times(value: number): Dimen {
     return new Dimen(this.width * value, this.height * value);
   }
 
-  copy(): Dimen {
+  public timesAssign(value: number): void {
+    this._width *= value;
+    this._height *= value;
+  }
+
+  public copy(): Dimen {
     return new Dimen(this.width, this.height);
   }
 
-  equals(other: Dimen): boolean {
+  public equals(other: Dimen): boolean {
     return this.width == other.width && this.height == other.height;
   }
 }
@@ -74,7 +135,7 @@ export class Matrix<T> {
     // no-op
   }
 
-  static create<T>(dimen: { width: number, height: number }): Matrix<Spot> {
+  public static create<T>(dimen: DimenCompat): Matrix<Spot> {
     const spots = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
         (_, column) => Spot.of({row, column})
@@ -84,17 +145,17 @@ export class Matrix<T> {
     return new Matrix<Spot>(Dimen.of(dimen), spots);
   }
 
-  static fill<T>(dimen: { width: number, height: number }, value: T): Matrix<T> {
+  public static fill<T>(dimen: DimenCompat, value: T): Matrix<T> {
     const values = [...Array(dimen.height)].map(
-      (_, row) => [...Array(dimen.width)].map(
-        (_, column) => value
+      () => [...Array(dimen.width)].map(
+        () => value
       )
     );
 
     return new Matrix<T>(Dimen.of(dimen), values);
   }
 
-  static generate<T>(dimen: { width: number, height: number }, factory: (spot: Spot) => T): Matrix<T> {
+  public static generate<T>(dimen: DimenCompat, factory: SpotFactory<T>): Matrix<T> {
     const values = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
         (_, column) => factory(Spot.of({row, column}))
@@ -104,28 +165,28 @@ export class Matrix<T> {
     return new Matrix<T>(Dimen.of(dimen), values);
   }
 
-  get width(): number {
+  public get width(): number {
     return this.dimen.width;
   }
 
-  get height(): number {
+  public get height(): number {
     return this.dimen.height;
   }
 
-  first(): T {
+  public first(): T {
     return this.values[0][0];
   }
 
-  last(): T {
+  public last(): T {
     const values = this.values[this.values.length - 1];
     return values[values.length - 1];
   }
 
-  get(spot: Spot): T {
+  public get(spot: SpotCompat): T {
     return this.values[spot.row][spot.column];
   }
 
-  getOrNull(spot: Spot): T | undefined {
+  public getOrNull(spot: SpotCompat): T | undefined {
     if (spot.row < 0 || this.values.length - 1 < spot.row) {
       return undefined;
     }
@@ -138,11 +199,11 @@ export class Matrix<T> {
     return values[spot.column];
   }
 
-  set(spot: Spot, value: T) {
+  public set(spot: SpotCompat, value: T) {
     this.values[spot.row][spot.column] = value;
   }
 
-  forEach(callback: (value: T, spot: Spot) => void) {
+  public forEach(callback: (value: T, spot: Spot) => void) {
     this.values.forEach((values, row) => {
       values.forEach((value, column) => {
         callback(value, Spot.of({row, column}));
@@ -150,7 +211,7 @@ export class Matrix<T> {
     });
   }
 
-  filter(predicate: (value: T, spot: Spot) => boolean): Array<T> {
+  public filter(predicate: (value: T, spot: Spot) => boolean): Array<T> {
     const result = [] as T[];
 
     this.forEach((value, spot) => {
@@ -162,7 +223,7 @@ export class Matrix<T> {
     return result;
   }
 
-  map<U>(transform: (value: T, spot: Spot) => U): Matrix<U> {
+  public map<U>(transform: (value: T, spot: Spot) => U): Matrix<U> {
     const values = this.values.map((values, row) => {
       return values.map((value, column) => {
         return transform(value, Spot.of({row, column}));
@@ -172,7 +233,7 @@ export class Matrix<T> {
     return new Matrix<U>(this.dimen, values);
   }
 
-  flatten(): Array<T> {
+  public flatten(): Array<T> {
     return this.values.reduce((acc, v) => acc.concat(v));
   }
 }

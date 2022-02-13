@@ -1,64 +1,108 @@
+export type ComplexCompat = {
+  re: number,
+  im: number,
+}
+
+export type ComplexMaybe = {
+  re?: number,
+  im?: number,
+}
+
 export class Complex {
   constructor(
-    public re: number,
-    public im: number,
+    private _re: number,
+    private _im: number,
   ) {
     // no-op
   }
 
-  static zero(): Complex {
+  public static zero(): Complex {
     return new Complex(0, 0);
   }
 
-  static of(re: number, im: number): Complex {
+  public static of(re: number, im: number): Complex {
     return new Complex(re, im);
   }
 
-  static re(re: number): Complex {
+  public static re(re: number): Complex {
     return new Complex(re, 0);
   }
 
-  static im(im: number): Complex {
+  public static im(im: number): Complex {
     return new Complex(0, im);
   }
 
-  static unit(t: number): Complex {
+  public static unit(t: number): Complex {
     return new Complex(
       Math.cos(t),
       Math.sin(t),
     );
   }
 
-  get norm(): number {
+  public get re(): number {
+    return this._re;
+  }
+
+  public get im(): number {
+    return this._im;
+  }
+
+  public get norm(): number {
     return Math.sqrt(this.re * this.re + this.im * this.im);
   }
 
-  plus({re, im}: { re: number, im: number }): Complex {
+  public plus({re, im}: ComplexMaybe): Complex {
     return new Complex(
-      this.re + re,
-      this.im + im,
+      this.re + (re ?? 0),
+      this.im + (im ?? 0),
     );
   }
 
-  minus({re, im}: { re: number, im: number }): Complex {
+  public plusAssign({re, im}: ComplexMaybe): void {
+    this._re += (re ?? 0);
+    this._im += (im ?? 0);
+  }
+
+  public minus({re, im}: ComplexMaybe): Complex {
     return new Complex(
-      this.re - re,
-      this.im - im,
+      this.re - (re ?? 0),
+      this.im - (im ?? 0),
     );
   }
 
-  times({re, im}: { re: number, im: number }): Complex {
+  public minusAssign({re, im}: ComplexMaybe): void {
+    this._re -= (re ?? 0);
+    this._im -= (im ?? 0);
+  }
+
+  public times({re, im}: ComplexMaybe): Complex {
     return new Complex(
-      this.re * re - this.im * im,
-      this.re * im + this.im * re,
+      this.re * (re ?? 1) - this.im * (im ?? 1),
+      this.re * (im ?? 1) + this.im * (re ?? 1),
     );
   }
 
-  div({re, im}: { re: number, im: number }): Complex {
-    const base = re * re + im * im;
+  public timesAssign({re, im}: ComplexMaybe): void {
+    this._re = this.re * (re ?? 1) - this.im * (im ?? 1);
+    this._im = this.re * (im ?? 1) + this.im * (re ?? 1);
+  }
+
+  public div({re, im}: ComplexMaybe): Complex {
+    const base = (re ?? 0) * (re ?? 0) + (im ?? 0) * (im ?? 0);
+
     return new Complex(
-      (this.re * re + this.im * im) / base,
-      (this.im * re - this.re * im) / base,
+      (this.re * (re ?? 1) + this.im * (im ?? 1)) / base,
+      (this.im * (re ?? 1) - this.re * (im ?? 1)) / base,
     );
+  }
+
+  public divAssign({re, im}: ComplexMaybe): void {
+    const base = (re ?? 0) * (re ?? 0) + (im ?? 0) * (im ?? 0);
+    this._re = (this.re * (re ?? 1) + this.im * (im ?? 1)) / base;
+    this._im = (this.im * (re ?? 1) - this.re * (im ?? 1)) / base;
+  }
+
+  public copy(): Complex {
+    return new Complex(this._re, this._im);
   }
 }
