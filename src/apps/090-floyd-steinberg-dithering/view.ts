@@ -3,24 +3,26 @@ import { Point } from '../../lib/graphics2d';
 import { ImageMachine } from './model';
 
 export class ImageWidget {
+  public machine: ImageMachine | undefined;
+  public origin = Point.zero();
 
   constructor(
-    public context: p5,
-    public origin: Point,
-    public machine: ImageMachine,
+    public readonly context: p5,
   ) {
     // no-op
   }
 
-  static create({context, origin, machine}: {
-    context: p5,
-    origin: Point,
-    machine: ImageMachine,
-  }): ImageWidget {
-    return new ImageWidget(context, origin, machine);
+  also(mutate: (widget: ImageWidget) => void): ImageWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
-    this.context.image(this.machine.image, this.origin.x, this.origin.y);
+    const machine = this.machine;
+    if (!machine) {
+      return;
+    }
+
+    this.context.image(machine.image, this.origin.x, this.origin.y);
   }
 }

@@ -5,8 +5,9 @@ import { ImageMachine } from './model';
 import { ImageWidget } from './view';
 
 const Params = Object.freeze({
-  PATH: '/image.jpg',
-  SCALE: 2,
+  IMAGE_PATH: '/image.jpg',
+  DITHER_SCALE: 2,
+  DITHER_SPEED: 1,
 });
 
 export function sketch(context: p5) {
@@ -18,11 +19,14 @@ export function sketch(context: p5) {
 
   context.preload = function () {
     sourceMachine = ImageMachine.create({
-      image: context.loadImage(Params.PATH),
+      image: context.loadImage(Params.IMAGE_PATH),
+      scale: Params.DITHER_SCALE,
     });
+
     resultMachine = ImageMachine.create({
-      image: context.loadImage(Params.PATH),
-    })
+      image: context.loadImage(Params.IMAGE_PATH),
+      scale: Params.DITHER_SCALE,
+    });
   }
 
   context.setup = function () {
@@ -32,27 +36,41 @@ export function sketch(context: p5) {
       context.P2D,
     );
     context.pixelDensity(1);
-    context.noLoop();
 
-    sourceWidget = ImageWidget.create({
-      context: context,
-      origin: Point.zero(),
-      machine: sourceMachine,
+    sourceMachine.setSpeed(
+      sourceMachine.image.width * Params.DITHER_SPEED
+    );
+
+    sourceWidget = new ImageWidget(context).also(it => {
+      it.machine = sourceMachine;
+      it.origin = Point.zero();
     });
 
-    resultWidget = ImageWidget.create({
-      context: context,
-      origin: sourceWidget.origin.with({
+    resultMachine.setSpeed(
+      resultMachine.image.width * Params.DITHER_SPEED
+    );
+
+    resultWidget = new ImageWidget(context).also(it => {
+      it.machine = resultMachine;
+      it.origin = sourceWidget.origin.with({
         x: sourceMachine.image.width,
-      }),
-      machine: resultMachine,
+      });
     });
   };
 
   context.draw = function () {
-    resultMachine.dither();
-
+    sourceMachine.load();
     sourceWidget.draw();
+
+    resultMachine.load();
     resultWidget.draw();
+
+    if (!resultMachine.hasNext) {
+      context.noLoop();
+      return;
+    }
+
+    resultMachine.dither();
+    resultMachine.update();
   }
 }
