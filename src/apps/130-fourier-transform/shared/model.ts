@@ -141,12 +141,12 @@ export class ChainState {
     return new ChainState(circles.sortedDesc(it => it.seed.amplitude));
   }
 
-  get first(): CircleState {
-    return this.circles[0];
+  first(): CircleState {
+    return this.circles.first();
   }
 
-  get last(): CircleState {
-    return this.circles[this.circles.length - 1];
+  last(): CircleState {
+    return this.circles.last();
   }
 
   also(mutate: (machine: ChainState) => void): ChainState {
@@ -189,12 +189,12 @@ export class PathState {
     return this.plots.length;
   }
 
-  get first(): Point {
-    return this.plots[0];
+  first(): Point {
+    return this.plots.first();
   }
 
-  get last(): Point {
-    return this.plots[this.plots.length - 1];
+  last(): Point {
+    return this.plots.last();
   }
 
   also(mutate: (wave: PathState) => void): PathState {

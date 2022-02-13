@@ -84,12 +84,12 @@ export class ChainState {
     this.circles.forEach(it => it.color = value);
   }
 
-  get first(): CircleState {
-    return this.circles[0];
+  first(): CircleState {
+    return this.circles.first();
   }
 
-  get last(): CircleState {
-    return this.circles[this.circles.length - 1];
+  last(): CircleState {
+    return this.circles.last();
   }
 
   update(clock: Clock) {
@@ -126,12 +126,12 @@ export class PathState {
     return new PathState(values);
   }
 
-  get first(): number {
-    return this.values[0];
+  first(): number {
+    return this.values.first();
   }
 
-  get last(): number {
-    return this.values[this.values.length - 1];
+  last(): number {
+    return this.values.last();
   }
 
   also(mutate: (wave: PathState) => void): PathState {
@@ -168,6 +168,6 @@ export class WorldState {
 
   update() {
     this.chain.update(this.clock);
-    this.path.push(this.chain.last.epicycleCenter.y);
+    this.path.push(this.chain.last().epicycleCenter.y);
   }
 }

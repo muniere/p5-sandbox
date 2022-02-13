@@ -25,8 +25,8 @@ export class ComplexWorldState {
     });
 
     const nextPoint = Point.of({
-      x: this.chain.last.epicycleCenter.x,
-      y: this.chain.last.epicycleCenter.y,
+      x: this.chain.last().epicycleCenter.x,
+      y: this.chain.last().epicycleCenter.y,
     });
 
     this.path.push(nextPoint);

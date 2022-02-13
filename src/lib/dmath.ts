@@ -174,12 +174,11 @@ export class Matrix<T> {
   }
 
   public first(): T {
-    return this.values[0][0];
+    return this.values.first().first();
   }
 
   public last(): T {
-    const values = this.values[this.values.length - 1];
-    return values[values.length - 1];
+    return this.values.last().last();
   }
 
   public get(spot: SpotCompat): T {

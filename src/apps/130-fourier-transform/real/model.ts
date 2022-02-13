@@ -31,8 +31,8 @@ export class RealWorldState {
     });
 
     const nextPoint = Point.of({
-      x: this.xChain.last.epicycleCenter.x,
-      y: this.yChain.last.epicycleCenter.y,
+      x: this.xChain.last().epicycleCenter.x,
+      y: this.yChain.last().epicycleCenter.y,
     });
 
     this.path.push(nextPoint);

@@ -82,7 +82,7 @@ export class ChainWidget {
   }
 
   get epicycleCenter(): Point | undefined {
-    return this.state?.last?.epicycleCenter;
+    return this.state?.last()?.epicycleCenter;
   }
 
   draw() {
@@ -127,23 +127,23 @@ export class PathWidget {
     return this;
   }
 
-  get first(): Point | undefined {
+  first(): Point | undefined {
     if (!this.state) {
       return undefined;
     }
 
     return this.origin.with({
-      y: this.state.first * this.scaleY,
+      y: this.state.first() * this.scaleY,
     });
   }
 
-  get last(): Point | undefined {
+  last(): Point | undefined {
     if (!this.state) {
       return undefined;
     }
 
     return this.origin.with({
-      y: this.state.last * this.scaleY,
+      y: this.state.last() * this.scaleY,
     });
   }
 
@@ -231,7 +231,7 @@ export class WorldWidget {
       this.line.start = start;
     }
 
-    const end = this.path.last;
+    const end = this.path.last();
     if (end) {
       this.line.end = end.with({y: start?.y});
     }

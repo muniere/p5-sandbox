@@ -66,10 +66,10 @@ export class RealWorldWidget {
     this.xChain.state = state.xChain;
     this.yChain.state = state.yChain;
     this.path.state = state.path;
-    this.xLine.start = state.xChain.last.epicycleCenter;
-    this.xLine.end = state.path.last;
-    this.yLine.start = state.yChain.last.epicycleCenter;
-    this.yLine.end = state.path.last;
+    this.xLine.start = state.xChain.last().epicycleCenter;
+    this.xLine.end = state.path.last();
+    this.yLine.start = state.yChain.last().epicycleCenter;
+    this.yLine.end = state.path.last();
 
     this.context.push();
 
