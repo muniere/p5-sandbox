@@ -14,6 +14,8 @@ declare global {
 
     remove(i: number): T;
 
+    removeWhere(predicate: (item: T) => boolean): T[];
+
     replace(i: number, ...items: T[]): T;
 
     swap(i: number, j: number): void
@@ -33,6 +35,14 @@ declare global {
     minBy(selector: (obj: T) => any): T
 
     maxBy(selector: (obj: T) => any): T
+
+    indexOfMin(): number
+
+    indexOfMax(): number
+
+    indexOfMinBy(selector: (obj: T) => any, options?: { predicate?: (obj: T) => boolean }): number
+
+    indexOfMaxBy(selector: (obj: T) => any, options?: { predicate?: (obj: T) => boolean }): number
   }
 }
 
@@ -85,7 +95,18 @@ Array.prototype.shuffled = function () {
 }
 
 Array.prototype.remove = function (i: number) {
-  this.splice(i, 1);
+  const removed = this.splice(i, 1);
+  return removed[0];
+}
+
+Array.prototype.removeWhere = function (predicate: (item: any) => boolean) {
+  const removed = [];
+  for (let i = this.length - 1; i >= 0; i--) {
+    if (predicate(this[i])) {
+      removed.unshift(this.remove(i));
+    }
+  }
+  return removed;
 }
 
 Array.prototype.replace = function (i: number, ...items: any[]) {
@@ -142,6 +163,58 @@ Array.prototype.maxBy = function (selector: (obj: any) => any) {
   return this.sortedDesc(selector).first();
 }
 
+Array.prototype.indexOfMin = function () {
+  return this.indexOfMinBy(it => it);
+}
+
+Array.prototype.indexOfMinBy = function (
+  selector: (obj: any) => any,
+  options?: { predicate?: (obj: any) => boolean },
+) {
+  let index = -1;
+  let value = Infinity;
+
+  this.forEach((o, i) => {
+    if (options && options.predicate && !options.predicate(o)) {
+      return;
+    }
+
+    const v = selector(o);
+    if (v < value) {
+      index = i;
+      value = v;
+    }
+  })
+
+  return index;
+}
+
+Array.prototype.indexOfMax = function () {
+  return this.indexOfMaxBy(it => it);
+}
+
+Array.prototype.indexOfMaxBy = function (
+  selector: (obj: any) => any,
+  options?: { predicate?: (obj: any) => boolean },
+) {
+  let index = -1;
+  let value = -Infinity;
+
+  this.forEach((o, i) => {
+    if (options && options.predicate && !options.predicate(o)) {
+      return;
+    }
+
+    const v = selector(o);
+    if (v > value) {
+      index = i;
+      value = v;
+    }
+  })
+
+  return index;
+}
+
 export namespace Arrays {
 
   export function sequence(length: number, option?: { start?: number }): number[] {
@@ -150,6 +223,10 @@ export namespace Arrays {
 
   export function generate<T>(length: number, factory: (index: number) => T): T[] {
     return [...Array(length)].map((_, i) => factory(i));
+  }
+
+  export function concat<T>(...arrays: Array<T>[]) {
+    return arrays.reduce((acc, it) => acc.concat(it));
   }
 
   export function zip<T, U>(a: T[], b: U[]): Array<[T, U]> {

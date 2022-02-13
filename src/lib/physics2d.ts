@@ -55,6 +55,14 @@ export class Force {
     this._vector.sub(delta.vector);
   }
 
+  public times(value: number): Force {
+    return Force.of(this.vector.mult(value));
+  }
+
+  public timesAssign(value: number): void {
+    this.vector.mult(value);
+  }
+
   public with(delta: Force): Force {
     return Force.of(delta.vector);
   }
@@ -77,6 +85,14 @@ export class Force {
 
   public limitAssign(magnitude: number): void {
     this._vector.limit(magnitude);
+  }
+
+  public normalize(): Force {
+    return Force.of(this.vector.normalize());
+  }
+
+  public normalizeAssign(): void {
+    this._vector.normalize();
   }
 
   public magnitude(): number {
@@ -140,7 +156,7 @@ export class Acceleration {
   }
 
   public with(other: Acceleration): Acceleration {
-    return Acceleration.of(this.vector);
+    return Acceleration.of(other.vector);
   }
 
   public assign(other: Acceleration) {
@@ -161,6 +177,14 @@ export class Acceleration {
 
   public limitAssign(magnitude: number): void {
     this._vector.limit(magnitude);
+  }
+
+  public normalize(): Acceleration {
+    return Acceleration.of(this.vector.normalize());
+  }
+
+  public normalizeAssign(): void {
+    this._vector.normalize();
   }
 
   public magnitude(): number {
@@ -254,6 +278,14 @@ export class Velocity {
 
   public limitAssign(magnitude: number): void {
     this._vector.limit(magnitude);
+  }
+
+  public normalize(): Velocity {
+    return Velocity.of(this.vector.normalize());
+  }
+
+  public normalizeAssign(): void {
+    this._vector.normalize();
   }
 
   public magnitude(): number {
