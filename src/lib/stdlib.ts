@@ -394,3 +394,14 @@ export class IntegerRange {
     return this.start + Math.floor(Math.random() * (this.stop - this.start))
   }
 }
+
+declare global {
+  interface Math {
+    average(...values: number[]): number
+  }
+}
+
+Math.average = function (...values: number[]) {
+  return values.reduce((acc, x) => acc + x) / values.length;
+}
+
