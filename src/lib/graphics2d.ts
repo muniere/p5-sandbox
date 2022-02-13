@@ -1,9 +1,19 @@
 import { Numeric } from './stdlib';
 
+export type PointCompat = {
+  x: number,
+  y: number,
+}
+
+export type PointMaybe = {
+  x?: number,
+  y?: number,
+}
+
 export class Point {
   public constructor(
-    public readonly x: number,
-    public readonly y: number,
+    private _x: number,
+    private _y: number,
   ) {
     // no-op
   }
@@ -12,17 +22,11 @@ export class Point {
     return new Point(0, 0);
   }
 
-  public static of({x, y}: {
-    x: number,
-    y: number,
-  }): Point {
+  public static of({x, y}: PointCompat): Point {
     return new Point(x, y);
   };
 
-  public static rect({x, y}: {
-    x: number,
-    y: number,
-  }): Point {
+  public static rect({x, y}: PointCompat): Point {
     return new Point(x, y);
   }
 
@@ -40,23 +44,46 @@ export class Point {
     return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0));
   }
 
-  plus({x, y}: { x?: number, y?: number }): Point {
-    return new Point(this.x + (x ?? 0), this.y + (y ?? 0));
+  public get x(): number {
+    return this._x;
   }
 
-  minus({x, y}: { x?: number, y?: number }): Point {
-    return new Point(this.x - (x ?? 0), this.y - (y ?? 0));
+  public get y(): number {
+    return this._y;
   }
 
-  with({x, y}: { x?: number, y?: number }): Point {
-    return new Point(x ?? this.x, y ?? this.y);
+  public plus(delta: PointMaybe): Point {
+    return new Point(this.x + (delta.x ?? 0), this.y + (delta.y ?? 0));
   }
 
-  copy(): Point {
+  public plusAssign(delta: PointMaybe) {
+    this._x += (delta.x ?? 0);
+    this._y += (delta.y ?? 0);
+  }
+
+  public minus(delta: PointMaybe): Point {
+    return new Point(this.x - (delta.x ?? 0), this.y - (delta.y ?? 0));
+  }
+
+  public minusAssign(delta: PointMaybe) {
+    this._x -= (delta.x ?? 0);
+    this._y -= (delta.y ?? 0);
+  }
+
+  public with(delta: PointMaybe): Point {
+    return new Point(delta.x ?? this.x, delta.y ?? this.y);
+  }
+
+  public assign(delta: PointMaybe) {
+    this._x = (delta.x ?? this.x);
+    this._y = (delta.y ?? this.y);
+  }
+
+  public copy(): Point {
     return new Point(this.x, this.y);
   }
 
-  equals(other: Point): boolean {
+  public equals(other: Point): boolean {
     return this.x == other.x && this.y == other.y;
   }
 }
@@ -69,29 +96,39 @@ export class PointRange {
     // no-op
   }
 
-  static of({start, stop}: {
+  public static of({start, stop}: {
     start: Point,
     stop: Point,
   }): PointRange {
     return new PointRange(start, stop);
   }
 
-  lerp(amount: number): Point {
+  public lerp(amount: number): Point {
     return Point.of({
       x: Numeric.range(this.start.x, this.stop.x).lerp(amount),
       y: Numeric.range(this.start.y, this.stop.y).lerp(amount),
     });
   }
 
-  sample(): Point {
+  public sample(): Point {
     return this.lerp(Math.random());
   }
 }
 
+export type SizeCompat = {
+  width: number,
+  height: number,
+}
+
+export type SizeMaybe = {
+  width?: number,
+  height?: number,
+}
+
 export class Size {
   public constructor(
-    public readonly width: number,
-    public readonly height: number,
+    private _width: number,
+    private _height: number,
   ) {
     // no-op
   }
@@ -104,38 +141,74 @@ export class Size {
     return new Size(size, size);
   }
 
-  public static of({width, height}: {
-    width: number,
-    height: number,
-  }): Size {
+  public static of({width, height}: SizeCompat): Size {
     return new Size(width, height);
   }
 
-  plus(other: Size): Size {
-    return new Size(this.width + other.width, this.height + other.height);
+  public get width(): number {
+    return this._width;
   }
 
-  minus(other: Size): Size {
-    return new Size(this.width - other.width, this.height - other.height);
+  public get height(): number {
+    return this._height;
   }
 
-  times(value: number): Size {
+  public plus(delta: SizeMaybe): Size {
+    return new Size(
+      this.width + (delta.width ?? 0),
+      this.height + (delta.height ?? 0),
+    );
+  }
+
+  public plusAssign(delta: SizeMaybe): void {
+    this._width += (delta.width ?? 0);
+    this._height += (delta.height ?? 0);
+  }
+
+  public minus(other: SizeMaybe): Size {
+    return new Size(
+      this.width - (other.width ?? 0),
+      this.height - (other.height ?? 0),
+    );
+  }
+
+  public minusAssign(delta: SizeMaybe): void {
+    this._width -= (delta.width ?? 0);
+    this._height -= (delta.height ?? 0);
+  }
+
+  public times(value: number): Size {
     return new Size(this.width * value, this.height * value);
   }
 
-  copy(): Size {
+  public timesAssign(value: number): void {
+    this._width *= value;
+    this._height *= value;
+  }
+
+  public copy(): Size {
     return new Size(this.width, this.height);
   }
 
-  equals(other: Size): boolean {
+  public equals(other: SizeCompat): boolean {
     return this.width == other.width && this.height == other.height;
   }
 }
 
+export type RectCompat = {
+  origin: Point,
+  size: Size,
+}
+
+export type RectMaybe = {
+  origin?: Point,
+  size?: Size,
+}
+
 export class Rect {
   public constructor(
-    public origin: Point,
-    public size: Size,
+    private _origin: Point,
+    private _size: Size,
   ) {
     // no-op
   }
@@ -147,11 +220,16 @@ export class Rect {
     });
   }
 
-  public static of({origin, size}: {
-    origin: Point,
-    size: Size,
-  }): Rect {
+  public static of({origin, size}: RectCompat): Rect {
     return new Rect(origin, size);
+  }
+
+  public get origin(): Point {
+    return this._origin.copy();
+  }
+
+  public get size(): Size {
+    return this._size.copy();
   }
 
   public get top(): number {
@@ -185,11 +263,23 @@ export class Rect {
     });
   }
 
-  copy(): Rect {
+  public with(delta: RectMaybe): Rect {
+    return new Rect(
+      delta.origin ?? this.origin,
+      delta.size ?? this.size,
+    );
+  }
+
+  public assign(delta: RectMaybe): void {
+    this._origin = (delta.origin ?? this._origin);
+    this._size = (delta.size ?? this._size);
+  }
+
+  public copy(): Rect {
     return new Rect(this.origin.copy(), this.size.copy());
   }
 
-  equals(other: Rect): boolean {
+  public equals(other: RectCompat): boolean {
     return this.origin.equals(other.origin) && this.size.equals(other.size);
   }
 }

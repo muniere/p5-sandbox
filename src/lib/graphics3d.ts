@@ -1,8 +1,20 @@
+export type PointCompat = {
+  x: number,
+  y: number,
+  z: number,
+}
+
+export type PointMaybe = {
+  x?: number,
+  y?: number,
+  z?: number,
+}
+
 export class Point {
   public constructor(
-    public readonly x: number,
-    public readonly y: number,
-    public readonly z: number,
+    private _x: number,
+    private _y: number,
+    private _z: number,
   ) {
     // no-op
   }
@@ -11,44 +23,94 @@ export class Point {
     return new Point(0, 0, 0);
   }
 
-  public static of({x, y, z}: {
-    x: number,
-    y: number,
-    z: number,
-  }): Point {
+  public static of({x, y, z}: PointCompat): Point {
     return new Point(x, y, z);
   };
 
-  static dist(a: Point, b: Point): number {
-    return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0) + Math.pow(a.z - b.z ,2.0));
+  public static dist(a: Point, b: Point): number {
+    return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0) + Math.pow(a.z - b.z, 2.0));
   }
 
-  plus({x, y, z}: { x?: number, y?: number, z?: number }): Point {
-    return new Point(this.x + (x ?? 0), this.y + (y ?? 0), this.z + (z ?? 0));
+  public get x(): number {
+    return this._x;
   }
 
-  minus({x, y, z}: { x?: number, y?: number, z?: number }): Point {
-    return new Point(this.x - (x ?? 0), this.y - (y ?? 0), this.z - (z ?? 0));
+  public get y(): number {
+    return this._y;
   }
 
-  with({x, y, z}: { x?: number, y?: number, z?: number }): Point {
-    return new Point(x ?? this.x, y ?? this.y, z ?? this.z);
+  public get z(): number {
+    return this._z;
   }
 
-  copy(): Point {
+  public plus(delta: PointMaybe): Point {
+    return new Point(
+      this.x + (delta.x ?? 0),
+      this.y + (delta.y ?? 0),
+      this.z + (delta.z ?? 0),
+    );
+  }
+
+  public plusAssign(delta: PointMaybe) {
+    this._x += (delta.x ?? 0);
+    this._y += (delta.y ?? 0);
+    this._z += (delta.z ?? 0);
+  }
+
+  public minus(delta: PointMaybe): Point {
+    return new Point(
+      this.x - (delta.x ?? 0),
+      this.y - (delta.y ?? 0),
+      this.z - (delta.z ?? 0),
+    );
+  }
+
+  public minusAssign(delta: PointMaybe) {
+    this._x -= (delta.x ?? 0);
+    this._y -= (delta.y ?? 0);
+    this._z -= (delta.z ?? 0);
+  }
+
+  public with(params: PointMaybe): Point {
+    return new Point(
+      params.x ?? this.x,
+      params.y ?? this.y,
+      params.z ?? this.z,
+    );
+  }
+
+  public assign(params: PointMaybe) {
+    this._x = (params.x ?? this.x);
+    this._y = (params.y ?? this.y);
+    this._z = (params.z ?? this.z);
+  }
+
+  public copy(): Point {
     return new Point(this.x, this.y, this.z);
   }
 
-  equals(other: Point): boolean {
+  public equals(other: PointCompat): boolean {
     return this.x == other.x && this.y == other.y && this.z == other.z;
   }
 }
 
+export type SizeCompat = {
+  width: number,
+  height: number,
+  depth: number,
+}
+
+export type SizeMaybe = {
+  width?: number,
+  height?: number,
+  depth?: number,
+}
+
 export class Size {
   public constructor(
-    public readonly width: number,
-    public readonly height: number,
-    public readonly depth: number,
+    private _width: number,
+    private _height: number,
+    private _depth: number,
   ) {
     // no-op
   }
@@ -61,48 +123,101 @@ export class Size {
     return new Size(size, size, size);
   }
 
-  public static of({width, height, depth}: {
-    width: number,
-    height: number,
-    depth: number,
-  }): Size {
-    return new Size(width, height, depth);
+  public static of(params: SizeCompat): Size {
+    return new Size(params.width, params.height, params.depth);
   }
 
-  plus(other: Size): Size {
-    return new Size(this.width + other.width, this.height + other.height, this.depth + other.depth);
+  public get width(): number {
+    return this._width;
   }
 
-  minus(other: Size): Size {
-    return new Size(this.width - other.width, this.height - other.height, this.depth - other.depth);
+  public get height(): number {
+    return this._height;
   }
 
-  times(value: number): Size {
-    return new Size(this.width * value, this.height * value, this.depth * value);
+  public get depth(): number {
+    return this._depth;
   }
 
-  copy(): Size {
+  public plus(delta: SizeMaybe): Size {
+    return new Size(
+      this.width + (delta.width ?? 0),
+      this.height + (delta.height ?? 0),
+      this.depth + (delta.depth ?? 0),
+    );
+  }
+
+  public plusAssign(delta: SizeMaybe): void {
+    this._width += (delta.width ?? 0);
+    this._height += (delta.height ?? 0);
+    this._depth += (delta.depth ?? 0);
+  }
+
+  public minus(delta: SizeMaybe): Size {
+    return new Size(
+      this.width - (delta.width ?? 0),
+      this.height - (delta.height ?? 0),
+      this.depth - (delta.depth ?? 0),
+    );
+  }
+
+  public minusAssign(delta: SizeMaybe): void {
+    this._width -= (delta.width ?? 0);
+    this._height -= (delta.height ?? 0);
+    this._depth -= (delta.depth ?? 0);
+  }
+
+  public times(value: number): Size {
+    return new Size(
+      this.width * value,
+      this.height * value,
+      this.depth * value,
+    );
+  }
+
+  public timesAssign(value: number): void {
+    this._width *= value;
+    this._height *= value;
+    this._depth *= value;
+  }
+
+  public copy(): Size {
     return new Size(this.width, this.height, this.depth);
   }
 
-  equals(other: Size): boolean {
+  public equals(other: SizeCompat): boolean {
     return this.width == other.width && this.height == other.height && this.depth == other.depth;
   }
 }
 
+export type RectCompat = {
+  origin: Point,
+  size: Size,
+}
+
+export type RectMaybe = {
+  origin?: Point,
+  size?: Size,
+}
+
 export class Rect {
   public constructor(
-    public origin: Point,
-    public size: Size,
+    private _origin: Point,
+    private _size: Size,
   ) {
     // no-op
   }
 
-  public static of({origin, size}: {
-    origin: Point,
-    size: Size,
-  }): Rect {
+  public static of({origin, size}: RectCompat): Rect {
     return new Rect(origin, size);
+  }
+
+  public get origin(): Point {
+    return this._origin.copy();
+  }
+
+  public get size(): Size {
+    return this._size.copy();
   }
 
   public get top(): number {
@@ -129,11 +244,23 @@ export class Rect {
     return this.size.height;
   }
 
-  copy(): Rect {
+  public with(delta: RectMaybe): Rect {
+    return new Rect(
+      delta.origin ?? this.origin,
+      delta.size ?? this.size,
+    );
+  }
+
+  public assign(delta: RectMaybe): void {
+    this._origin = (delta.origin ?? this._origin);
+    this._size = (delta.size ?? this._size);
+  }
+
+  public copy(): Rect {
     return new Rect(this.origin.copy(), this.size.copy());
   }
 
-  equals(other: Rect): boolean {
+  public equals(other: RectCompat): boolean {
     return this.origin.equals(other.origin) && this.size.equals(other.size);
   }
 }
