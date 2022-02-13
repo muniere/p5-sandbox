@@ -348,7 +348,7 @@ export class QuickSortMachine implements SortMachine {
               new IndexRange(section.start, this._lowIndex - 1),
               new IndexRange(this._lowIndex, section.stop),
             ];
-          this._sections.splice(this._sectionIndex, 1, ...newSections);
+          this._sections.replace(this._sectionIndex, ...newSections);
           this.prepareForSection();
         }
 

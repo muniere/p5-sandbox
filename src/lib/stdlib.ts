@@ -12,6 +12,10 @@ declare global {
 
     shuffled(): Array<T>
 
+    remove(i: number): T;
+
+    replace(i: number, ...items: T[]): T;
+
     swap(i: number, j: number): void
 
     swapped(i: number, j: number): Array<T>
@@ -80,6 +84,14 @@ Array.prototype.shuffled = function () {
   return result;
 }
 
+Array.prototype.remove = function (i: number) {
+  this.splice(i, 1);
+}
+
+Array.prototype.replace = function (i: number, ...items: any[]) {
+  this.splice(i, 1, ...items);
+}
+
 Array.prototype.swap = function (i: number, j: number) {
   const tmp = this[i];
   this[i] = this[j];
@@ -122,11 +134,11 @@ Array.prototype.sortedDesc = function (selector: (obj: any) => any) {
   return [...this].sort((a, b) => selector(a) > selector(b) ? -1 : 1);
 }
 
-Array.prototype.minBy = function(selector: (obj: any) => any) {
+Array.prototype.minBy = function (selector: (obj: any) => any) {
   return this.sortedAsc(selector).first();
 }
 
-Array.prototype.maxBy = function(selector: (obj: any) => any) {
+Array.prototype.maxBy = function (selector: (obj: any) => any) {
   return this.sortedDesc(selector).first();
 }
 

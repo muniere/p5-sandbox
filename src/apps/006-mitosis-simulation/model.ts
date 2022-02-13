@@ -140,6 +140,6 @@ export class WorldState {
   split(index: number) {
     const cell = this._cells[index];
     const children = cell.split();
-    this._cells.splice(index, 1, ...children);
+    this._cells.replace(index, ...children);
   }
 }

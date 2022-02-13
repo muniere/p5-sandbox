@@ -153,7 +153,7 @@ export class RandomSwapMorphing implements Morphing {
   }
 
   backward() {
-    this._indices.splice(this._indices.sampleIndex(), 1);
+    this._indices.remove(this._indices.sampleIndex());
   }
 
   path() {
