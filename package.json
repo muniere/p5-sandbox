@@ -18,7 +18,6 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "bezier-easing": "^2.1.0",
     "p5": "^1.4.0"
   }
 }

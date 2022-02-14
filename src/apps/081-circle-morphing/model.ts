@@ -1,5 +1,3 @@
-import * as easing from 'bezier-easing';
-import { EasingFunction } from 'bezier-easing';
 import { Arrays } from '../../lib/stdlib';
 import { Point, PointRange } from '../../lib/graphics2d';
 
@@ -71,6 +69,24 @@ export class Path {
   }
 }
 
+export interface Interpolator {
+  compute(fraction: number): number
+}
+
+export class AnyInterpolator implements Interpolator {
+  private readonly _compute: (fraction: number) => number;
+
+  constructor(
+    compute: (fraction: number) => number
+  ) {
+    this._compute = compute;
+  }
+
+  compute(fraction: number): number {
+    return this._compute(fraction);
+  }
+}
+
 export interface Morphing {
   progress: number
 
@@ -82,21 +98,27 @@ export interface Morphing {
 }
 
 export class InterpolationMorphing implements Morphing {
-  private readonly _interpolator: EasingFunction;
+  private readonly _interpolator: Interpolator;
   private _progress: number = 0;
 
   constructor(
     private src: Path,
     private dst: Path,
-    interpolator?: EasingFunction,
+    interpolator?: Interpolator,
   ) {
-    this._interpolator = interpolator || easing.default(0.65, 0, 0.35, 1);
+    this._interpolator = interpolator ?? new AnyInterpolator((fraction: number) => {
+      if (fraction < 0.5) {
+        return Math.pow(fraction, 2) * 2;
+      } else {
+        return 1 - Math.pow((1 - fraction), 2) * 2;
+      }
+    });
   }
 
   static create({src, dst, interpolator}: {
     src: Path,
     dst: Path,
-    interpolator?: EasingFunction,
+    interpolator?: Interpolator,
   }): InterpolationMorphing {
     return new InterpolationMorphing(src, dst, interpolator);
   }
@@ -114,7 +136,7 @@ export class InterpolationMorphing implements Morphing {
   }
 
   path(): Path {
-    const progress = this._interpolator(this._progress);
+    const progress = this._interpolator.compute(this._progress);
 
     const points = Arrays.zip(this.src.points, this.dst.points).map(([src, dst]) => {
       const range = new PointRange(src, dst);
