@@ -12,6 +12,10 @@ declare global {
 
     shuffled(): Array<T>
 
+    droppingFirst(n?: number): Array<T>
+
+    droppingLast(n?: number): Array<T>
+
     remove(i: number): T;
 
     removeWhere(predicate: (item: T) => boolean): T[];
@@ -92,6 +96,16 @@ Array.prototype.shuffled = function () {
   }
 
   return result;
+}
+
+Array.prototype.droppingFirst = function (n?: number) {
+  const drop = Math.max(n ?? 1, 1);
+  return this.slice(drop);
+}
+
+Array.prototype.droppingLast = function (n?: number) {
+  const drop = Math.max(n ?? 1, 1);
+  return this.slice(0, this.length - drop);
 }
 
 Array.prototype.remove = function (i: number) {
