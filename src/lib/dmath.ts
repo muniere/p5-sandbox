@@ -135,6 +135,25 @@ export class Dimen {
     this._height *= value;
   }
 
+  public cycle(spot: Spot): Spot {
+    let {row, column} = spot;
+
+    if (row < 0) {
+      row += this._height;
+    }
+    if (row >= this._height) {
+      row -= this._height;
+    }
+    if (column < 0) {
+      column += this._width;
+    }
+    if (column >= this._width) {
+      column -= this._width;
+    }
+
+    return Spot.of({row, column});
+  }
+
   public copy(): Dimen {
     return new Dimen(this.width, this.height);
   }
