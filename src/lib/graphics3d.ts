@@ -4,6 +4,12 @@ export type PointCompat = {
   z: number,
 }
 
+export type PointDelta = {
+  x?: number,
+  y?: number,
+  z?: number,
+}
+
 export type PointMaybe = {
   x?: number,
   y?: number,
@@ -43,7 +49,7 @@ export class Point {
     return this._z;
   }
 
-  public plus(delta: PointMaybe): Point {
+  public plus(delta: PointDelta): Point {
     return new Point(
       this.x + (delta.x ?? 0),
       this.y + (delta.y ?? 0),
@@ -51,13 +57,13 @@ export class Point {
     );
   }
 
-  public plusAssign(delta: PointMaybe) {
+  public plusAssign(delta: PointDelta) {
     this._x += (delta.x ?? 0);
     this._y += (delta.y ?? 0);
     this._z += (delta.z ?? 0);
   }
 
-  public minus(delta: PointMaybe): Point {
+  public minus(delta: PointDelta): Point {
     return new Point(
       this.x - (delta.x ?? 0),
       this.y - (delta.y ?? 0),
@@ -65,7 +71,7 @@ export class Point {
     );
   }
 
-  public minusAssign(delta: PointMaybe) {
+  public minusAssign(delta: PointDelta) {
     this._x -= (delta.x ?? 0);
     this._y -= (delta.y ?? 0);
     this._z -= (delta.z ?? 0);
@@ -98,6 +104,12 @@ export type SizeCompat = {
   width: number,
   height: number,
   depth: number,
+}
+
+export type SizeDelta = {
+  width?: number,
+  height?: number,
+  depth?: number,
 }
 
 export type SizeMaybe = {
@@ -139,7 +151,7 @@ export class Size {
     return this._depth;
   }
 
-  public plus(delta: SizeMaybe): Size {
+  public plus(delta: SizeDelta): Size {
     return new Size(
       this.width + (delta.width ?? 0),
       this.height + (delta.height ?? 0),
@@ -147,13 +159,13 @@ export class Size {
     );
   }
 
-  public plusAssign(delta: SizeMaybe): void {
+  public plusAssign(delta: SizeDelta): void {
     this._width += (delta.width ?? 0);
     this._height += (delta.height ?? 0);
     this._depth += (delta.depth ?? 0);
   }
 
-  public minus(delta: SizeMaybe): Size {
+  public minus(delta: SizeDelta): Size {
     return new Size(
       this.width - (delta.width ?? 0),
       this.height - (delta.height ?? 0),
@@ -161,7 +173,7 @@ export class Size {
     );
   }
 
-  public minusAssign(delta: SizeMaybe): void {
+  public minusAssign(delta: SizeDelta): void {
     this._width -= (delta.width ?? 0);
     this._height -= (delta.height ?? 0);
     this._depth -= (delta.depth ?? 0);

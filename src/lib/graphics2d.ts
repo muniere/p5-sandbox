@@ -5,6 +5,11 @@ export type PointCompat = {
   y: number,
 }
 
+export type PointDelta = {
+  x?: number,
+  y?: number,
+}
+
 export type PointMaybe = {
   x?: number,
   y?: number,
@@ -52,20 +57,20 @@ export class Point {
     return this._y;
   }
 
-  public plus(delta: PointMaybe): Point {
+  public plus(delta: PointDelta): Point {
     return new Point(this.x + (delta.x ?? 0), this.y + (delta.y ?? 0));
   }
 
-  public plusAssign(delta: PointMaybe) {
+  public plusAssign(delta: PointDelta) {
     this._x += (delta.x ?? 0);
     this._y += (delta.y ?? 0);
   }
 
-  public minus(delta: PointMaybe): Point {
+  public minus(delta: PointDelta): Point {
     return new Point(this.x - (delta.x ?? 0), this.y - (delta.y ?? 0));
   }
 
-  public minusAssign(delta: PointMaybe) {
+  public minusAssign(delta: PointDelta) {
     this._x -= (delta.x ?? 0);
     this._y -= (delta.y ?? 0);
   }
@@ -120,6 +125,11 @@ export type SizeCompat = {
   height: number,
 }
 
+export type SizeDelta = {
+  width?: number,
+  height?: number,
+}
+
 export type SizeMaybe = {
   width?: number,
   height?: number,
@@ -153,26 +163,26 @@ export class Size {
     return this._height;
   }
 
-  public plus(delta: SizeMaybe): Size {
+  public plus(delta: SizeDelta): Size {
     return new Size(
       this.width + (delta.width ?? 0),
       this.height + (delta.height ?? 0),
     );
   }
 
-  public plusAssign(delta: SizeMaybe): void {
+  public plusAssign(delta: SizeDelta): void {
     this._width += (delta.width ?? 0);
     this._height += (delta.height ?? 0);
   }
 
-  public minus(other: SizeMaybe): Size {
+  public minus(other: SizeDelta): Size {
     return new Size(
       this.width - (other.width ?? 0),
       this.height - (other.height ?? 0),
     );
   }
 
-  public minusAssign(delta: SizeMaybe): void {
+  public minusAssign(delta: SizeDelta): void {
     this._width -= (delta.width ?? 0);
     this._height -= (delta.height ?? 0);
   }

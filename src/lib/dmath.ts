@@ -3,6 +3,11 @@ export type SpotCompat = {
   column: number,
 }
 
+export type SpotDelta = {
+  row?: number,
+  column?: number,
+}
+
 export type SpotMaybe = {
   row?: number,
   column?: number,
@@ -34,10 +39,22 @@ export class Spot {
     return this._column;
   }
 
-  shift({row, column}: SpotMaybe): Spot {
+  shift({row, column}: SpotDelta): Spot {
     return new Spot(
-      this.row + (row ?? 0),
-      this.column + (column ?? 0),
+      this._row + (row ?? 0),
+      this._column + (column ?? 0),
+    );
+  }
+
+  shiftAssign({row, column}: SpotDelta): void {
+    this._row += row ?? 0;
+    this._column += column ?? 0;
+  }
+
+  with({row, column}: SpotMaybe): Spot {
+    return new Spot(
+      row ?? this._row,
+      column ?? this._column,
     );
   }
 
