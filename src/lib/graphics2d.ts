@@ -285,6 +285,26 @@ export class Rect {
     this._size = (delta.size ?? this._size);
   }
 
+  public includes(point: Point): boolean {
+    return this.left <= point.x && point.x < this.right && this.top <= point.y && point.y < this.bottom;
+  }
+
+  public intersects(other: Rect): boolean {
+    if (other.left > this.right) {
+      return false;
+    }
+    if (other.right < this.left) {
+      return false;
+    }
+    if (other.top > this.bottom) {
+      return false;
+    }
+    if (other.bottom < this.top) {
+      return false;
+    }
+    return true;
+  }
+
   public copy(): Rect {
     return new Rect(this.origin.copy(), this.size.copy());
   }

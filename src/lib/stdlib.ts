@@ -16,6 +16,8 @@ declare global {
 
     droppingLast(n?: number): Array<T>
 
+    flatMap<U>(callback: (item: T) => Array<U>): Array<U>;
+
     remove(i: number): T;
 
     removeWhere(predicate: (item: T) => boolean): T[];
@@ -25,6 +27,8 @@ declare global {
     swap(i: number, j: number): void
 
     swapped(i: number, j: number): Array<T>
+
+    reversed(): Array<T>
 
     reverseBetween(option?: { start?: number, end?: number }): void
 
@@ -108,6 +112,10 @@ Array.prototype.droppingLast = function (n?: number) {
   return this.slice(0, this.length - drop);
 }
 
+Array.prototype.flatMap = function (callback: (item: any) => any[]) {
+  return this.map(it => callback(it)).reduce((acc, arr) => acc.concat(arr));
+}
+
 Array.prototype.remove = function (i: number) {
   const removed = this.splice(i, 1);
   return removed[0];
@@ -139,6 +147,10 @@ Array.prototype.swapped = function (i: number, j: number) {
   result[i] = result[j];
   result[j] = tmp;
   return result;
+}
+
+Array.prototype.reversed = function () {
+  return [...this].reverse();
 }
 
 Array.prototype.reverseBetween = function (option?: { start?: number, end?: number }) {
