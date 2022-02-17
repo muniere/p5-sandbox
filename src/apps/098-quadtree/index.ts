@@ -1,8 +1,8 @@
 import p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { Force, Position } from '../../lib/physics2d';
-import { MaterialState, WorldState } from './model';
+import { Force } from '../../lib/physics2d';
+import { BallState, WorldState } from './model';
 import { WorldWidget } from './view';
 
 const Params = Object.freeze({
@@ -40,7 +40,7 @@ export function sketch(context: p5) {
     });
 
     Arrays.sequence(Params.MATERIAL_COUNT).forEach(() => {
-      const center = Position.of({
+      const center = Point.of({
         x: Math.random() * size,
         y: Math.random() * size,
       });
@@ -50,11 +50,13 @@ export function sketch(context: p5) {
         y: Math.random(),
       });
 
-      const material = MaterialState.create({
+      const material = BallState.create({
         radius: Params.MATERIAL_RADIUS,
         center: center
       }).also(it => {
-        it.applyForce(force);
+        it.fillColor = '#888888';
+        it.strokeColor = undefined;
+        it.apply(force);
       });
 
       state.push(material);

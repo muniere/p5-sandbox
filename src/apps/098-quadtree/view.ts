@@ -1,8 +1,8 @@
 import p5 from 'p5';
-import { DivisionState, MaterialState, MaterialTag, TreeState, WorldState } from './model';
+import { DivisionState, BallState, BallTag, TreeState, WorldState } from './model';
 
 export class MaterialWidget {
-  public state: MaterialState | undefined;
+  public state: BallState | undefined;
 
   constructor(
     public readonly context: p5,
@@ -18,15 +18,15 @@ export class MaterialWidget {
 
     this.context.push();
 
-    this.context.noStroke();
-
     switch (state.tag) {
-      case MaterialTag.normal:
-        this.context.fill(state.color);
+      case BallTag.normal:
+        state.fillColor ? this.context.fill(state.fillColor) : this.context.noFill();
+        state.strokeColor ? this.context.stroke(state.strokeColor) : this.context.noStroke();
         break;
 
-      case MaterialTag.focused:
+      case BallTag.focused:
         this.context.fill('#ff1111');
+        this.context.noStroke();
         break;
     }
 

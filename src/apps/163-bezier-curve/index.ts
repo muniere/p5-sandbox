@@ -2,7 +2,7 @@
 import p5, { Vector } from 'p5';
 import { Arrays, NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
-import { Position, Velocity } from '../../lib/physics2d';
+import { Velocity } from '../../lib/physics2d';
 import { BallState, BezierCurve, WorldState } from './model';
 import { PathMode, WorldWidget } from './view';
 
@@ -34,7 +34,7 @@ export function sketch(context: p5) {
       balls: Arrays.generate(Params.CONTROL_COUNT, () => {
         return BallState.create({
           radius: Params.CONTROL_RADIUS,
-          center: Position.of({
+          center: Point.of({
             x: Math.random() * context.width,
             y: Math.random() * context.height,
           }),

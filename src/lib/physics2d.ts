@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Point, Size } from './graphics2d';
 
 export type ForceCompat = {
   x: number,
@@ -313,63 +314,239 @@ export class Velocity {
   }
 }
 
-export type PositionCompat = {
-  x: number,
-  y: number,
+export abstract class Material {
+  public abstract fillColor: string | undefined;
+  public abstract strokeColor: string | undefined;
+
+  public abstract readonly top: number;
+  public abstract readonly left: number;
+  public abstract readonly right: number;
+  public abstract readonly bottom: number;
+
+  public abstract readonly mass: number;
+  public abstract readonly center: Point;
+  public abstract readonly velocity: Velocity;
+  public abstract readonly acceleration: Acceleration;
+
+  public abstract apply(force: Force): void;
+  public abstract update(): void;
+  public abstract coerceIn(bounds: Size): void;
 }
 
-export class Position {
-  private _vector: Vector;
+export class RectangularMaterial extends Material {
+  public fillColor: string | undefined;
+  public strokeColor: string | undefined;
+
+  private readonly _size: Size;
+  private readonly _mass: number;
+  private readonly _center: Point;
+  private readonly _velocity: Velocity;
+  private readonly _acceleration: Acceleration;
 
   public constructor(
-    x: number,
-    y: number,
+    size?: Size,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
   ) {
-    this._vector = new Vector().set(x, y);
+    super();
+    this._size = size ?? Size.zero();
+    this._mass = mass ?? 1;
+    this._center = center ?? Point.zero();
+    this._velocity = velocity ?? Velocity.zero();
+    this._acceleration = acceleration ?? Acceleration.zero();
   }
 
-  public static zero(): Position {
-    return new Position(0, 0);
+  public static create({size, mass, center, velocity, acceleration}: {
+    size?: Size,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
+  }): RectangularMaterial {
+    return new RectangularMaterial(size, mass, center, velocity, acceleration);
   }
 
-  public static of({x, y}: PositionCompat): Position {
-    return new Position(x, y);
-  };
-
-  static dist(a: Position, b: Position): number {
-    return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0));
+  public get size(): Size {
+    return this._size.copy();
   }
 
-  public get x(): number {
-    return this._vector.x;
+  public get width(): number {
+    return this._size.width;
   }
 
-  public get y(): number {
-    return this._vector.y;
+  public get height(): number {
+    return this._size.height;
   }
 
-
-  public plus(delta: Velocity): Position {
-    return Position.of(this._vector.copy().add(delta.vector));
+  public get top(): number {
+    return this.center.y - this.height / 2;
   }
 
-  public plusAssign(delta: Velocity) {
-    this._vector.add(delta.vector);
+  public get bottom(): number {
+    return this.center.y + this.height / 2;
   }
 
-  public minus(delta: Velocity): Position {
-    return Position.of(this._vector.copy().add(delta.vector));
+  public get left(): number {
+    return this.center.x - this.width / 2;
   }
 
-  public minusAssign(delta: Velocity) {
-    this._vector.sub(delta.vector);
+  public get right(): number {
+    return this.center.x + this.width / 2;
   }
 
-  public copy(): Position {
-    return new Position(this.x, this.y);
+  public get mass(): number {
+    return this._mass;
   }
 
-  public equals(other: Position): boolean {
-    return this.x == other.x && this.y == other.y;
+  public get center(): Point {
+    return this._center.copy();
+  }
+
+  public get velocity(): Velocity {
+    return this._velocity.copy();
+  }
+
+  public get acceleration(): Acceleration {
+    return this._acceleration.copy();
+  }
+
+  public apply(force: Force): void {
+    this._center.plusAssign(Vector.div(force.vector, this._mass));
+  }
+
+  public update() {
+    this._velocity.plusAssign(this._acceleration);
+    this._center.plusAssign(this._velocity);
+  }
+
+  public coerceIn(bounds: Size) {
+    if (this.left <= 0 || bounds.width <= this.right) {
+      this._velocity.plusAssign(
+        Acceleration.of({x: -this._velocity.x * 2, y: 0})
+      );
+    }
+    if (this.top <= 0 || bounds.height <= this.bottom) {
+      this._velocity.plusAssign(
+        Acceleration.of({x: 0, y: -this._velocity.y * 2})
+      )
+    }
+  }
+
+  public intersects(other: RectangularMaterial): boolean {
+    if (other.left > this.right) {
+      return false;
+    }
+    if (other.right < this.left) {
+      return false;
+    }
+    if (other.top > this.bottom) {
+      return false;
+    }
+    if (other.bottom < this.top) {
+      return false;
+    }
+    return true;
+  }
+}
+
+export class CircularMaterial extends Material {
+  public fillColor: string | undefined;
+  public strokeColor: string | undefined;
+
+  private readonly _radius: number;
+  private readonly _mass: number;
+  private readonly _center: Point;
+  private readonly _velocity: Velocity;
+  private readonly _acceleration: Acceleration;
+
+  public constructor(
+    radius?: number,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
+  ) {
+    super();
+    this._radius = radius ?? 0;
+    this._mass = mass ?? 1;
+    this._center = center ?? Point.zero();
+    this._velocity = velocity ?? Velocity.zero();
+    this._acceleration = acceleration ?? Acceleration.zero();
+  }
+
+  public static create({radius, mass, center, velocity, acceleration}: {
+    radius?: number,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
+  }): CircularMaterial {
+    return new CircularMaterial(radius, mass, center, velocity, acceleration);
+  }
+
+  public get radius(): number {
+    return this._radius;
+  }
+
+  public get top(): number {
+    return this.center.y - this._radius;
+  }
+
+  public get bottom(): number {
+    return this.center.y + this._radius;
+  }
+
+  public get left(): number {
+    return this.center.x - this._radius;
+  }
+
+  public get right(): number {
+    return this.center.x + this._radius;
+  }
+
+  public get mass(): number {
+    return this._mass;
+  }
+
+  public get center(): Point {
+    return this._center.copy();
+  }
+
+  public get velocity(): Velocity {
+    return this._velocity.copy();
+  }
+
+  public get acceleration(): Acceleration {
+    return this._acceleration.copy();
+  }
+
+  public apply(force: Force): void {
+    const newValue = force.acceleration({mass: this._mass});
+    this._acceleration.assign(newValue);
+  }
+
+  public update() {
+    this._velocity.plusAssign(this._acceleration);
+    this._center.plusAssign(this._velocity);
+    this._acceleration.setMagnitude(0);
+  }
+
+  public coerceIn(bounds: Size) {
+    if (this.left <= 0 || bounds.width <= this.right) {
+      this._velocity.plusAssign(
+        Acceleration.of({x: -this._velocity.x * 2, y: 0})
+      );
+    }
+    if (this.top <= 0 || bounds.height <= this.bottom) {
+      this._velocity.plusAssign(
+        Acceleration.of({x: 0, y: -this._velocity.y * 2})
+      )
+    }
+  }
+
+  public intersects(other: CircularMaterial): boolean {
+    return Point.dist(this._center, other._center) < this._radius + other._radius;
   }
 }

@@ -1,52 +1,16 @@
 import { Point, PointRange, Size } from '../../lib/graphics2d';
-import { Acceleration, Position, Velocity } from '../../lib/physics2d';
+import { Acceleration, CircularMaterial, Velocity } from '../../lib/physics2d';
 
-export class BallState {
-  private readonly _radius: number;
-  private readonly _center: Position;
-  private readonly _velocity: Velocity;
+export class BallState extends CircularMaterial {
 
-  constructor(
-    radius: number,
-    center: Position,
-    velocity: Velocity,
-  ) {
-    this._radius = radius;
-    this._center = center;
-    this._velocity = velocity;
-  }
-
-  static create({radius, center, velocity}: {
-    radius: number,
-    center: Position,
-    velocity: Velocity,
+  public static create({radius, mass, center, velocity, acceleration}: {
+    radius?: number,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
   }): BallState {
-    return new BallState(radius, center, velocity);
-  }
-
-  get radius(): number {
-    return this._radius;
-  }
-
-  get center(): Position {
-    return this._center;
-  }
-
-  update() {
-    this._center.plusAssign(this._velocity);
-  }
-
-  coerceIn(bounds: Size) {
-    if (this._center.x - this._radius <= 0 || bounds.width <= this._center.x + this._radius) {
-      this._velocity.plusAssign(
-        Acceleration.of({x: -this._velocity.x * 2, y: 0})
-      );
-    }
-    if (this._center.y - this._radius <= 0 || bounds.height <= this._center.y + this._radius) {
-      this._velocity.plusAssign(
-        Acceleration.of({x: 0, y: -this._velocity.y * 2})
-      )
-    }
+    return new BallState(radius, mass, center, velocity, acceleration);
   }
 }
 
@@ -163,6 +127,6 @@ export class WorldState {
       it.coerceIn(this._bounds);
     });
 
-    this._bezier.controls = this._balls.map(it => Point.of(it.center));
+    this._bezier.controls = this._balls.map(it => it.center);
   }
 }

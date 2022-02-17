@@ -1,56 +1,22 @@
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { Acceleration, Force, Position, Velocity } from '../../lib/physics2d';
+import { Acceleration, CircularMaterial, Velocity } from '../../lib/physics2d';
 
-export enum MaterialTag {
+export enum BallTag {
   normal,
   focused,
 }
 
-export class MaterialState {
-  public tag = MaterialTag.normal;
-  public color: string = '#888888';
+export class BallState extends CircularMaterial {
+  public tag = BallTag.normal;
 
-  private readonly _radius: number;
-  private readonly _center: Position;
-  private readonly _velocity: Velocity = Velocity.zero();
-
-  constructor(
-    radius: number,
-    center: Position,
-  ) {
-    this._radius = radius;
-    this._center = center;
-  }
-
-  static create({radius, center}: {
-    radius: number,
-    center: Position,
-  }): MaterialState {
-    return new MaterialState(radius, center);
-  }
-
-  get radius(): number {
-    return this._radius;
-  }
-
-  get center(): Position {
-    return this._center;
-  }
-
-  get top(): number {
-    return this._center.y - this._radius;
-  }
-
-  get bottom(): number {
-    return this._center.y + this._radius;
-  }
-
-  get left(): number {
-    return this._center.x - this._radius;
-  }
-
-  get right(): number {
-    return this._center.x + this._radius;
+  public static create({radius, mass, center, velocity, acceleration}: {
+    radius?: number,
+    mass?: number,
+    center?: Point,
+    velocity?: Velocity,
+    acceleration?: Acceleration,
+  }): BallState {
+    return new BallState(radius, mass, center, velocity, acceleration);
   }
 
   get zone(): Rect {
@@ -63,37 +29,16 @@ export class MaterialState {
     });
   }
 
-  applyForce(force: Force) {
-    this._velocity.plusAssign(force.acceleration({mass: 1}));
-  }
-
-  coerceIn(bounds: Size) {
-    if (this._center.x - this._radius <= 0 || bounds.width <= this._center.x + this._radius) {
-      this._velocity.plusAssign(
-        Acceleration.of({x: -this._velocity.x * 2, y: 0})
-      );
-    }
-    if (this._center.y - this._radius <= 0 || bounds.height <= this._center.y + this._radius) {
-      this._velocity.plusAssign(
-        Acceleration.of({x: 0, y: -this._velocity.y * 2})
-      )
-    }
-  }
-
-  also(mutate: (state: MaterialState) => void): MaterialState {
+  also(mutate: (state: BallState) => void): BallState {
     mutate(this);
     return this;
-  }
-
-  update() {
-    this._center.plusAssign(this._velocity);
   }
 }
 
 export class DivisionState {
   private readonly _boundary: Rect;
   private readonly _capacity: number;
-  private _materials: MaterialState[];
+  private _materials: BallState[];
   private _children: DivisionState[];
 
   constructor(
@@ -125,12 +70,12 @@ export class DivisionState {
     return [...this._children];
   }
 
-  get materials(): MaterialState[] {
+  get materials(): BallState[] {
     return [...this._materials];
   }
 
-  push(material: MaterialState): boolean {
-    if (!this._boundary.includes(Point.of(material.center))) {
+  push(material: BallState): boolean {
+    if (!this._boundary.includes(material.center)) {
       return false;
     }
 
@@ -153,8 +98,8 @@ export class DivisionState {
     return true;
   }
 
-  includes(position: Position): boolean {
-    return this._boundary.includes(Point.of(position));
+  includes(point: Point): boolean {
+    return this._boundary.includes(point);
   }
 
   clear(): void {
@@ -218,11 +163,11 @@ export class TreeState {
     return this._root.capacity;
   }
 
-  push(material: MaterialState) {
+  push(material: BallState) {
     this._root.push(material);
   }
 
-  collectDeeply({query}: { query?: Rect }): MaterialState[] {
+  collectDeeply({query}: { query?: Rect }): BallState[] {
     const stack = [this._root];
     const divisions = [] as DivisionState[];
 
@@ -243,12 +188,12 @@ export class TreeState {
 
     return divisions.flatMap(
       division => query
-        ? division.materials.filter(it => query.includes(Point.of(it.center)))
+        ? division.materials.filter(it => query.includes(it.center))
         : division.materials
     );
   }
 
-  collectWidely({query}: { query?: Rect }): MaterialState[] {
+  collectWidely({query}: { query?: Rect }): BallState[] {
     const queue = [this._root];
     const divisions = [] as DivisionState[];
 
@@ -269,7 +214,7 @@ export class TreeState {
 
     return divisions.flatMap(
       division => query
-        ? division.materials.filter(it => query.includes(Point.of(it.center)))
+        ? division.materials.filter(it => query.includes(it.center))
         : division.materials
     );
   }
@@ -304,7 +249,7 @@ export class TreeState {
 }
 
 export class WorldState {
-  private readonly _materials: MaterialState[];
+  private readonly _materials: BallState[];
   private readonly _tree: TreeState;
 
   constructor(
@@ -326,7 +271,7 @@ export class WorldState {
     return this._tree;
   }
 
-  push(material: MaterialState) {
+  push(material: BallState) {
     this._materials.push(material);
   }
 
@@ -350,13 +295,13 @@ export class WorldState {
       const collisions = this._tree
         .collectDeeply({query: material.zone})
         .filter(it => it != material)
-        .filter(it => Position.dist(it.center, material.center) < it.radius + material.radius);
+        .filter(it => it.intersects(material));
 
       if (collisions.length == 0) {
-        material.tag = MaterialTag.normal;
+        material.tag = BallTag.normal;
       } else {
-        material.tag = MaterialTag.focused;
-        collisions.forEach(it => it.tag = MaterialTag.focused);
+        material.tag = BallTag.focused;
+        collisions.forEach(it => it.tag = BallTag.focused);
       }
     });
   }
