@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=LG8ZK-rRkXo
 import * as p5 from 'p5';
-import { SpongeState } from './model';
+import { SpongeModel } from './model';
 import { SpongeWidget } from './view';
 
 const Params = Object.freeze({
@@ -12,7 +12,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: SpongeState;
+  let model: SpongeModel;
   let widget: SpongeWidget;
 
   context.setup = function () {
@@ -22,14 +22,14 @@ export function sketch(context: p5) {
       context.WEBGL,
     );
 
-    state = SpongeState.create({
+    model = SpongeModel.create({
       size: Params.SPONGE_SIZE,
     }).also(it => {
       it.fillColor = Params.FILL_COLOR;
       it.strokeColor = Params.STROKE_COLOR;
     });
 
-    widget = new SpongeWidget(context, state);
+    widget = new SpongeWidget(context, model);
   }
 
   context.draw = function () {
@@ -41,10 +41,10 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.rotate(Params.ROTATION_SPEED);
+    model.rotate(Params.ROTATION_SPEED);
   }
 
   context.mousePressed = function () {
-    state.cycle();
+    model.cycle();
   }
 }

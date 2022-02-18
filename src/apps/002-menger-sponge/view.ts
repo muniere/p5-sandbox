@@ -1,12 +1,12 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { CubeState, SpongeState } from './model';
+import { CubeModel, SpongeModel } from './model';
 
 class CubeWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: CubeState,
+    public readonly state: CubeModel,
   ) {
     // no-op
   }
@@ -35,7 +35,7 @@ class CubeWidget {
 export class SpongeWidget {
   constructor(
     private readonly context: p5,
-    private readonly state: SpongeState,
+    private readonly state: SpongeModel,
   ) {
     // no-op
   }

@@ -1,23 +1,23 @@
 import { Point as Point3D } from '../../lib/graphics3d';
 
-export class CubeState {
+export class CubeModel {
   public color: string = '#FFFFFF';
 
   constructor(
-    public center: Point3D,
     public size: number,
+    public center: Point3D,
   ) {
     // no-op
   }
 
-  static create({center, side}: {
+  static create({size, center}: {
+    size: number,
     center: Point3D,
-    side: number,
-  }): CubeState {
-    return new CubeState(center, side);
+  }): CubeModel {
+    return new CubeModel(size, center);
   }
 
-  spawn(): CubeState[] {
+  spawn(): CubeModel[] {
     let cubes = [];
 
     for (let x = -1; x <= 1; x++) {
@@ -35,12 +35,12 @@ export class CubeState {
             z: z * newSize,
           });
 
-          const newBox = CubeState.create({
+          const newCube = CubeModel.create({
+            size: newSize,
             center: newCenter,
-            side: newSize,
           });
 
-          cubes.push(newBox);
+          cubes.push(newCube);
         }
       }
     }
@@ -49,23 +49,23 @@ export class CubeState {
   }
 }
 
-export class SpongeState {
+export class SpongeModel {
   public strokeColor: string = '#FFFFFF';
   public rotation: number = 0;
 
   constructor(
-    public cubes: CubeState[],
+    public cubes: CubeModel[],
   ) {
     // no-op
   }
 
-  static create({size}: { size: number }): SpongeState {
-    const seed = CubeState.create({
+  static create({size}: { size: number }): SpongeModel {
+    const seed = CubeModel.create({
+      size: size,
       center: Point3D.zero(),
-      side: size,
     });
 
-    return new SpongeState([seed]);
+    return new SpongeModel([seed]);
   }
 
   get fillColor(): string {
@@ -80,14 +80,14 @@ export class SpongeState {
     this.rotation += value;
   }
 
-  also(mutate: (sponge: SpongeState) => void): SpongeState {
+  also(mutate: (sponge: SpongeModel) => void): SpongeModel {
     mutate(this);
     return this;
   }
 
   cycle() {
     this.cubes = this.cubes.reduce(
-      (acc, box) => [...acc, ...box.spawn()], [] as CubeState[]
+      (acc, box) => [...acc, ...box.spawn()], [] as CubeModel[]
     );
   }
 }
