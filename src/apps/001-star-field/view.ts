@@ -5,52 +5,51 @@ import { Point as Point3D } from '../../lib/graphics3d';
 import { StarFieldState, StarState } from './model';
 
 class StarWidget {
+  public state: StarState | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly state: StarState,
   ) {
     // no-op
   }
 
-  private get origin(): Point3D {
-    return this.state.origin;
-  }
-
-  private get radius(): number {
-    return this.state.radius;
-  }
-
-  private get center(): Point3D {
-    return this.state.center;
+  also(mutate: (widget: StarWidget) => void): StarWidget {
+    mutate(this);
+    return this;
   }
 
   draw(): void {
+    const state = this.state;
+    if (!state) {
+      return;
+    }
+
     const currentX = Numeric.map({
-      value: this.center.x / this.center.z,
+      value: state.center.x / state.center.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.width)
     });
 
     const currentY = Numeric.map({
-      value: this.center.y / this.center.z,
+      value: state.center.y / state.center.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.height)
     });
 
     const currentRadius = Numeric.map({
-      value: this.center.z,
+      value: state.center.z,
       domain: Numeric.range(this.context.width, 0),
-      target: Numeric.range(0, this.radius)
+      target: Numeric.range(0, state.radius)
     });
 
     const originX = Numeric.map({
-      value: this.center.x / this.origin.z,
+      value: state.center.x / state.origin.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.width),
     });
 
     const originY = Numeric.map({
-      value: this.center.y / this.origin.z,
+      value: state.center.y / state.origin.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.height)
     });
@@ -67,25 +66,35 @@ class StarWidget {
 }
 
 export class StarFieldWidget {
-  private children: StarWidget[];
+  public state: StarFieldState | undefined;
+
+  private _star: StarWidget;
 
   constructor(
     public readonly context: p5,
-    public readonly state: StarFieldState,
   ) {
-    this.children = state.stars.map(
-      it => new StarWidget(context, it),
-    );
+    this._star = new StarWidget(context);
+  }
+
+  also(mutate: (widget: StarFieldWidget) => void): StarFieldWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
+    const state = this.state;
+    if (!state) {
+      return;
+    }
+
     this.context.translate(
       this.context.width / 2,
       this.context.height / 2,
     );
 
-    this.children.forEach(
-      it => it.draw()
-    );
+    state.stars.forEach(it => {
+      this._star.state = it;
+      this._star.draw();
+    });
   }
 }

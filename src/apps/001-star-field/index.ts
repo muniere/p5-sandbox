@@ -30,7 +30,9 @@ export function sketch(context: p5) {
       count: Params.STAR_COUNT,
     });
 
-    widget = new StarFieldWidget(context, state);
+    widget = new StarFieldWidget(context).also(it => {
+      it.state = state;
+    });
   }
 
   context.draw = function () {
