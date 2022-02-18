@@ -1,7 +1,7 @@
 import p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
-import { StarFieldModel, StarModel } from './model';
+import { ApplicationModel, StarFieldModel, StarModel } from './model';
 
 class StarWidget {
   public model: StarModel | undefined;
@@ -95,5 +95,32 @@ export class StarFieldWidget {
       this._star.model = it;
       this._star.draw();
     });
+  }
+}
+
+export class ApplicationWidget {
+  public model: ApplicationModel | undefined;
+
+  private _starField: StarFieldWidget;
+
+  constructor(
+    public readonly context: p5,
+  ) {
+    this._starField = new StarFieldWidget(context);
+  }
+
+  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
+    mutate(this);
+    return this;
+  }
+
+  draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    this._starField.model = model.starField;
+    this._starField.draw();
   }
 }

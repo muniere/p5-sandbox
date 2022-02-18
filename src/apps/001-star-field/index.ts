@@ -3,8 +3,8 @@ import p5 from 'p5';
 import { Arrays, Numeric } from '../../lib/stdlib';
 import { Point as Point2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { StarFieldModel, StarModel } from './model';
-import { StarFieldWidget } from './view';
+import { ApplicationModel, StarModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#111111',
@@ -15,8 +15,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let model: StarFieldModel;
-  let widget: StarFieldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -25,7 +25,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = StarFieldModel.create({
+    model = ApplicationModel.create({
       stars: Arrays.generate(Params.STAR_COUNT, () => {
         return StarModel.create({
           radius: Params.STAR_RADIUS,
@@ -38,7 +38,7 @@ export function sketch(context: p5) {
       })
     });
 
-    widget = new StarFieldWidget(context).also(it => {
+    widget = new ApplicationWidget(context).also(it => {
       it.model = model;
     });
   }
@@ -75,7 +75,7 @@ export function sketch(context: p5) {
       y: context.mouseY,
     });
 
-    model.speed = Numeric.map({
+    model.starField.speed = Numeric.map({
       value: Point2D.dist(mousePoint, canvasCenter),
       domain: Numeric.range(0, Point2D.dist(canvasOrigin, canvasCenter)),
       target: Numeric.range(Params.STAR_SPEED_MIN, Params.STAR_SPEED_MAX),

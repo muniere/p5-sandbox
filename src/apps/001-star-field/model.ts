@@ -98,3 +98,28 @@ export class StarFieldModel {
     );
   }
 }
+
+export class ApplicationModel {
+  private readonly _starField: StarFieldModel;
+
+  constructor(
+    starField: StarFieldModel,
+  ) {
+    this._starField = starField;
+  }
+
+  static create({stars}: {
+    stars: StarModel[]
+  }): ApplicationModel {
+    const starField = StarFieldModel.create({stars})
+    return new ApplicationModel(starField);
+  }
+
+  get starField(): StarFieldModel {
+    return this._starField;
+  }
+
+  update(): void {
+    this._starField.update();
+  }
+}
