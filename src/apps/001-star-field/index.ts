@@ -24,6 +24,7 @@ export function sketch(context: p5) {
       context.windowHeight,
       context.P2D,
     );
+    context.noLoop();
 
     model = ApplicationModel.create({
       stars: Arrays.generate(Params.STAR_COUNT, () => {

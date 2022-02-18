@@ -1,11 +1,11 @@
 import { Point as Point3D } from '../../lib/graphics3d';
+import { Acceleration as Acceleration3D, Velocity as Velocity3D } from '../../lib/physics3d';
 
 export class StarModel {
   private readonly _radius: number;
   private readonly _origin: Point3D;
   private readonly _center: Point3D;
-
-  private _speed: number;
+  private readonly _velocity: Velocity3D;
 
   constructor(
     radius: number,
@@ -14,12 +14,12 @@ export class StarModel {
     this._radius = radius;
     this._origin = origin.copy();
     this._center = origin.copy();
-    this._speed = 0;
+    this._velocity = Velocity3D.zero();
   }
 
-  static create({center, radius}: {
-    center: Point3D,
+  static create({radius, center}: {
     radius: number,
+    center: Point3D,
   }): StarModel {
     return new StarModel(radius, center);
   }
@@ -37,15 +37,21 @@ export class StarModel {
   }
 
   get speed(): number {
-    return this._speed;
+    return this._velocity.magnitude();
   }
 
   set speed(speed: number) {
-    this._speed = speed;
+    if (speed > 0 && this._velocity.magnitude() == 0) {
+      const accel = Acceleration3D.of({x: 0, y: 0, z: 1});
+      this._velocity.plusAssign(accel);
+      this._velocity.normalize();
+    }
+
+    this._velocity.setMagnitude(speed);
   }
 
   update(): void {
-    this._center.minusAssign({z: this._speed});
+    this._center.minusAssign({z: this.speed});
 
     if (this._center.z < 0.01) {
       this.reset();
