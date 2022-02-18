@@ -1,64 +1,68 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
-import { Point as Point3D } from '../../lib/graphics3d';
 import { CubeModel, SpongeModel } from './model';
 
-class CubeWidget {
+export class CubeWidget {
+  public model: CubeModel | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly state: CubeModel,
   ) {
     // no-op
   }
 
-  private get center(): Point3D {
-    return this.state.center;
-  }
-
-  private get size(): number {
-    return this.state.size;
-  }
-
-  private get color(): string {
-    return this.state.color;
+  also(mutate: (widget: CubeWidget) => void): CubeWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
     Context.scope(this.context, $ => {
-      $.translate(this.center.x, this.center.y, this.center.z);
-      $.fill(this.color);
-      $.box(this.size);
+      $.translate(model.center.x, model.center.y, model.center.z);
+      $.fill(model.color);
+      $.box(model.size);
     });
   }
 }
 
 export class SpongeWidget {
+  public model: SpongeModel | undefined;
+
+  private _cube: CubeWidget;
+
   constructor(
     private readonly context: p5,
-    private readonly state: SpongeModel,
   ) {
-    // no-op
+    this._cube = new CubeWidget(context);
   }
 
-  private get strokeColor(): string {
-    return this.state.strokeColor;
-  }
-
-  private get rotation(): number {
-    return this.state.rotation;
+  also(mutate: (widget: SpongeWidget) => void): SpongeWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
     Context.scope(this.context, $ => {
-      $.rotateX(this.rotation);
-      $.rotateY(this.rotation * 0.5)
-      $.rotateZ(this.rotation * 0.2)
+      $.rotateX(model.rotation);
+      $.rotateY(model.rotation * 0.5)
+      $.rotateZ(model.rotation * 0.2)
 
-      $.stroke(this.strokeColor)
+      $.stroke(model.strokeColor)
 
-      this.state.cubes.forEach(
-        it => new CubeWidget($, it).draw(),
-      );
+      model.cubes.forEach(it => {
+        this._cube.model = it;
+        this._cube.draw();
+      });
     });
   }
 }

@@ -29,7 +29,9 @@ export function sketch(context: p5) {
       it.strokeColor = Params.STROKE_COLOR;
     });
 
-    widget = new SpongeWidget(context, model);
+    widget = new SpongeWidget(context).also(it => {
+      it.model = model;
+    });
   }
 
   context.draw = function () {
