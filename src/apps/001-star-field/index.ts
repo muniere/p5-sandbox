@@ -2,7 +2,7 @@
 import * as p5 from 'p5';
 import { Numeric } from '../../lib/stdlib';
 import { Point as Point2D, Size as Size2D } from '../../lib/graphics2d';
-import { StarFieldState } from './model';
+import { StarFieldModel } from './model';
 import { StarFieldWidget } from './view';
 
 const Params = Object.freeze({
@@ -14,7 +14,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: StarFieldState;
+  let model: StarFieldModel;
   let widget: StarFieldWidget;
 
   context.setup = function () {
@@ -24,14 +24,14 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = StarFieldState.random({
+    model = StarFieldModel.random({
       bounds: Size2D.of(context),
       radius: Params.STAR_RADIUS,
       count: Params.STAR_COUNT,
     });
 
     widget = new StarFieldWidget(context).also(it => {
-      it.state = state;
+      it.model = model;
     });
   }
 
@@ -43,7 +43,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.forward();
+    model.forward();
   }
 
   context.mouseClicked = function () {
@@ -67,7 +67,7 @@ export function sketch(context: p5) {
       y: context.mouseY,
     });
 
-    state.speed = Numeric.map({
+    model.speed = Numeric.map({
       value: Point2D.dist(mousePoint, canvasCenter),
       domain: Numeric.range(0, Point2D.dist(canvasOrigin, canvasCenter)),
       target: Numeric.range(Params.STAR_SPEED_MIN, Params.STAR_SPEED_MAX),

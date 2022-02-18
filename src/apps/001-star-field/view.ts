@@ -2,10 +2,10 @@ import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { StarFieldState, StarState } from './model';
+import { StarFieldModel, StarModel } from './model';
 
 class StarWidget {
-  public state: StarState | undefined;
+  public model: StarModel | undefined;
 
   constructor(
     public readonly context: p5,
@@ -19,37 +19,37 @@ class StarWidget {
   }
 
   draw(): void {
-    const state = this.state;
-    if (!state) {
+    const model = this.model;
+    if (!model) {
       return;
     }
 
     const currentX = Numeric.map({
-      value: state.center.x / state.center.z,
+      value: model.center.x / model.center.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.width)
     });
 
     const currentY = Numeric.map({
-      value: state.center.y / state.center.z,
+      value: model.center.y / model.center.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.height)
     });
 
     const currentRadius = Numeric.map({
-      value: state.center.z,
+      value: model.center.z,
       domain: Numeric.range(this.context.width, 0),
-      target: Numeric.range(0, state.radius)
+      target: Numeric.range(0, model.radius)
     });
 
     const originX = Numeric.map({
-      value: state.center.x / state.origin.z,
+      value: model.center.x / model.origin.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.width),
     });
 
     const originY = Numeric.map({
-      value: state.center.y / state.origin.z,
+      value: model.center.y / model.origin.z,
       domain: Numeric.range(0, 1),
       target: Numeric.range(0, this.context.height)
     });
@@ -66,7 +66,7 @@ class StarWidget {
 }
 
 export class StarFieldWidget {
-  public state: StarFieldState | undefined;
+  public model: StarFieldModel | undefined;
 
   private _star: StarWidget;
 
@@ -82,8 +82,8 @@ export class StarFieldWidget {
   }
 
   draw() {
-    const state = this.state;
-    if (!state) {
+    const model = this.model;
+    if (!model) {
       return;
     }
 
@@ -92,8 +92,8 @@ export class StarFieldWidget {
       this.context.height / 2,
     );
 
-    state.stars.forEach(it => {
-      this._star.state = it;
+    model.stars.forEach(it => {
+      this._star.model = it;
       this._star.draw();
     });
   }

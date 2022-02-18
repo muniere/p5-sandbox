@@ -2,7 +2,7 @@ import { Arrays } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { Size as Size2D } from '../../lib/graphics2d';
 
-export class StarState {
+export class StarModel {
   public center: Point3D;
   public speed: number;
 
@@ -17,8 +17,8 @@ export class StarState {
   static create({center, radius}: {
     center: Point3D,
     radius: number,
-  }): StarState {
-    return new StarState(center, radius);
+  }): StarModel {
+    return new StarModel(center, radius);
   }
 
   forward(duration?: number): void {
@@ -38,9 +38,9 @@ export class StarState {
   }
 }
 
-export class StarFieldState {
+export class StarFieldModel {
   constructor(
-    public stars: StarState[],
+    public stars: StarModel[],
   ) {
     // no-op
   }
@@ -49,9 +49,9 @@ export class StarFieldState {
     bounds: Size2D,
     radius: number,
     count: number,
-  }): StarFieldState {
+  }): StarFieldModel {
     const stars = Arrays.generate(count, () => {
-      return StarState.create({
+      return StarModel.create({
         center: Point3D.of({
           x: Math.floor(bounds.width * (Math.random() - 0.5)),
           y: Math.floor(bounds.height * (Math.random() - 0.5)),
@@ -60,7 +60,7 @@ export class StarFieldState {
         radius: radius,
       });
     });
-    return new StarFieldState(stars);
+    return new StarFieldModel(stars);
   }
 
   set speed(speed: number) {
