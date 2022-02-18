@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { ChainState, CircleState, PathState, WorldState } from './model';
 
@@ -25,41 +26,39 @@ export class CircleWidget {
       return;
     }
 
-    this.context.push()
-
     const pointCenter = state.epicycleCenter;
 
-    if (this.trackWeight > 0) {
-      this.context.stroke(state.color);
-      this.context.strokeWeight(this.trackWeight);
-      this.context.noFill();
+    Context.scope(this.context, $ => {
+      if (this.trackWeight > 0) {
+        $.stroke(state.color);
+        $.strokeWeight(this.trackWeight);
+        $.noFill();
 
-      this.context.circle(
-        state.center.x,
-        state.center.y,
-        state.radius * 2
-      );
-    }
+        $.circle(
+          state.center.x,
+          state.center.y,
+          state.radius * 2
+        );
+      }
 
-    if (this.handWeight > 0) {
-      this.context.stroke(state.color);
-      this.context.strokeWeight(this.handWeight)
-      this.context.noFill();
+      if (this.handWeight > 0) {
+        $.stroke(state.color);
+        $.strokeWeight(this.handWeight)
+        $.noFill();
 
-      this.context.line(
-        state.center.x, state.center.y,
-        pointCenter.x, pointCenter.y
-      );
-    }
+        $.line(
+          state.center.x, state.center.y,
+          pointCenter.x, pointCenter.y
+        );
+      }
 
-    if (this.pointRadius) {
-      this.context.noStroke();
-      this.context.fill(state.color);
+      if (this.pointRadius) {
+        $.noStroke();
+        $.fill(state.color);
 
-      this.context.circle(pointCenter.x, pointCenter.y, this.pointRadius);
-    }
-
-    this.context.pop();
+        $.circle(pointCenter.x, pointCenter.y, this.pointRadius);
+      }
+    });
   }
 }
 
@@ -91,22 +90,20 @@ export class ChainWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.translate(this.origin.x, this.origin.y);
 
-    this.context.translate(this.origin.x, this.origin.y);
+      state.circles.forEach((circle, i) => {
+        const widget = new CircleWidget($).also(it => {
+          it.state = circle;
+          it.trackWeight = i == 0 ? 1 : 0;
+          it.handWeight = 1;
+          it.pointRadius = 1;
+        });
 
-    state.circles.forEach((circle, i) => {
-      const widget = new CircleWidget(this.context).also(it => {
-        it.state = circle;
-        it.trackWeight = i == 0 ? 1 : 0;
-        it.handWeight = 1;
-        it.pointRadius = 1;
+        widget.draw();
       });
-
-      widget.draw();
     });
-
-    this.context.pop();
   }
 }
 
@@ -153,22 +150,21 @@ export class PathWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.noFill();
+      $.stroke(state.color);
 
-    this.context.noFill();
-    this.context.stroke(state.color);
+      $.beginShape();
 
-    this.context.beginShape();
+      state.values.forEach((value, i) => {
+        const x = this.origin.x + i * this.scaleX;
+        const y = this.origin.y + value * this.scaleY;
 
-    state.values.forEach((value, i) => {
-      const x = this.origin.x + i * this.scaleX;
-      const y = this.origin.y + value * this.scaleY;
+        $.vertex(x, y);
+      });
 
-      this.context.vertex(x, y);
+      $.endShape();
     });
-
-    this.context.endShape();
-    this.context.pop();
   }
 }
 
@@ -189,10 +185,10 @@ export class LineWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.stroke(this.color);
-    this.context.line(this.start.x, this.start.y, this.end.x, this.end.y);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
+      $.line(this.start.x, this.start.y, this.end.x, this.end.y);
+    });
   }
 }
 
@@ -236,14 +232,12 @@ export class WorldWidget {
       this.line.end = end.with({y: start?.y});
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.translate(this.origin.x, this.origin.y);
 
-    this.context.translate(this.origin.x, this.origin.y);
-
-    this.chain.draw();
-    this.path.draw()
-    this.line.draw();
-
-    this.context.pop();
+      this.chain.draw();
+      this.path.draw()
+      this.line.draw();
+    });
   }
 }

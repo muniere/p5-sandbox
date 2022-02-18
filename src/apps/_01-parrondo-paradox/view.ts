@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point, Rect } from '../../lib/graphics2d';
 import { GameType, ProgressState, SimulationState } from './model';
 
@@ -36,50 +37,47 @@ export class SimulationWidget {
       y: this.frame.origin.y + this.frame.size.height / 2,
     });
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      // axis
+      $.stroke(this.axisColor);
+      $.strokeWeight(this.axisWeight);
+      $.noFill();
 
-    // axis
-    this.context.stroke(this.axisColor);
-    this.context.strokeWeight(this.axisWeight);
-    this.context.noFill();
+      $.line(
+        this.frame.left, this.frame.top,
+        this.frame.left, this.frame.bottom
+      );
+      $.line(
+        this.frame.left, base.y,
+        this.frame.right, base.y,
+      );
 
-    this.context.line(
-      this.frame.left, this.frame.top,
-      this.frame.left, this.frame.bottom
-    );
-    this.context.line(
-      this.frame.left, base.y,
-      this.frame.right, base.y,
-    );
+      const simulation = this.state;
+      if (!simulation) {
+        return;
+      }
 
-    const simulation = this.state;
-    if (!simulation) {
-      this.context.pop();
-      return;
-    }
+      const points = simulation.history.map(
+        (value, i) => Point.of({
+          x: base.x + i * this.scaleX,
+          y: base.y - value * this.scaleY,
+        })
+      );
 
-    const points = simulation.history.map(
-      (value, i) => Point.of({
-        x: base.x + i * this.scaleX,
-        y: base.y - value * this.scaleY,
-      })
-    );
+      // stroke
+      $.stroke(this.strokeColor);
+      $.strokeWeight(this.strokeWeight);
+      $.noFill();
 
-    // stroke
-    this.context.stroke(this.strokeColor);
-    this.context.strokeWeight(this.strokeWeight);
-    this.context.noFill();
+      Context.shape($, 'open', $$ => {
+        points.forEach(it => $$.vertex(it.x, it.y));
+      });
 
-    this.context.beginShape();
-    points.forEach(it => this.context.vertex(it.x, it.y));
-    this.context.endShape();
-
-    // points
-    this.context.noStroke();
-    this.context.fill(this.pointColor);
-    points.forEach(it => this.context.circle(it.x, it.y, this.pointRadius * 2));
-
-    this.context.pop();
+      // points
+      $.noStroke();
+      $.fill(this.pointColor);
+      points.forEach(it => $.circle(it.x, it.y, this.pointRadius * 2));
+    });
   }
 }
 
@@ -113,17 +111,17 @@ export class ProgressWidget {
       return;
     }
 
-    this.context.push();
-    this.context.noStroke();
-    this.context.fill(this.textColor);
-    this.context.textAlign(this.context.LEFT, this.context.TOP)
-    this.context.textSize(this.textSize);
-    this.context.text(
-      this.format(state),
-      this.frame.left, this.frame.top,
-      this.frame.right, this.frame.bottom,
-    );
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.noStroke();
+      $.fill(this.textColor);
+      $.textAlign($.LEFT, $.TOP)
+      $.textSize(this.textSize);
+      $.text(
+        this.format(state),
+        this.frame.left, this.frame.top,
+        this.frame.right, this.frame.bottom,
+      );
+    });
   }
 
   private format(state: ProgressState): string {

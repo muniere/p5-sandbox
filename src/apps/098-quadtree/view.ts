@@ -1,4 +1,5 @@
 import p5 from 'p5';
+import { Context } from '../../lib/process';
 import { DivisionState, BallState, BallTag, TreeState, WorldState } from './model';
 
 export class MaterialWidget {
@@ -16,23 +17,21 @@ export class MaterialWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      switch (state.tag) {
+        case BallTag.normal:
+          state.fillColor ? $.fill(state.fillColor) : $.noFill();
+          state.strokeColor ? $.stroke(state.strokeColor) : $.noStroke();
+          break;
 
-    switch (state.tag) {
-      case BallTag.normal:
-        state.fillColor ? this.context.fill(state.fillColor) : this.context.noFill();
-        state.strokeColor ? this.context.stroke(state.strokeColor) : this.context.noStroke();
-        break;
+        case BallTag.focused:
+          $.fill('#ff1111');
+          $.noStroke();
+          break;
+      }
 
-      case BallTag.focused:
-        this.context.fill('#ff1111');
-        this.context.noStroke();
-        break;
-    }
-
-    this.context.circle(state.center.x, state.center.y, state.radius * 2);
-
-    this.context.pop();
+      $.circle(state.center.x, state.center.y, state.radius * 2);
+    });
   }
 }
 
@@ -56,15 +55,13 @@ export class DivisionWidget {
     }
 
     if (this.strokeColor || this.fillColor) {
-      this.context.push();
+      Context.scope(this.context, $ => {
+        const boundary = state.boundary;
 
-      const boundary = state.boundary;
-
-      this.strokeColor ? this.context.stroke(this.strokeColor) : this.context.noStroke();
-      this.fillColor ? this.context.fill(this.fillColor) : this.context.noFill();
-      this.context.rect(boundary.left, boundary.top, boundary.width, boundary.height);
-
-      this.context.pop();
+        this.strokeColor ? $.stroke(this.strokeColor) : $.noStroke();
+        this.fillColor ? $.fill(this.fillColor) : $.noFill();
+        $.rect(boundary.left, boundary.top, boundary.width, boundary.height);
+      });
     }
 
     state.materials.forEach(it => {

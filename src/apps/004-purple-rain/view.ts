@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { DropState, RainState } from './model';
 
@@ -19,11 +20,13 @@ export class DropWidget {
   }
 
   draw() {
-    this.context.stroke(this.state.color);
-    this.context.line(
-      this.point.x, this.point.y,
-      this.point.x, this.point.y + this.length,
-    );
+    Context.scope(this.context, $ => {
+      $.stroke(this.state.color);
+      $.line(
+        this.point.x, this.point.y,
+        this.point.x, this.point.y + this.length,
+      );
+    });
   }
 }
 

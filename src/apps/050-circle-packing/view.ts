@@ -1,7 +1,8 @@
 import * as p5 from 'p5';
 import { Image } from 'p5';
-import { CircleState, CrowdState, WorldState } from './model';
+import { Context } from '../../lib/process';
 import { Point, Rect } from '../../lib/graphics2d';
+import { CircleState, CrowdState, WorldState } from './model';
 
 export class CircleWidget {
   constructor(
@@ -32,25 +33,23 @@ export class CircleWidget {
   }
 
   draw() {
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.strokeWeight(this.strokeWeight);
 
-    this.context.strokeWeight(this.strokeWeight);
+      if (this.strokeColor) {
+        $.stroke(this.strokeColor);
+      } else {
+        $.noStroke();
+      }
 
-    if (this.strokeColor) {
-      this.context.stroke(this.strokeColor);
-    } else {
-      this.context.noStroke();
-    }
+      if (this.fillColor) {
+        $.fill(this.fillColor);
+      } else {
+        $.noFill();
+      }
 
-    if (this.fillColor) {
-      this.context.fill(this.fillColor);
-    } else {
-      this.context.noFill();
-    }
-
-    this.context.circle(this.center.x, this.center.y, this.radius * 2);
-
-    this.context.pop();
+      $.circle(this.center.x, this.center.y, this.radius * 2);
+    });
   }
 }
 
@@ -89,9 +88,11 @@ export class ImageWidget {
   }
 
   draw() {
-    this.context.tint(255, 255 * this.alpha);
-    this.context.image(this.image, this.frame.left, this.frame.top, this.frame.width, this.frame.height);
-    this.context.noTint();
+    Context.scope(this.context, $ => {
+      $.tint(255, 255 * this.alpha);
+      $.image(this.image, this.frame.left, this.frame.top, this.frame.width, this.frame.height);
+      $.noTint();
+    });
   }
 }
 

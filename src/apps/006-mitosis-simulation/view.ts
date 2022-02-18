@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { CellState, WorldState } from './model';
 
@@ -19,13 +20,11 @@ export class CellWidget {
   }
 
   draw() {
-    this.context.push();
-
-    this.context.fill(this.state.fillColor);
-    this.context.stroke(this.state.strokeColor);
-    this.context.ellipse(this.center.x, this.center.y, this.radius * 2);
-
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.fill(this.state.fillColor);
+      $.stroke(this.state.strokeColor);
+      $.ellipse(this.center.x, this.center.y, this.radius * 2);
+    });
   }
 }
 

@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Spot } from '../../lib/dmath';
 import { Size } from '../../lib/graphics2d';
 import { NodeKind, NodeState, Solver } from './model';
@@ -22,19 +23,17 @@ export class NodeWidget {
   }
 
   draw() {
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.noStroke();
+      $.fill(this.color);
 
-    this.context.noStroke();
-    this.context.fill(this.color);
-
-    this.context.rect(
-      this.spot.column * this.size.width,
-      this.spot.row * this.size.height,
-      this.size.width - 1,
-      this.size.height - 1,
-    );
-
-    this.context.pop();
+      $.rect(
+        this.spot.column * this.size.width,
+        this.spot.row * this.size.height,
+        this.size.width - 1,
+        this.size.height - 1,
+      );
+    });
   }
 }
 

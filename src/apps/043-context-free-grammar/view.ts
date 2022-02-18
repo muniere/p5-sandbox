@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point, Size } from '../../lib/graphics2d';
 import { Machine } from './model';
 
@@ -22,43 +23,38 @@ export class BoxListWidget {
   }
 
   draw() {
-    const context = this.context;
+    Context.scope(this.context, $ => {
+      $.stroke(0);
+      $.textAlign($.CENTER);
+      $.textStyle($.NORMAL);
 
-    context.push();
+      $.translate(this.origin.x, this.origin.y);
 
-    context.stroke(0);
-    context.textAlign(context.CENTER);
-    context.textStyle(context.NORMAL);
+      if (this.values.length > 0) {
+        let origin = new p5.Vector();
+        let size = this.boxSize;
 
-    context.translate(this.origin.x, this.origin.y);
+        this.values.forEach((value) => {
+          $.rect(origin.x, origin.y, size.width, size.height);
+          $.text(value, origin.x + size.width / 2, origin.y + size.height / 2 + 5);
 
-    if (this.values.length > 0) {
-      let origin = new p5.Vector();
-      let size = this.boxSize;
+          origin = origin.copy().add(size.width);
 
-      this.values.forEach((value) => {
-        context.rect(origin.x, origin.y, size.width, size.height);
-        context.text(value, origin.x + size.width / 2, origin.y + size.height / 2 + 5);
+          if (origin.x + size.width > $.width) {
+            origin = origin.copy().set(0, origin.y + size.height);
+          }
+        });
 
-        origin = origin.copy().add(size.width);
+      } else {
+        const origin = new p5.Vector();
+        const size = this.boxSize;
 
-        if (origin.x + size.width > context.width) {
-          origin = origin.copy().set(0, origin.y + size.height);
-        }
-      });
-
-    } else {
-      const origin = new p5.Vector();
-      const size = this.boxSize;
-
-      // @ts-ignore
-      context.drawingContext.setLineDash([5, 5]);
-      context.rect(origin.x, origin.y, size.width, size.height);
-      context.text('φ', origin.x + size.width / 2, origin.y + size.height / 2 + 5);
-    }
-
-
-    context.pop();
+        // @ts-ignore
+        $.drawingContext.setLineDash([5, 5]);
+        $.rect(origin.x, origin.y, size.width, size.height);
+        $.text('φ', origin.x + size.width / 2, origin.y + size.height / 2 + 5);
+      }
+    });
   }
 }
 
@@ -85,14 +81,16 @@ export class MachineWidget {
   }
 
   draw() {
-    this.context.text(`Stack (${this.machine.stack.length})`, 10, 20);
+    Context.scope(this.context, $ => {
+      $.text(`Stack (${this.machine.stack.length})`, 10, 20);
 
-    this.stackWidget.values = this.machine.stack;
-    this.stackWidget.draw();
+      this.stackWidget.values = this.machine.stack;
+      this.stackWidget.draw();
 
-    this.context.text(`Result (${this.machine.result.length})`, 10, 100);
+      $.text(`Result (${this.machine.result.length})`, 10, 100);
 
-    this.listWidget.values = this.machine.result;
-    this.listWidget.draw();
+      this.listWidget.values = this.machine.result;
+      this.listWidget.draw();
+    });
   }
 }

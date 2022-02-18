@@ -1,4 +1,5 @@
 import p5 from 'p5';
+import { Context } from '../../lib/process';
 import { NumberRange, NumberRangeMap } from '../../lib/stdlib';
 import { BallState, BezierCurve, WorldState } from './model';
 
@@ -28,14 +29,12 @@ export class BallWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.fill(this.color);
+      $.noStroke();
 
-    this.context.fill(this.color);
-    this.context.noStroke();
-
-    this.context.circle(state.center.x, state.center.y, state.radius);
-
-    this.context.pop();
+      $.circle(state.center.x, state.center.y, state.radius);
+    });
   }
 }
 
@@ -62,50 +61,46 @@ export class BezierWidget {
     }
 
     // intermediate
-    this.context.push();
+    const points = Context.scope(this.context, $ => {
+      this.context.colorMode(this.context.HSB, 360, 100, 100, 100);
+      this.context.noFill();
 
-    this.context.colorMode(this.context.HSB, 360, 100, 100, 100);
-    this.context.noFill();
+      const hueMap = NumberRangeMap.of({
+        domain: new NumberRange(state.start.x, state.stop.x),
+        target: new NumberRange(0, 360),
+      });
 
-    const hueMap = NumberRangeMap.of({
-      domain: new NumberRange(state.start.x, state.stop.x),
-      target: new NumberRange(0, 360),
+      return state.compute({
+        onCompute: (p1, p2) => {
+          const hue = hueMap.apply((p1.x + p2.x) / 2);
+          const color = this.context.color(hue, 100, 100);
+          $.stroke(color);
+          $.line(p1.x, p1.y, p2.x, p2.y);
+        }
+      });
     });
-
-    const points = state.compute({
-      onCompute: (p1, p2) => {
-        const hue = hueMap.apply((p1.x + p2.x) / 2);
-        const color = this.context.color(hue, 100, 100);
-        this.context.stroke(color);
-        this.context.line(p1.x, p1.y, p2.x, p2.y);
-      }
-    });
-
-    this.context.pop();
 
     // result
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
+      $.noFill();
 
-    this.context.stroke(this.color);
-    this.context.noFill();
+      switch (this.mode) {
+        case PathMode.discrete:
+          points.forEach(it => {
+            $.point(it.x, it.y);
+          });
+          break;
 
-    switch (this.mode) {
-      case PathMode.discrete:
-        points.forEach(it => {
-          this.context.point(it.x, it.y);
-        });
-        break;
-
-      case PathMode.continuous:
-        this.context.beginShape();
-        points.forEach(it => {
-          this.context.vertex(it.x, it.y);
-        });
-        this.context.endShape();
-        break;
-    }
-
-    this.context.pop();
+        case PathMode.continuous:
+          Context.shape($, 'open', $$ => {
+            points.forEach(it => {
+              $$.vertex(it.x, it.y);
+            });
+          });
+          break;
+      }
+    });
   }
 }
 
@@ -141,14 +136,12 @@ export class WorldWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      this._bezier.also(it => it.state = state.bezier).draw();
 
-    this._bezier.also(it => it.state = state.bezier).draw();
-
-    state.balls.forEach(ball => {
-      this._ball.also(it => it.state = ball).draw();
+      state.balls.forEach(ball => {
+        this._ball.also(it => it.state = ball).draw();
+      });
     });
-
-    this.context.pop();
   }
 }

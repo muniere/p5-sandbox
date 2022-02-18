@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { TreeState } from './model';
 
 export class TreeWidget {
@@ -12,13 +13,15 @@ export class TreeWidget {
   }
 
   draw() {
-    this.context.stroke(this.color);
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
 
-    this.state.walk((branch) => {
-      this.context.line(
-        branch.begin.x, branch.begin.y,
-        branch.end.x, branch.end.y,
-      );
-    })
+      this.state.walk((branch) => {
+        $.line(
+          branch.begin.x, branch.begin.y,
+          branch.end.x, branch.end.y,
+        );
+      })
+    });
   }
 }

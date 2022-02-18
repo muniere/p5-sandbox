@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { ChainWidget, PathWidget } from '../shared/view';
 import { ComplexWorldState } from './model';
@@ -31,12 +32,10 @@ export class ComplexWorldWidget {
     this.chain.state = state.chain;
     this.path.state = state.path;
 
-    this.context.push();
-
-    this.context.translate(this.origin.x, this.origin.y);
-    this.chain.draw();
-    this.path.draw();
-
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.translate(this.origin.x, this.origin.y);
+      this.chain.draw();
+      this.path.draw();
+    });
   }
 }

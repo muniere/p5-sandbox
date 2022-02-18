@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { StarFieldState, StarState } from './model';
@@ -54,16 +55,14 @@ class StarWidget {
       target: Numeric.range(0, this.context.height)
     });
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.fill(255);
+      $.noStroke();
+      $.ellipse(currentX, currentY, currentRadius, currentRadius);
 
-    this.context.fill(255);
-    this.context.noStroke();
-    this.context.ellipse(currentX, currentY, currentRadius, currentRadius);
-
-    this.context.stroke(255, 64);
-    this.context.line(originX, originY, currentX, currentY);
-
-    this.context.pop();
+      $.stroke(255, 64);
+      $.line(originX, originY, currentX, currentY);
+    })
   }
 }
 

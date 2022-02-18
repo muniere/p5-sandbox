@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../../lib/process';
 import { ChainState, CircleState, PathState } from './model';
 
 export class CircleWidget {
@@ -25,41 +26,39 @@ export class CircleWidget {
       return;
     }
 
-    this.context.push()
-
     const pointCenter = state.epicycleCenter;
 
-    if (this.trackWeight > 0) {
-      this.context.stroke(state.color);
-      this.context.strokeWeight(this.trackWeight);
-      this.context.noFill();
+    Context.scope(this.context, $ => {
+      if (this.trackWeight > 0) {
+        $.stroke(state.color);
+        $.strokeWeight(this.trackWeight);
+        $.noFill();
 
-      this.context.circle(
-        state.center.x,
-        state.center.y,
-        state.radius * 2
-      );
-    }
+        $.circle(
+          state.center.x,
+          state.center.y,
+          state.radius * 2
+        );
+      }
 
-    if (this.handWeight > 0) {
-      this.context.stroke(state.color);
-      this.context.strokeWeight(this.handWeight)
-      this.context.noFill();
+      if (this.handWeight > 0) {
+        $.stroke(state.color);
+        $.strokeWeight(this.handWeight)
+        $.noFill();
 
-      this.context.line(
-        state.center.x, state.center.y,
-        pointCenter.x, pointCenter.y
-      );
-    }
+        $.line(
+          state.center.x, state.center.y,
+          pointCenter.x, pointCenter.y
+        );
+      }
 
-    if (this.pointRadius) {
-      this.context.noStroke();
-      this.context.fill(state.color);
+      if (this.pointRadius) {
+        $.noStroke();
+        $.fill(state.color);
 
-      this.context.circle(pointCenter.x, pointCenter.y, this.pointRadius);
-    }
-
-    this.context.pop();
+        $.circle(pointCenter.x, pointCenter.y, this.pointRadius);
+      }
+    });
   }
 }
 
@@ -120,19 +119,16 @@ export class PathWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      this.context.noFill();
+      this.context.stroke(state.color);
 
-    this.context.noFill();
-    this.context.stroke(state.color);
-
-    this.context.beginShape();
-
-    state.plots.forEach((value) => {
-      this.context.vertex(value.x, value.y);
+      Context.shape($, 'closed', $$ => {
+        state.plots.forEach((value) => {
+          $$.vertex(value.x, value.y);
+        });
+      });
     });
-
-    this.context.endShape();
-    this.context.pop();
   }
 }
 

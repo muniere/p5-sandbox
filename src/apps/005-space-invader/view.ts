@@ -1,4 +1,5 @@
 import * as p5 from "p5";
+import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { EnemyState, GameState, MissileState, ShipState } from './model';
 
@@ -19,11 +20,11 @@ export class ShipWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.fill(this.state.color);
-    this.context.rectMode(this.context.CENTER);
-    this.context.square(this.center.x, this.center.y, this.radius);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.fill(this.state.color);
+      $.rectMode($.CENTER);
+      $.square(this.center.x, this.center.y, this.radius);
+    });
   }
 }
 
@@ -48,10 +49,10 @@ export class EnemyWidget {
       return;
     }
 
-    this.context.push();
-    this.context.fill(this.state.color);
-    this.context.ellipse(this.center.x, this.center.y, this.radius);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.fill(this.state.color);
+      $.ellipse(this.center.x, this.center.y, this.radius);
+    });
   }
 }
 
@@ -76,11 +77,11 @@ export class MissileWidget {
       return;
     }
 
-    this.context.push();
-    this.context.noStroke();
-    this.context.fill(this.state.color);
-    this.context.ellipse(this.center.x, this.center.y, this.radius);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.noStroke();
+      $.fill(this.state.color);
+      $.ellipse(this.center.x, this.center.y, this.radius);
+    });
   }
 }
 

@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { PlanetState, SolarSystemState } from './model';
 
@@ -25,8 +26,10 @@ export class PlanetWidget {
   }
 
   draw() {
-    this.context.fill(this.state.color);
-    this.context.circle(this.center.x, this.center.y, this.state.radius * 2);
+    Context.scope(this.context, $ => {
+      $.fill(this.state.color);
+      $.circle(this.center.x, this.center.y, this.state.radius * 2);
+    });
   }
 }
 

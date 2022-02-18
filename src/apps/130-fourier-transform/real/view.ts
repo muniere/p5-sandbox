@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { ChainWidget, PathWidget } from '../shared/view';
 import { RealWorldState } from './model';
@@ -21,14 +22,14 @@ export class LineWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.stroke(this.color);
-    this.context.strokeWeight(this.weight);
-    this.context.line(
-      this.start.x, this.start.y,
-      this.end.x, this.end.y,
-    );
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
+      $.strokeWeight(this.weight);
+      $.line(
+        this.start.x, this.start.y,
+        this.end.x, this.end.y,
+      );
+    });
   }
 }
 
@@ -71,15 +72,13 @@ export class RealWorldWidget {
     this.yLine.start = state.yChain.last().epicycleCenter;
     this.yLine.end = state.path.last();
 
-    this.context.push();
-
-    this.context.translate(this.origin.x, this.origin.y);
-    this.xChain.draw();
-    this.yChain.draw();
-    this.xLine.draw();
-    this.yLine.draw();
-    this.path.draw();
-
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.translate(this.origin.x, this.origin.y);
+      this.xChain.draw();
+      this.yChain.draw();
+      this.xLine.draw();
+      this.yLine.draw();
+      this.path.draw();
+    });
   }
 }

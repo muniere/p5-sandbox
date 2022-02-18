@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { Spot } from '../../lib/dmath';
 import { WorldState } from './model';
@@ -12,27 +13,27 @@ export class WorldWidget {
   }
 
   draw() {
-    const context = this.context;
     const grid = this.state.grid;
-
-    context.loadPixels();
-
     const valueRange = Numeric.range(0, 255);
 
-    for (let row = 0; row < context.height; row++) {
-      for (let column = 0; column < context.width; column++) {
-        const spot = Spot.of({row, column});
-        const index = (column + row * context.width) * 4;
-        const {a, b} = grid.getValue(spot);
-        const value = 255 - Math.floor((a - b) * 256);
-        const color = valueRange.coerce(value);
-        context.pixels[index + 0] = color;
-        context.pixels[index + 1] = color;
-        context.pixels[index + 2] = color;
-        context.pixels[index + 3] = 255;
-      }
-    }
+    Context.scope(this.context, $ => {
+      $.loadPixels();
 
-    context.updatePixels();
+      for (let row = 0; row < $.height; row++) {
+        for (let column = 0; column < $.width; column++) {
+          const spot = Spot.of({row, column});
+          const index = (column + row * $.width) * 4;
+          const {a, b} = grid.getValue(spot);
+          const value = 255 - Math.floor((a - b) * 256);
+          const color = valueRange.coerce(value);
+          $.pixels[index + 0] = color;
+          $.pixels[index + 1] = color;
+          $.pixels[index + 2] = color;
+          $.pixels[index + 3] = 255;
+        }
+      }
+
+      $.updatePixels();
+    });
   }
 }

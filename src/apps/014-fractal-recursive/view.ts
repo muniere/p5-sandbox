@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 
 export class TreeWidget {
   public angle: number = Math.PI / 4;
@@ -26,21 +27,23 @@ export class TreeWidget {
   }
 
   private _draw(length: number) {
-    this.context.line(0, 0, 0, -length);
-    this.context.translate(0, -length);
+    Context.scope(this.context, $ => {
+      $.line(0, 0, 0, -length);
+      $.translate(0, -length);
+    });
 
     if (length < this.limit) {
       return;
     }
 
-    this.context.push();
-    this.context.rotate(this.angle);
-    this._draw(length * this.scale);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.rotate(this.angle);
+      this._draw(length * this.scale);
+    });
 
-    this.context.push();
-    this.context.rotate(-this.angle);
-    this._draw(length * this.scale);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.rotate(-this.angle);
+      this._draw(length * this.scale);
+    });
   }
 }

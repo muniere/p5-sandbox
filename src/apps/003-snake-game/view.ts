@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { FoodState, GameState, SnakeState } from './model';
 
 class SnakeWidget {
@@ -18,11 +19,13 @@ class SnakeWidget {
   }
 
   draw() {
-    this.context.fill(this.color);
+    Context.scope(this.context, $ => {
+      $.fill(this.color);
 
-    this.state.body.forEach(
-      it => this.context.square(it.x, it.y, this.scale)
-    );
+      this.state.body.forEach(
+        it => $.square(it.x, it.y, this.scale)
+      );
+    })
   }
 }
 
@@ -51,8 +54,10 @@ class FoodWidget {
   }
 
   draw() {
-    this.context.fill(this.color);
-    this.context.square(this.x, this.y, this.scale);
+    Context.scope(this.context, $ => {
+      $.fill(this.color);
+      $.square(this.x, this.y, this.scale);
+    });
   }
 }
 

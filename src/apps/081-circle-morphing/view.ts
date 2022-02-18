@@ -1,5 +1,6 @@
 import * as p5 from 'p5';
 import { WorldState } from './model';
+import { Context } from '../../lib/process';
 
 export class WorldWidget {
   public color: string = '#FFFFFF';
@@ -14,17 +15,15 @@ export class WorldWidget {
   draw() {
     const path = this.state.path();
 
-    this.context.push();
-    this.context.beginShape();
+    Context.scope(this.context, $ => {
+      $.noFill();
+      $.stroke(this.color);
 
-    this.context.noFill();
-    this.context.stroke(this.color);
-
-    path.points.forEach(it => {
-      this.context.vertex(it.x, it.y);
+      Context.shape($, 'closed', $$ => {
+        path.points.forEach(it => {
+          $$.vertex(it.x, it.y);
+        });
+      });
     });
-
-    this.context.endShape(this.context.CLOSE);
-    this.context.pop();
   }
 }

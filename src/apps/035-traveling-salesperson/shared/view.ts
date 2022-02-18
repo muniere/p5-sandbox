@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../../lib/process';
 import { Point, Rect, Size } from '../../../lib/graphics2d';
 import { PathState, ProgressState } from './model';
 
@@ -18,37 +19,28 @@ export class PathWidget {
   }
 
   draw() {
-    this.drawNodes();
-    this.drawEdges();
-  }
+    // nodes
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
+      $.fill(this.color);
 
-  private drawNodes() {
-    this.context.push();
+      this.points.forEach(
+        it => this.context.ellipse(it.x, it.y, 8)
+      );
+    });
 
-    this.context.stroke(this.color);
-    this.context.fill(this.color);
+    // edges
+    Context.scope(this.context, $ => {
+      $.stroke(this.color);
+      $.strokeWeight(this.weight);
+      $.noFill();
 
-    this.points.forEach(
-      it => this.context.ellipse(it.x, it.y, 8)
-    );
-
-    this.context.pop();
-  }
-
-  private drawEdges() {
-    this.context.push();
-
-    this.context.stroke(this.color);
-    this.context.strokeWeight(this.weight);
-    this.context.noFill();
-
-    this.context.beginShape();
-    this.points.forEach(
-      it => this.context.vertex(it.x, it.y)
-    );
-    this.context.endShape();
-
-    this.context.pop();
+      Context.shape($, 'open', $$ => {
+        this.points.forEach(
+          it => $$.vertex(it.x, it.y)
+        );
+      });
+    });
   }
 }
 

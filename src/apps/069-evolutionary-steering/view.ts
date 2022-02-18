@@ -1,5 +1,6 @@
 import * as p5 from 'p5';
 import { Color } from 'p5';
+import { Context } from '../../lib/process';
 import { ItemState, ItemType, VehicleState, WorldState } from './model';
 import { Flags } from './debug';
 
@@ -34,15 +35,13 @@ export class ItemWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.fill(this.color(state));
+      $.noStroke();
 
-    this.context.fill(this.color(state));
-    this.context.noStroke();
-
-    this.context.translate(state.center.x, state.center.y);
-    this.context.circle(0, 0, state.radius * 2);
-
-    this.context.pop();
+      $.translate(state.center.x, state.center.y);
+      $.circle(0, 0, state.radius * 2);
+    });
   }
 
   private color(item: ItemState): Color {
@@ -77,37 +76,35 @@ export class VehicleWidget {
       return;
     }
 
-    this.context.push();
+    Context.scope(this.context, $ => {
+      $.translate(state.center.x, state.center.y);
+      $.rotate(state.velocity.vector.heading() + Math.PI / 2);
 
-    this.context.translate(state.center.x, state.center.y);
-    this.context.rotate(state.velocity.vector.heading() + Math.PI / 2);
+      $.fill(this.color(state));
+      $.noStroke();
 
-    this.context.fill(this.color(state));
-    this.context.noStroke();
+      $.beginShape();
+      $.vertex(0, -state.radius);
+      $.vertex(-state.radius / 2, state.radius);
+      $.vertex(state.radius / 2, state.radius);
+      $.endShape($.CLOSE);
 
-    this.context.beginShape();
-    this.context.vertex(0, -state.radius);
-    this.context.vertex(-state.radius / 2, state.radius);
-    this.context.vertex(state.radius / 2, state.radius);
-    this.context.endShape(this.context.CLOSE);
+      if (Flags.debug) {
+        $.stroke(VehiclePalette.body);
+        $.noFill();
+        $.circle(0, 0, state.radius * 2);
 
-    if (Flags.debug) {
-      this.context.stroke(VehiclePalette.body);
-      this.context.noFill();
-      this.context.circle(0, 0, state.radius * 2);
+        $.stroke(ItemPalette.medicine);
+        $.noFill();
+        $.line(0, 0, 0, -state.scoreGenome.reward * 100);
+        $.circle(0, 0, state.senseGenome.reward * 2);
 
-      this.context.stroke(ItemPalette.medicine);
-      this.context.noFill();
-      this.context.line(0, 0, 0, -state.scoreGenome.reward * 100);
-      this.context.circle(0, 0, state.senseGenome.reward * 2);
-
-      this.context.stroke(ItemPalette.poison);
-      this.context.noFill();
-      this.context.line(0, 0, 0, -state.scoreGenome.penalty * 100);
-      this.context.circle(0, 0, state.senseGenome.penalty * 2);
-    }
-
-    this.context.pop();
+        $.stroke(ItemPalette.poison);
+        $.noFill();
+        $.line(0, 0, 0, -state.scoreGenome.penalty * 100);
+        $.circle(0, 0, state.senseGenome.penalty * 2);
+      }
+    });
   }
 
   private color(vehicle: VehicleState): Color {

@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Spot } from '../../lib/dmath';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 import { BoardState, CellState, DrawResult, FixedResult, GameState, Player } from './model';
@@ -20,36 +21,34 @@ export class CellWidget {
   }
 
   draw() {
-    this.context.push();
-
     const diameter = Math.min(this.frame.width, this.frame.height) * 0.4;
     const center = this.frame.center;
 
-    switch (this.state) {
-      case CellState.circle:
-        this.context.circle(center.x, center.y, diameter);
-        break;
+    Context.scope(this.context, $ => {
+      switch (this.state) {
+        case CellState.circle:
+          $.circle(center.x, center.y, diameter);
+          break;
 
-      case CellState.cross:
-        this.context.line(
-          center.x - diameter / 2,
-          center.y - diameter / 2,
-          center.x + diameter / 2,
-          center.y + diameter / 2,
-        )
-        this.context.line(
-          center.x - diameter / 2,
-          center.y + diameter / 2,
-          center.x + diameter / 2,
-          center.y - diameter / 2,
-        )
-        break;
+        case CellState.cross:
+          $.line(
+            center.x - diameter / 2,
+            center.y - diameter / 2,
+            center.x + diameter / 2,
+            center.y + diameter / 2,
+          )
+          $.line(
+            center.x - diameter / 2,
+            center.y + diameter / 2,
+            center.x + diameter / 2,
+            center.y - diameter / 2,
+          )
+          break;
 
-      case CellState.empty:
-        break;
-    }
-
-    this.context.pop();
+        case CellState.empty:
+          break;
+      }
+    });
   }
 }
 
@@ -159,22 +158,24 @@ export class SurfaceWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.fill(this.fillColor)
-    this.context.noStroke();
-    this.context.rect(this.frame.left, this.frame.top, this.frame.width, this.frame.height);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.fill(this.fillColor)
+      $.noStroke();
+      $.rect(this.frame.left, this.frame.top, this.frame.width, this.frame.height);
+    });
 
-    if (!this.text) {
+    const text = this.text;
+    if (!text) {
       return;
     }
 
     const center = this.frame.center;
-    this.context.push();
-    this.context.textSize(32);
-    this.context.textAlign(this.context.CENTER, this.context.CENTER);
-    this.context.text(this.text, center.x, center.y);
-    this.context.pop();
+
+    Context.scope(this.context, $ => {
+      $.textSize(32);
+      $.textAlign(this.context.CENTER, this.context.CENTER);
+      $.text(text, center.x, center.y);
+    });
   }
 }
 

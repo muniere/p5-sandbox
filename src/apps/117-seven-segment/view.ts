@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { DisplayState, SegmentState } from './model';
 
 export class SegmentWidget {
@@ -21,7 +22,6 @@ export class SegmentWidget {
   }
 
   private drawHorizontal() {
-    const context = this.context;
     const cap = this.state.weight / 2;
 
     const left = this.state.origin.x;
@@ -31,27 +31,27 @@ export class SegmentWidget {
     const middle = top + this.state.weight / 2;
     const bottom = top + this.state.weight;
 
+    Context.scope(this.context, $ => {
+      if (this.state.on) {
+        $.fill(this.state.color);
+      } else {
+        $.noFill();
+      }
 
-    if (this.state.on) {
-      context.fill(this.state.color);
-    } else {
-      context.noFill();
-    }
+      $.stroke(this.state.color);
 
-    context.stroke(this.state.color);
-
-    context.beginShape();
-    context.vertex(left, middle);
-    context.vertex(left + cap, top);
-    context.vertex(right - cap, top);
-    context.vertex(right, middle);
-    context.vertex(right - cap, bottom);
-    context.vertex(left + cap, bottom);
-    context.endShape(context.CLOSE);
+      Context.shape($, 'closed', $$ => {
+        $$.vertex(left, middle);
+        $$.vertex(left + cap, top);
+        $$.vertex(right - cap, top);
+        $$.vertex(right, middle);
+        $$.vertex(right - cap, bottom);
+        $$.vertex(left + cap, bottom);
+      });
+    });
   }
 
   private drawVertical() {
-    const context = this.context;
     const cap = this.state.weight / 2;
 
     const left = this.state.origin.x;
@@ -61,22 +61,26 @@ export class SegmentWidget {
     const top = this.state.origin.y;
     const bottom = top + this.state.length;
 
-    context.stroke(this.state.color);
+    Context.scope(this.context, $ => {
+      if (this.state.on) {
+        $.fill(this.state.color);
+      } else {
+        $.noFill();
+      }
 
-    if (this.state.on) {
-      context.fill(this.state.color);
-    } else {
-      context.noFill();
-    }
+      $.stroke(this.state.color);
 
-    context.beginShape();
-    context.vertex(center, top);
-    context.vertex(right, top + cap);
-    context.vertex(right, bottom - cap);
-    context.vertex(center, bottom);
-    context.vertex(left, bottom - cap);
-    context.vertex(left, top + cap);
-    context.endShape(context.CLOSE);
+      Context.shape($, 'closed', $$ => {
+        $$.beginShape();
+        $$.vertex(center, top);
+        $$.vertex(right, top + cap);
+        $$.vertex(right, bottom - cap);
+        $$.vertex(center, bottom);
+        $$.vertex(left, bottom - cap);
+        $$.vertex(left, top + cap);
+        $$.endShape($$.CLOSE);
+      });
+    });
   }
 }
 
@@ -93,9 +97,12 @@ export class DisplayWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.translate(this.state.origin.x, this.state.origin.y);
-    this.children.forEach(it => it.draw());
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.translate(
+        this.state.origin.x,
+        this.state.origin.y,
+      );
+      this.children.forEach(it => it.draw());
+    });
   }
 }

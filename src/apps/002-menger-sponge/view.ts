@@ -1,4 +1,5 @@
 import * as p5 from 'p5';
+import { Context } from '../../lib/process';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { CubeState, SpongeState } from './model';
 
@@ -23,11 +24,11 @@ class CubeWidget {
   }
 
   draw() {
-    this.context.push();
-    this.context.translate(this.center.x, this.center.y, this.center.z);
-    this.context.fill(this.color);
-    this.context.box(this.size);
-    this.context.pop();
+    Context.scope(this.context, $ => {
+      $.translate(this.center.x, this.center.y, this.center.z);
+      $.fill(this.color);
+      $.box(this.size);
+    });
   }
 }
 
@@ -48,14 +49,16 @@ export class SpongeWidget {
   }
 
   draw() {
-    this.context.rotateX(this.rotation);
-    this.context.rotateY(this.rotation * 0.5)
-    this.context.rotateZ(this.rotation * 0.2)
+    Context.scope(this.context, $ => {
+      $.rotateX(this.rotation);
+      $.rotateY(this.rotation * 0.5)
+      $.rotateZ(this.rotation * 0.2)
 
-    this.context.stroke(this.strokeColor)
+      $.stroke(this.strokeColor)
 
-    this.state.cubes.forEach(
-      it => new CubeWidget(this.context, it).draw(),
-    );
+      this.state.cubes.forEach(
+        it => new CubeWidget($, it).draw(),
+      );
+    });
   }
 }
