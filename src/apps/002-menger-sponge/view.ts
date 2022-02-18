@@ -1,6 +1,6 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Context } from '../../lib/process';
-import { CubeModel, SpongeModel } from './model';
+import { ApplicationModel, CubeModel, SpongeModel } from './model';
 
 export class CubeWidget {
   public model: CubeModel | undefined;
@@ -64,5 +64,32 @@ export class SpongeWidget {
         this._cube.draw();
       });
     });
+  }
+}
+
+export class ApplicationWidget {
+  public model: ApplicationModel | undefined;
+
+  private _sponge: SpongeWidget;
+
+  constructor(
+    public readonly context: p5,
+  ) {
+    this._sponge = new SpongeWidget(context);
+  }
+
+  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
+    mutate(this);
+    return this;
+  }
+
+  draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    this._sponge.model = model.sponge;
+    this._sponge.draw();
   }
 }

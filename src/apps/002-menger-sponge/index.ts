@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=LG8ZK-rRkXo
-import * as p5 from 'p5';
-import { SpongeModel } from './model';
-import { SpongeWidget } from './view';
+import p5 from 'p5';
+import { ApplicationModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -12,8 +12,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let model: SpongeModel;
-  let widget: SpongeWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -22,14 +22,14 @@ export function sketch(context: p5) {
       context.WEBGL,
     );
 
-    model = SpongeModel.create({
+    model = ApplicationModel.create({
       size: Params.SPONGE_SIZE,
     }).also(it => {
-      it.fillColor = Params.FILL_COLOR;
-      it.strokeColor = Params.STROKE_COLOR;
+      it.sponge.fillColor = Params.FILL_COLOR;
+      it.sponge.strokeColor = Params.STROKE_COLOR;
     });
 
-    widget = new SpongeWidget(context).also(it => {
+    widget = new ApplicationWidget(context).also(it => {
       it.model = model;
     });
   }
@@ -46,7 +46,7 @@ export function sketch(context: p5) {
     model.rotate(Params.ROTATION_SPEED);
   }
 
-  context.mousePressed = function () {
-    model.cycle();
+  context.mouseClicked = function () {
+    model.update();
   }
 }

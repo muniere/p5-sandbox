@@ -91,3 +91,35 @@ export class SpongeModel {
     );
   }
 }
+
+export class ApplicationModel {
+  private readonly _sponge: SpongeModel;
+
+  constructor(
+    sponge: SpongeModel,
+  ) {
+    this._sponge = sponge;
+  }
+
+  static create({size}: { size: number }): ApplicationModel {
+    const sponge = SpongeModel.create({size});
+    return new ApplicationModel(sponge);
+  }
+
+  also(mutate: (model: ApplicationModel) => void): ApplicationModel {
+    mutate(this);
+    return this;
+  }
+
+  get sponge(): SpongeModel {
+    return this._sponge;
+  }
+
+  update() {
+    this._sponge.cycle();
+  }
+
+  rotate(value: number) {
+    this._sponge.rotation += value;
+  }
+}
