@@ -1,7 +1,6 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
-import { Point as Point3D } from '../../lib/graphics3d';
 import { StarFieldModel, StarModel } from './model';
 
 class StarWidget {

@@ -1,82 +1,99 @@
-import { Arrays } from '../../lib/stdlib';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { Size as Size2D } from '../../lib/graphics2d';
 
 export class StarModel {
-  public center: Point3D;
-  public speed: number;
+  private readonly _radius: number;
+  private readonly _origin: Point3D;
+  private readonly _center: Point3D;
+
+  private _speed: number;
 
   constructor(
-    public readonly origin: Point3D,
-    public readonly radius: number,
+    radius: number,
+    origin: Point3D,
   ) {
-    this.center = origin.copy();
-    this.speed = 0;
+    this._radius = radius;
+    this._origin = origin.copy();
+    this._center = origin.copy();
+    this._speed = 0;
   }
 
   static create({center, radius}: {
     center: Point3D,
     radius: number,
   }): StarModel {
-    return new StarModel(center, radius);
+    return new StarModel(radius, center);
   }
 
-  forward(duration?: number): void {
-    this.center = this.center.minus({
-      z: this.speed * (duration ?? 1),
-    });
+  get radius(): number {
+    return this._radius;
+  }
 
-    if (this.center.z < 0.01) {
+  get origin(): Point3D {
+    return this._origin;
+  }
+
+  get center(): Point3D {
+    return this._center;
+  }
+
+  get speed(): number {
+    return this._speed;
+  }
+
+  set speed(speed: number) {
+    this._speed = speed;
+  }
+
+  update(): void {
+    this._center.minusAssign({z: this._speed});
+
+    if (this._center.z < 0.01) {
       this.reset();
     }
   }
 
   reset(): void {
-    this.center = this.center.with({
-      z: this.origin.z,
-    });
+    this._center.assign({z: this._origin.z});
   }
 }
 
 export class StarFieldModel {
+  private readonly _stars: StarModel[];
+
   constructor(
-    public stars: StarModel[],
+    stars: StarModel[],
   ) {
-    // no-op
+    this._stars = [...stars];
   }
 
-  static random({bounds, radius, count}: {
-    bounds: Size2D,
-    radius: number,
-    count: number,
+  static create({stars}: {
+    stars: StarModel[]
   }): StarFieldModel {
-    const stars = Arrays.generate(count, () => {
-      return StarModel.create({
-        center: Point3D.of({
-          x: Math.floor(bounds.width * (Math.random() - 0.5)),
-          y: Math.floor(bounds.height * (Math.random() - 0.5)),
-          z: Math.random() * bounds.width,
-        }),
-        radius: radius,
-      });
-    });
     return new StarFieldModel(stars);
   }
 
+  get stars(): StarModel[] {
+    return [...this._stars];
+  }
+
   set speed(speed: number) {
-    this.stars.forEach(
+    this._stars.forEach(
       it => it.speed = speed
     );
   }
 
-  forward(duration?: number): void {
-    this.stars.forEach(
-      it => it.forward(duration)
+  push(...stars: StarModel[]) {
+    this._stars.push(...stars);
+  }
+
+  update(): void {
+    this._stars.forEach(
+      it => it.update()
     );
   }
 
   reset(): void {
-    this.stars.forEach(
+    this._stars.forEach(
       it => it.reset()
     );
   }

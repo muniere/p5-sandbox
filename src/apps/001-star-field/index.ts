@@ -1,8 +1,9 @@
 // https://www.youtube.com/watch?v=17WoOqgXsRM
-import * as p5 from 'p5';
-import { Numeric } from '../../lib/stdlib';
-import { Point as Point2D, Size as Size2D } from '../../lib/graphics2d';
-import { StarFieldModel } from './model';
+import p5 from 'p5';
+import { Arrays, Numeric } from '../../lib/stdlib';
+import { Point as Point2D } from '../../lib/graphics2d';
+import { Point as Point3D } from '../../lib/graphics3d';
+import { StarFieldModel, StarModel } from './model';
 import { StarFieldWidget } from './view';
 
 const Params = Object.freeze({
@@ -24,10 +25,17 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = StarFieldModel.random({
-      bounds: Size2D.of(context),
-      radius: Params.STAR_RADIUS,
-      count: Params.STAR_COUNT,
+    model = StarFieldModel.create({
+      stars: Arrays.generate(Params.STAR_COUNT, () => {
+        return StarModel.create({
+          radius: Params.STAR_RADIUS,
+          center: Point3D.of({
+            x: Math.floor(context.width * (Math.random() - 0.5)),
+            y: Math.floor(context.height * (Math.random() - 0.5)),
+            z: Math.random() * context.width,
+          }),
+        });
+      })
     });
 
     widget = new StarFieldWidget(context).also(it => {
@@ -43,7 +51,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    model.forward();
+    model.update();
   }
 
   context.mouseClicked = function () {
