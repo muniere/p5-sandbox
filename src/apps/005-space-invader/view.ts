@@ -1,12 +1,12 @@
 import * as p5 from "p5";
 import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
-import { EnemyState, GameState, MissileState, ShipState } from './model';
+import { EnemyModel, GameModel, MissileModel, ShipModel } from './model';
 
 export class ShipWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: ShipState,
+    public readonly state: ShipModel,
   ) {
     // no-op
   }
@@ -23,7 +23,7 @@ export class ShipWidget {
     Context.scope(this.context, $ => {
       $.fill(this.state.color);
       $.rectMode($.CENTER);
-      $.square(this.center.x, this.center.y, this.radius);
+      $.square(this.center.x, this.center.y, this.radius * 2);
     });
   }
 }
@@ -31,7 +31,7 @@ export class ShipWidget {
 export class EnemyWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: EnemyState,
+    public readonly state: EnemyModel,
   ) {
     // no-op
   }
@@ -51,7 +51,7 @@ export class EnemyWidget {
 
     Context.scope(this.context, $ => {
       $.fill(this.state.color);
-      $.ellipse(this.center.x, this.center.y, this.radius);
+      $.circle(this.center.x, this.center.y, this.radius * 2);
     });
   }
 }
@@ -59,7 +59,7 @@ export class EnemyWidget {
 export class MissileWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: MissileState,
+    public readonly state: MissileModel,
   ) {
     // no-op
   }
@@ -80,7 +80,7 @@ export class MissileWidget {
     Context.scope(this.context, $ => {
       $.noStroke();
       $.fill(this.state.color);
-      $.ellipse(this.center.x, this.center.y, this.radius);
+      $.circle(this.center.x, this.center.y, this.radius * 2);
     });
   }
 }
@@ -88,7 +88,7 @@ export class MissileWidget {
 export class GameWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: GameState,
+    public readonly state: GameModel,
   ) {
     // no-op
   }

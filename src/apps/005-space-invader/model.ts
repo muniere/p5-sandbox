@@ -1,138 +1,136 @@
+import { NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 
-export class ShipState {
+export abstract class ObjectModel {
   public color: string = '#FFFFFF';
 
-  constructor(
-    public center: Point,
-    public radius: number,
-    public speed: number,
+  protected readonly _radius: number;
+  protected readonly _center: Point;
+  protected readonly _speed: number;
+
+  protected _active: boolean = true;
+
+  protected constructor(
+    radius: number,
+    center: Point,
+    speed: number,
   ) {
-    // no-op
+    this._radius = radius;
+    this._center = center;
+    this._speed = speed;
   }
 
-  static create({center, radius, speed}: {
-    center: Point,
-    radius: number,
-    speed: number,
-  }): ShipState {
-    return new ShipState(center, radius, speed);
+  get radius(): number {
+    return this._radius;
+  }
+
+  get top(): number {
+    return this._center.y - this._radius;
+  }
+
+  get bottom(): number {
+    return this._center.y + this._radius;
   }
 
   get left(): number {
-    return this.center.x - this.radius;
+    return this._center.x - this._radius;
   }
 
   get right(): number {
-    return this.center.x - this.radius;
+    return this._center.x + this._radius;
   }
 
-  moveLeft() {
-    this.center = this.center.minus({x: this.speed});
+  get center(): Point {
+    return this._center.copy();
   }
 
-  moveRight() {
-    this.center = this.center.plus({x: this.speed});
+  get speed(): number {
+    return this._speed;
+  }
+
+  get active(): boolean {
+    return this._active;
   }
 
   constraint(bounds: Size) {
-    this.center = this.center.with({
-      x: Math.max(this.radius, Math.min(bounds.width - this.radius, this.center.x)),
-    })
+    const range = new NumberRange(this._radius, bounds.width - this._radius);
+    this._center.assign({x: range.coerce(this._center.x)});
+  }
+
+  hitTest(other: ObjectModel): boolean {
+    return this._active && other._active && Point.dist(this._center, other._center) < (this._radius + other._radius);
   }
 }
 
-export class EnemyState {
-  public color: string = '#FF00C0';
-  public active: boolean = true;
-
-  constructor(
-    public center: Point,
-    public radius: number,
-    public speed: number,
-  ) {
-    // no-op
-  }
-
-  static create({center, radius, speed}: {
-    center: Point,
+export class ShipModel extends ObjectModel {
+  static create({radius, center, speed}: {
     radius: number,
+    center: Point,
     speed: number,
-  }): EnemyState {
-    return new EnemyState(center, radius, speed);
-  }
-
-  get top(): number {
-    return this.center.y - this.radius;
-  }
-
-  get bottom(): number {
-    return this.center.y + this.radius;
-  }
-
-  get left(): number {
-    return this.center.x - this.radius;
-  }
-
-  get right(): number {
-    return this.center.x + this.radius;
+  }): ShipModel {
+    return new ShipModel(radius, center, speed);
   }
 
   moveLeft() {
-    this.center = this.center.minus({x: this.speed});
+    this._center.minusAssign({x: this._speed});
   }
 
   moveRight() {
-    this.center = this.center.plus({x: this.speed});
-  }
-
-  moveDown(distance: number) {
-    this.center = this.center.plus({y: distance});
-  }
-
-  die() {
-    this.active = false;
+    this._center.plusAssign({x: this._speed});
   }
 }
 
-export class MissileState {
-  public color: string = '#00FFC0';
-  public active: boolean = true;
-
-  constructor(
-    public center: Point,
-    public radius: number,
-    public speed: number,
-  ) {
-    // no-op
-  }
-
-  static create({center, radius, speed}: {
-    center: Point,
+export class EnemyModel extends ObjectModel {
+  static create({radius, center, speed}: {
     radius: number,
+    center: Point,
     speed: number,
-  }): MissileState {
-    return new MissileState(center, radius, speed);
+  }): EnemyModel {
+    return new EnemyModel(radius, center, speed);
   }
 
-  get top(): number {
-    return this.center.y - this.radius;
+  moveLeft() {
+    this._center.minusAssign({x: this._speed});
   }
 
-  get bottom(): number {
-    return this.center.y + this.radius;
+  moveRight() {
+    this._center.plusAssign({x: this._speed});
   }
 
-  update() {
-    this.center = this.center.minus({y: this.speed});
+  moveDown(distance: number) {
+    this._center.plusAssign({y: distance});
   }
 
   die() {
-    this.active = false;
+    this._active = false;
+  }
+}
+
+export class MissileBlueprint extends ObjectModel {
+  static create({radius, center, speed}: {
+    radius: number,
+    center: Point,
+    speed: number,
+  }): MissileBlueprint {
+    return new MissileBlueprint(radius, center, speed);
+  }
+}
+
+export class MissileModel extends ObjectModel {
+  static create({radius, center, speed}: {
+    radius: number,
+    center: Point,
+    speed: number,
+  }): MissileModel {
+    return new MissileModel(radius, center, speed);
   }
 
-  hitTest(enemy: EnemyState): boolean {
-    return this.active && Point.dist(this.center, enemy.center) < (this.radius + enemy.radius) / 2;
+  update() {
+    this._center.minusAssign({y: this.speed});
+  }
+
+  die() {
+    this._active = false;
   }
 }
 
@@ -163,14 +161,14 @@ export class GameBuilder {
     return this;
   }
 
-  public build(): GameState {
+  public build(): GameModel {
     const rule = GameRule.create({
-      enemyTick : this.enemyTick,
+      enemyTick: this.enemyTick,
       enemyStep: this.enemyStep,
       missileLimit: this.missileLimit
     });
 
-    const ship = ShipState.create({
+    const ship = ShipModel.create({
       center: Point.of({
         x: this.bounds.width / 2,
         y: this.bounds.height - this.shipRadius,
@@ -180,7 +178,7 @@ export class GameBuilder {
     });
     ship.color = this.shipColor;
 
-    const enemies = [] as EnemyState[];
+    const enemies = [] as EnemyModel[];
 
     for (let row = 0; row < this.enemyGrid.height; row++) {
       const y = this.enemyOrigin.y + this.enemyRadius + (this.enemyRadius * 2 + this.enemyMargin.height) * row;
@@ -188,7 +186,7 @@ export class GameBuilder {
       for (let column = 0; column < this.enemyGrid.width; column++) {
         const x = this.enemyOrigin.x + this.enemyRadius + (this.enemyRadius * 2 + this.enemyMargin.width) * column;
 
-        const enemy = EnemyState.create({
+        const enemy = EnemyModel.create({
           center: Point.of({x, y}),
           radius: this.enemyRadius,
           speed: this.enemySpeed,
@@ -198,14 +196,14 @@ export class GameBuilder {
       }
     }
 
-    const missile = MissileState.create({
+    const missile = MissileModel.create({
       center: Point.zero(),
       radius: this.missileRadius,
       speed: this.missileSpeed,
     });
     missile.color = this.missileColor;
 
-    return new GameState(rule, ship, enemies, missile);
+    return new GameModel(rule, ship, enemies, missile);
   }
 }
 
@@ -223,7 +221,7 @@ export class GameContext {
     frameCount: number,
     canvasSize: Size,
     direction?: number,
-  }) : GameContext {
+  }): GameContext {
     return new GameContext(frameCount, canvasSize, direction);
   }
 }
@@ -242,74 +240,94 @@ export class GameRule {
     enemyTick: number,
     enemyStep: number,
     missileLimit: number,
-  }) : GameRule {
+  }): GameRule {
     return new GameRule(enemyTick, enemyStep, missileLimit);
   }
 }
 
-export class GameState {
+export class GameModel {
   private enemyDirection: number = 1;
-  public missiles: MissileState[] = [];
+
+  private readonly _rule: GameRule;
+  private readonly _ship: ShipModel;
+  private readonly _enemies: EnemyModel[];
+  private readonly _missile: MissileBlueprint;
+  private readonly _missiles: MissileModel[] = [];
 
   constructor(
-    public rule: GameRule,
-    public ship: ShipState,
-    public enemies: EnemyState[],
-    public missile: MissileState,
+    rule: GameRule,
+    ship: ShipModel,
+    enemies: EnemyModel[],
+    missile: MissileBlueprint,
   ) {
-    // no-op
+    this._rule = rule;
+    this._ship = ship;
+    this._enemies = [...enemies];
+    this._missile = missile;
   }
 
-  static create(build: (builder: GameBuilder) => void): GameState {
+  static create(build: (builder: GameBuilder) => void): GameModel {
     return new GameBuilder().also(build).build();
   }
 
+  get ship(): ShipModel {
+    return this._ship;
+  }
+
+  get enemies(): EnemyModel[] {
+    return [...this._enemies];
+  }
+
+  get missiles(): MissileModel[] {
+    return [...this._missiles];
+  }
+
   fire() {
-    if (this.missiles.length >= this.rule.missileLimit) {
+    if (this._missiles.length >= this._rule.missileLimit) {
       return;
     }
 
-    this.missiles.push(
-      MissileState.create({
-        center: this.ship.center.copy(),
-        radius: this.missile.radius,
-        speed: this.missile.speed,
-      })
-    );
+    const newMissile = MissileModel.create({
+      center: this._ship.center.copy(),
+      radius: this._missile.radius,
+      speed: this._missile.speed,
+    });
+
+    this._missiles.push(newMissile);
   }
 
   update(context: GameContext) {
     // ship
     switch (context.direction) {
       case -1:
-        this.ship.moveLeft();
+        this._ship.moveLeft();
         break;
       case 1:
-        this.ship.moveRight();
+        this._ship.moveRight();
         break;
       default:
         break;
     }
 
-    this.ship.constraint(context.canvasSize);
+    this._ship.constraint(context.canvasSize);
 
     // enemies
-    if (context.frameCount % this.rule.enemyTick == 0) {
+    if (context.frameCount % this._rule.enemyTick == 0) {
       switch (this.enemyDirection) {
         case 1:
-          this.enemies.forEach(it => it.moveRight());
+          this._enemies.forEach(it => it.moveRight());
           break;
         case -1:
-          this.enemies.forEach(it => it.moveLeft());
+          this._enemies.forEach(it => it.moveLeft());
           break;
         default:
-          this.enemies.forEach(it => it.moveDown(this.rule.enemyStep));
+          this._enemies.forEach(it => it.moveDown(this._rule.enemyStep));
           break;
       }
 
       this.enemyDirection = (() => {
-        const left = Math.min(...this.enemies.map((it) => it.left));
-        const right = Math.max(...this.enemies.map((it) => it.right));
+        const left = Math.min(...this._enemies.map((it) => it.left));
+        const right = Math.max(...this._enemies.map((it) => it.right));
         switch (this.enemyDirection) {
           case 1:
             return right >= context.canvasSize.width ? 0 : 1;
@@ -322,16 +340,16 @@ export class GameState {
     }
 
     // missile
-    this.missiles.forEach((missile) => {
+    this._missiles.forEach((missile) => {
       missile.update();
 
-      this.enemies.filter(it => missile.hitTest(it)).forEach((enemy) => {
+      this._enemies.filter(it => missile.hitTest(it)).forEach((enemy) => {
         enemy.die();
         missile.die();
       });
     })
 
-    this.enemies = this.enemies.filter(it => it.active);
-    this.missiles = this.missiles.filter(it => it.active && it.bottom >= 0);
+    this._enemies.removeWhere(it => !it.active);
+    this._missiles.removeWhere(it => !it.active || it.bottom < 0);
   }
 }

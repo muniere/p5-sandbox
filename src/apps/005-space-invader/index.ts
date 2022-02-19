@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=biN3v3ef-Y0
 import * as p5 from 'p5';
-import { GameContext, GameState } from "./model";
 import { Point, Size } from "../../lib/graphics2d";
+import { GameContext, GameModel } from "./model";
 import { GameWidget } from "./view";
 
 const Params = Object.freeze({
@@ -18,19 +18,19 @@ const Params = Object.freeze({
   ENEMY_COLUMNS: 12,
   ENEMY_ROWS: 3,
   ENEMY_SPACE: 30,
-  ENEMY_RADIUS: 30,
+  ENEMY_RADIUS: 15,
   ENEMY_SPEED: 10,
   ENEMY_TICK: 60,
 
   // missile
   MISSILE_COLOR: '#00FFFF',
-  MISSILE_SIZE: 20,
+  MISSILE_SIZE: 10,
   MISSILE_SPEED: 5,
   MISSILE_LIMIT: 1,
 });
 
 export function sketch(context: p5) {
-  let state: GameState;
+  let state: GameModel;
   let widget: GameWidget;
 
   context.setup = function () {
@@ -40,7 +40,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = GameState.create(it => {
+    state = GameModel.create(it => {
       it.bounds = Size.of(context);
 
       it.shipColor = Params.SHIP_COLOR;
