@@ -3,11 +3,15 @@ import { Point as Point3D } from '../../lib/graphics3d';
 export class CubeModel {
   public color: string = '#FFFFFF';
 
+  private readonly _size: number;
+  private readonly _center: Point3D;
+
   constructor(
-    public size: number,
-    public center: Point3D,
+    size: number,
+    center: Point3D,
   ) {
-    // no-op
+    this._size = size;
+    this._center = center;
   }
 
   static create({size, center}: {
@@ -15,6 +19,14 @@ export class CubeModel {
     center: Point3D,
   }): CubeModel {
     return new CubeModel(size, center);
+  }
+
+  get size(): number {
+    return this._size;
+  }
+
+  get center(): Point3D {
+    return this._center;
   }
 
   spawn(): CubeModel[] {
@@ -28,8 +40,8 @@ export class CubeModel {
             continue;
           }
 
-          const newSize = this.size / 3;
-          const newCenter = this.center.plus({
+          const newSize = this._size / 3;
+          const newCenter = this._center.plus({
             x: x * newSize,
             y: y * newSize,
             z: z * newSize,
@@ -51,12 +63,15 @@ export class CubeModel {
 
 export class SpongeModel {
   public strokeColor: string = '#FFFFFF';
-  public rotation: number = 0;
+
+  private _cubes: CubeModel[];
+  private _rotation: number;
 
   constructor(
-    public cubes: CubeModel[],
+    cubes: CubeModel[],
   ) {
-    // no-op
+    this._cubes = cubes;
+    this._rotation = 0;
   }
 
   static create({size}: { size: number }): SpongeModel {
@@ -69,15 +84,23 @@ export class SpongeModel {
   }
 
   get fillColor(): string {
-    return this.cubes[0].color;
+    return this._cubes[0].color;
   }
 
   set fillColor(value: string) {
-    this.cubes.forEach(it => it.color = value);
+    this._cubes.forEach(it => it.color = value);
+  }
+
+  get cubes(): CubeModel[] {
+    return [...this._cubes];
+  }
+
+  get rotation(): number {
+    return this._rotation;
   }
 
   rotate(value: number) {
-    this.rotation += value;
+    this._rotation += value;
   }
 
   also(mutate: (sponge: SpongeModel) => void): SpongeModel {
@@ -86,7 +109,7 @@ export class SpongeModel {
   }
 
   cycle() {
-    this.cubes = this.cubes.reduce(
+    this._cubes = this._cubes.reduce(
       (acc, box) => [...acc, ...box.spawn()], [] as CubeModel[]
     );
   }
@@ -120,6 +143,6 @@ export class ApplicationModel {
   }
 
   rotate(value: number) {
-    this._sponge.rotation += value;
+    this._sponge.rotate(value);
   }
 }
