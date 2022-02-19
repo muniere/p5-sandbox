@@ -1,50 +1,57 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Context } from '../../lib/process';
-import { Point as Point3D } from '../../lib/graphics3d';
-import { DropModel, ApplicationModel } from './model';
+import { ApplicationModel, DropModel } from './model';
 
 export class DropWidget {
+  public model: DropModel | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly state: DropModel,
   ) {
     // no-op
   }
 
-  private get point(): Point3D {
-    return this.state.point;
-  }
-
-  private get length(): number {
-    return this.state.length;
-  }
-
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
     Context.scope(this.context, $ => {
-      $.stroke(this.state.color);
+      $.stroke(model.color);
       $.line(
-        this.point.x, this.point.y,
-        this.point.x, this.point.y + this.length,
+        model.point.x, model.point.y,
+        model.point.x, model.point.y + model.length,
       );
     });
   }
 }
 
-export class RainWidget {
-  private children: DropWidget[];
+export class ApplicationWidget {
+  public model: ApplicationModel | undefined;
+
+  private readonly _drop: DropWidget;
 
   constructor(
     public readonly context: p5,
-    public readonly state: ApplicationModel,
   ) {
-    this.children = state.drops.map(
-      it => new DropWidget(context, it),
-    );
+    this._drop = new DropWidget(context);
+  }
+
+  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
-    this.children.forEach(
-      it => it.draw()
-    );
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    model.drops.forEach(it => {
+      this._drop.model = it;
+      this._drop.draw();
+    })
   }
 }

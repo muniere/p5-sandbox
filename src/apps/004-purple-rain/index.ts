@@ -1,10 +1,10 @@
 // https://www.youtube.com/watch?v=KkyIDI6rQJI
 import * as p5 from 'p5';
-import { Size as Size2D, Size } from '../../lib/graphics2d';
-import { ApplicationModel, DropModel } from './model';
-import { RainWidget } from './view';
 import { Arrays, Numeric } from '../../lib/stdlib';
+import { Size } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
+import { ApplicationModel, DropModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#E6E6FA',
@@ -13,8 +13,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: ApplicationModel;
-  let widget: RainWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -23,7 +23,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = ApplicationModel.create({
+    model = ApplicationModel.create({
       bounds: Size.of(context),
       drops: Arrays.generate(Params.DROP_COUNT, () => {
         const origin = Point3D.of({
@@ -39,9 +39,11 @@ export function sketch(context: p5) {
         return DropModel.create({origin, length});
       }),
     });
-    state.color = Params.DROP_COLOR;
+    model.color = Params.DROP_COLOR;
 
-    widget = new RainWidget(context, state);
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
+    });
   };
 
   context.draw = function () {
@@ -52,6 +54,6 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 }
