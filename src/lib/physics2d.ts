@@ -329,7 +329,9 @@ export abstract class Material {
   public abstract readonly acceleration: Acceleration;
 
   public abstract apply(force: Force): void;
+
   public abstract update(): void;
+
   public abstract coerceIn(bounds: Size): void;
 }
 
@@ -410,6 +412,11 @@ export class RectangularMaterial extends Material {
 
   public get acceleration(): Acceleration {
     return this._acceleration.copy();
+  }
+
+  public also(mutate: (model: RectangularMaterial) => void): RectangularMaterial {
+    mutate(this);
+    return this;
   }
 
   public apply(force: Force): void {
@@ -520,6 +527,11 @@ export class CircularMaterial extends Material {
 
   public get acceleration(): Acceleration {
     return this._acceleration.copy();
+  }
+
+  public also(mutate: (model: CircularMaterial) => void): CircularMaterial {
+    mutate(this);
+    return this;
   }
 
   public apply(force: Force): void {
