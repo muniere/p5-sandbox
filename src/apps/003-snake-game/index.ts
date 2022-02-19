@@ -34,8 +34,12 @@ export function sketch(context: p5) {
     model.snake.color = Params.SNAKE_COLOR;
     model.food.color = Params.FOOD_COLOR;
 
-    widget = new GameWidget(context, model);
-    master = new GameMaster(context, model);
+    widget = new GameWidget(context).also(it => {
+      it.model = model;
+    });
+    master = new GameMaster(context).also(it => {
+      it.model = model;
+    });
   }
 
   context.draw = function () {

@@ -2,92 +2,106 @@ import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { FoodModel, GameModel, SnakeModel } from './model';
 
-class SnakeWidget {
+export class SnakeWidget {
+  public model: SnakeModel | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly model: SnakeModel,
   ) {
     // no-op
   }
 
-  private get color(): string {
-    return this.model.color;
-  }
-
-  private get scale(): number {
-    return this.model.scale;
-  }
-
   draw() {
-    Context.scope(this.context, $ => {
-      $.fill(this.color);
+    const model = this.model;
+    if (!model) {
+      return;
+    }
 
-      this.model.body.forEach(
-        it => $.square(it.x, it.y, this.scale)
+    Context.scope(this.context, $ => {
+      $.fill(model.color);
+
+      model.body.forEach(
+        it => $.square(it.x, it.y, model.scale)
       );
     })
   }
 }
 
-class FoodWidget {
+export class FoodWidget {
+  public model: FoodModel | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly model: FoodModel,
   ) {
     // no-op
   }
 
-  private get x(): number {
-    return this.model.point.x;
-  }
-
-  private get y(): number {
-    return this.model.point.y;
-  }
-
-  private get color(): string {
-    return this.model.color;
-  }
-
-  private get scale(): number {
-    return this.model.scale;
-  }
-
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
     Context.scope(this.context, $ => {
-      $.fill(this.color);
-      $.square(this.x, this.y, this.scale);
+      $.fill(model.color);
+      $.square(model.point.x, model.point.y, model.scale);
     });
   }
 }
 
 export class GameWidget {
+  public model: GameModel | undefined;
+
+  private readonly _snake: SnakeWidget;
+  private readonly _food: FoodWidget;
+
   constructor(
     public readonly context: p5,
-    public readonly model: GameModel,
   ) {
-    // no-op
+    this._snake = new SnakeWidget(context);
+    this._food = new FoodWidget(context);
+  }
+
+  also(mutate: (widget: GameWidget) => void) : GameWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
-    const snakeWidget = new SnakeWidget(this.context, this.model.snake);
-    const foodWidget = new FoodWidget(this.context, this.model.food);
+    const model = this.model;
+    if (!model) {
+      return;
+    }
 
-    snakeWidget.draw();
-    foodWidget.draw();
+    this._snake.model = model.snake;
+    this._snake.draw();
+
+    this._food.model = model.food;
+    this._food.draw();
   }
 }
 
 export class GameMaster {
+  public model: GameModel | undefined;
+
   constructor(
     public readonly context: p5,
-    public readonly model: GameModel,
   ) {
     // no-op
   }
 
+  also(mutate: (master: GameMaster) => void) : GameMaster {
+    mutate(this);
+    return this;
+  }
+
   consumeKeyCode(keyCode: number) {
-    const snake = this.model.snake;
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    const snake = model.snake;
 
     switch (keyCode) {
       case this.context.UP_ARROW:
