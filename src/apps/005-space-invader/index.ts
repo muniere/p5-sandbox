@@ -30,7 +30,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: GameModel;
+  let model: GameModel;
   let widget: GameWidget;
 
   context.setup = function () {
@@ -40,7 +40,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = GameModel.create(it => {
+    model = GameModel.create(it => {
       it.bounds = Size.of(context);
 
       it.shipColor = Params.SHIP_COLOR;
@@ -63,7 +63,9 @@ export function sketch(context: p5) {
       it.missileLimit = Params.MISSILE_LIMIT;
     });
 
-    widget = new GameWidget(context, state);
+    widget = new GameWidget(context).also(it => {
+      it.model = model;
+    });
   };
 
   context.draw = function () {
@@ -92,12 +94,12 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update(ctx);
+    model.update(ctx);
   }
 
   context.keyPressed = function () {
     if (context.key == ' ') {
-      state.fire();
+      model.fire();
     }
   }
 }
