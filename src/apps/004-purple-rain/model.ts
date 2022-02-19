@@ -1,104 +1,112 @@
-import { Vector } from 'p5';
-import { Arrays, Numeric } from '../../lib/stdlib';
+import { Numeric } from '../../lib/stdlib';
 import { Size as Size2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
+import { Acceleration, Velocity as Velocity3D } from '../../lib/physics3d';
 
-export class DropState {
+export class DropModel {
   public color: string = '#000000';
 
-  private _point: Point3D;
-  private _velocity: Vector;
+  private readonly _length: number;
+  private readonly _origin: Point3D;
+  private readonly _point: Point3D;
+  private readonly _velocity: Velocity3D;
 
   constructor(
-    public readonly origin: Point3D,
-    public readonly length: number,
+    length: number,
+    origin: Point3D,
   ) {
-    this._point = origin;
-    this._velocity = new Vector();
+    this._length = length;
+    this._origin = origin.copy();
+    this._point = origin.copy();
+    this._velocity = Velocity3D.zero();
   }
 
-  static create({origin, length}: {
-    origin: Point3D,
+  static create({length, origin}: {
     length: number,
-  }): DropState {
-    return new DropState(origin, length);
+    origin: Point3D,
+  }): DropModel {
+    return new DropModel(length, origin);
+  }
+
+  get length(): number {
+    return this._length;
   }
 
   get point(): Point3D {
     return this._point.copy();
   }
 
-  forward(duration?: number) {
-    const grav = Numeric.map({
+  update() {
+    const gravity = Numeric.map({
       value: this._point.z,
       domain: Numeric.range(0, 20),
       target: Numeric.range(0, 0.1),
     });
 
-    this._point = this._point.plus({
-      y: this._velocity.y * (duration ?? 1)
+    const accel = Acceleration.of({
+      x: 0,
+      y: gravity,
+      z: 0,
     });
 
-    this._velocity = this._velocity.copy().add(0, grav * (duration ?? 1));
+    this._point.plusAssign({
+      y: this._velocity.y,
+    })
+
+    this._velocity.plusAssign(accel);
   }
 
   reset(): void {
-    this._point = this.origin;
-    this._velocity = new Vector();
+    this._point.assign(this._origin);
+    this._velocity.setMagnitude(0);
   }
 }
 
-export class RainState {
+export class ApplicationModel {
+  private readonly _bounds: Size2D;
+  private readonly _drops: DropModel[];
+
   public constructor(
-    public readonly bounds: Size2D,
-    public readonly drops: DropState[],
+    bounds: Size2D,
+    drops: DropModel[],
   ) {
-    // no-op
+    this._bounds = bounds;
+    this._drops = [...drops];
   }
 
-  static random({bounds, count}: {
+  static create({bounds, drops}: {
     bounds: Size2D,
-    count: number,
-  }) : RainState {
-    const drops = Arrays.generate(count, () => {
-      const origin = Point3D.of({
-        x: bounds.width * Math.random(),
-        y: -500 * Math.random(),
-        z: 20 * Math.random(),
-      });
-      const length = Numeric.map({
-        value: origin.z,
-        domain: Numeric.range(0, 20),
-        target: Numeric.range(10, 20),
-      });
-      return DropState.create({origin, length});
-    });
+    drops: DropModel[],
+  }): ApplicationModel {
+    return new ApplicationModel(bounds, drops);
+  }
 
-    return new RainState(bounds, drops);
+  get drops(): DropModel[] {
+    return [...this._drops];
   }
 
   get color(): string {
-    return this.drops[0].color;
+    return this._drops[0].color;
   }
 
   set color(value: string) {
-    this.drops.forEach(
+    this._drops.forEach(
       it => it.color = value
     );
   }
 
-  forward(duration?: number): void {
-    this.drops.forEach(
-      it => it.forward(duration)
-    );
+  update(): void {
+    this._drops.forEach(it => {
+      it.update();
 
-    this.drops
-      .filter(it => it.point.y >= this.bounds.height)
-      .forEach(it => it.reset());
+      if (it.point.y >= this._bounds.height) {
+        it.reset();
+      }
+    });
   }
 
   reset(): void {
-    this.drops.forEach(
+    this._drops.forEach(
       it => it.reset()
     );
   }

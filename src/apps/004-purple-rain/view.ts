@@ -1,12 +1,12 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { DropState, RainState } from './model';
+import { DropModel, ApplicationModel } from './model';
 
 export class DropWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: DropState,
+    public readonly state: DropModel,
   ) {
     // no-op
   }
@@ -35,7 +35,7 @@ export class RainWidget {
 
   constructor(
     public readonly context: p5,
-    public readonly state: RainState,
+    public readonly state: ApplicationModel,
   ) {
     this.children = state.drops.map(
       it => new DropWidget(context, it),
