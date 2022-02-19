@@ -3,13 +3,21 @@ import { Point, Size } from '../../lib/graphics2d';
 
 export class SnakeModel {
   public color: string = '#FFFFFF';
-  private tail: Point[] = [];
+
+  private _head: Point;
+  private readonly _tail: Point[];
+  private readonly _velocity: Vector;
+  private readonly _scale: number;
 
   constructor(
-    public head: Point,
-    public velocity: Vector,
-    public scale: number,
+    head: Point,
+    velocity: Vector,
+    scale: number,
   ) {
+    this._head = head;
+    this._tail = [];
+    this._velocity = velocity;
+    this._scale = scale;
     // no-op
   }
 
@@ -20,48 +28,56 @@ export class SnakeModel {
   }
 
   get body(): Point[] {
-    return [this.head, ...this.tail];
+    return [this._head, ...this._tail];
   }
 
   get left(): number {
-    return this.head.x;
+    return this._head.x;
   }
 
   get right(): number {
-    return this.head.x + this.scale;
+    return this._head.x + this._scale;
   }
 
   get top(): number {
-    return this.head.y;
+    return this._head.y;
   }
 
   get bottom(): number {
-    return this.head.y + this.scale;
+    return this._head.y + this._scale;
+  }
+
+  get scale(): number {
+    return this._scale;
+  }
+
+  get velocity(): Vector {
+    return this._velocity;
   }
 
   update() {
     // compute
-    const delta = Vector.mult(this.velocity, this.scale);
+    const delta = Vector.mult(this._velocity, this._scale);
 
     const next = Point.of({
-      x: this.head.x + delta.x,
-      y: this.head.y + delta.y,
+      x: this._head.x + delta.x,
+      y: this._head.y + delta.y,
     });
 
     // update
-    if (this.tail.length > 0) {
-      for (let i = this.tail.length - 1; i > 0; i--) {
-        this.tail[i] = this.tail[i - 1];
+    if (this._tail.length > 0) {
+      for (let i = this._tail.length - 1; i > 0; i--) {
+        this._tail[i] = this._tail[i - 1];
       }
-      this.tail[0] = this.head.copy();
+      this._tail[0] = this._head.copy();
     }
 
-    this.head = next;
+    this._head = next;
   }
 
   dir({x, y}: { x: number, y: number }) {
-    this.velocity.x = x;
-    this.velocity.y = y;
+    this._velocity.x = x;
+    this._velocity.y = y;
   }
 
   eat(food: FoodModel): boolean {
@@ -69,18 +85,18 @@ export class SnakeModel {
       return false;
     }
 
-    this.tail.push(this.head.copy());
+    this._tail.push(this._head.copy());
     return this.hitTest(food.point);
   }
 
   testOvershoot(bounds: Size): boolean {
-    return (this.head.x < 0 || bounds.width <= this.head.x) ||
-      (this.head.y < 0 || bounds.height <= this.head.y);
+    return (this._head.x < 0 || bounds.width <= this._head.x) ||
+      (this._head.y < 0 || bounds.height <= this._head.y);
   }
 
   testUroboros(): boolean {
-    return this.tail.some(
-      it => Point.dist(it, this.head) < 0.01
+    return this._tail.some(
+      it => Point.dist(it, this._head) < 0.01
     );
   }
 
@@ -93,11 +109,15 @@ export class SnakeModel {
 export class FoodModel {
   public color: string = '#FFFFFF';
 
+  private readonly _point: Point;
+  private readonly _scale: number;
+
   constructor(
-    public point: Point,
-    public scale: number,
+    point: Point,
+    scale: number,
   ) {
-    // no-op
+    this._point = point;
+    this._scale = scale;
   }
 
   static create({point, scale}: {
@@ -106,16 +126,32 @@ export class FoodModel {
   }): FoodModel {
     return new FoodModel(point, scale);
   }
+
+  get point(): Point {
+    return this._point;
+  }
+
+  get scale(): number {
+    return this._scale;
+  }
 }
 
 export class GameModel {
+  private readonly _bounds: Size;
+  private readonly _scale: number;
+  private _snake: SnakeModel;
+  private _food: FoodModel;
+
   constructor(
-    public bounds: Size,
-    public scale: number,
-    public snake: SnakeModel,
-    public food: FoodModel,
+    bounds: Size,
+    scale: number,
+    snake: SnakeModel,
+    food: FoodModel,
   ) {
-    // no-op
+    this._bounds = bounds;
+    this._scale = scale;
+    this._snake = snake;
+    this._food = food;
   }
 
   static create({bounds, scale}: {
@@ -139,31 +175,39 @@ export class GameModel {
     return new GameModel(bounds, scale, snake, food);
   }
 
+  get snake(): SnakeModel {
+    return this._snake;
+  }
+
+  get food(): FoodModel {
+    return this._food;
+  }
+
   update() {
-    this.snake.update();
+    this._snake.update();
 
-    if (this.snake.testOvershoot(this.bounds) || this.snake.testUroboros()) {
-      const oldState = this.snake;
+    if (this._snake.testOvershoot(this._bounds) || this._snake.testUroboros()) {
+      const oldState = this._snake;
 
-      this.snake = SnakeModel.create({
-        scale: this.scale,
+      this._snake = SnakeModel.create({
+        scale: this._scale,
       });
-      this.snake.color = oldState.color;
+      this._snake.color = oldState.color;
     }
 
-    if (this.snake.eat(this.food)) {
-      const oldState = this.food;
+    if (this._snake.eat(this._food)) {
+      const oldState = this._food;
 
       const random = Point.of({
-        x: Math.floor(Math.random() * this.bounds.width / this.scale) * this.scale,
-        y: Math.floor(Math.random() * this.bounds.height / this.scale) * this.scale,
+        x: Math.floor(Math.random() * this._bounds.width / this._scale) * this._scale,
+        y: Math.floor(Math.random() * this._bounds.height / this._scale) * this._scale,
       });
 
-      this.food = FoodModel.create({
+      this._food = FoodModel.create({
         point: random,
-        scale: this.scale,
+        scale: this._scale,
       });
-      this.food.color = oldState.color
+      this._food.color = oldState.color
     }
   }
 }
