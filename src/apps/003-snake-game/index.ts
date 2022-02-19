@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=AaGK-fj-BAM
 import * as p5 from 'p5';
 import { Size } from '../../lib/graphics2d';
-import { GameState } from './model';
+import { GameModel } from './model';
 import { GameWidget, GameMaster } from './view';
 
 const Params = Object.freeze({
@@ -12,7 +12,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: GameState;
+  let model: GameModel;
   let widget: GameWidget;
   let master: GameMaster;
 
@@ -26,16 +26,16 @@ export function sketch(context: p5) {
     context.frameRate(10);
     context.noLoop();
 
-    state = GameState.create({
+    model = GameModel.create({
       bounds: Size.of(context),
       scale: Params.GAME_SCALE,
     });
 
-    state.snake.color = Params.SNAKE_COLOR;
-    state.food.color = Params.FOOD_COLOR;
+    model.snake.color = Params.SNAKE_COLOR;
+    model.food.color = Params.FOOD_COLOR;
 
-    widget = new GameWidget(context, state);
-    master = new GameMaster(context, state);
+    widget = new GameWidget(context, model);
+    master = new GameMaster(context, model);
   }
 
   context.draw = function () {
@@ -46,7 +46,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 
   context.mousePressed = function () {

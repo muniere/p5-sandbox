@@ -1,28 +1,28 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
-import { FoodState, GameState, SnakeState } from './model';
+import { FoodModel, GameModel, SnakeModel } from './model';
 
 class SnakeWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: SnakeState,
+    public readonly model: SnakeModel,
   ) {
     // no-op
   }
 
   private get color(): string {
-    return this.state.color;
+    return this.model.color;
   }
 
   private get scale(): number {
-    return this.state.scale;
+    return this.model.scale;
   }
 
   draw() {
     Context.scope(this.context, $ => {
       $.fill(this.color);
 
-      this.state.body.forEach(
+      this.model.body.forEach(
         it => $.square(it.x, it.y, this.scale)
       );
     })
@@ -32,25 +32,25 @@ class SnakeWidget {
 class FoodWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: FoodState,
+    public readonly model: FoodModel,
   ) {
     // no-op
   }
 
   private get x(): number {
-    return this.state.point.x;
+    return this.model.point.x;
   }
 
   private get y(): number {
-    return this.state.point.y;
+    return this.model.point.y;
   }
 
   private get color(): string {
-    return this.state.color;
+    return this.model.color;
   }
 
   private get scale(): number {
-    return this.state.scale;
+    return this.model.scale;
   }
 
   draw() {
@@ -64,14 +64,14 @@ class FoodWidget {
 export class GameWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: GameState,
+    public readonly model: GameModel,
   ) {
     // no-op
   }
 
   draw() {
-    const snakeWidget = new SnakeWidget(this.context, this.state.snake);
-    const foodWidget = new FoodWidget(this.context, this.state.food);
+    const snakeWidget = new SnakeWidget(this.context, this.model.snake);
+    const foodWidget = new FoodWidget(this.context, this.model.food);
 
     snakeWidget.draw();
     foodWidget.draw();
@@ -81,13 +81,13 @@ export class GameWidget {
 export class GameMaster {
   constructor(
     public readonly context: p5,
-    public readonly state: GameState,
+    public readonly model: GameModel,
   ) {
     // no-op
   }
 
   consumeKeyCode(keyCode: number) {
-    const snake = this.state.snake;
+    const snake = this.model.snake;
 
     switch (keyCode) {
       case this.context.UP_ARROW:

@@ -1,7 +1,7 @@
 import { Vector } from 'p5';
 import { Point, Size } from '../../lib/graphics2d';
 
-export class SnakeState {
+export class SnakeModel {
   public color: string = '#FFFFFF';
   private tail: Point[] = [];
 
@@ -13,10 +13,10 @@ export class SnakeState {
     // no-op
   }
 
-  static create({scale}: { scale: number }): SnakeState {
+  static create({scale}: { scale: number }): SnakeModel {
     const head = Point.zero();
     const velocity = new Vector().set(1, 0);
-    return new SnakeState(head, velocity, scale);
+    return new SnakeModel(head, velocity, scale);
   }
 
   get body(): Point[] {
@@ -64,7 +64,7 @@ export class SnakeState {
     this.velocity.y = y;
   }
 
-  eat(food: FoodState): boolean {
+  eat(food: FoodModel): boolean {
     if (!this.hitTest(food.point)) {
       return false;
     }
@@ -90,7 +90,7 @@ export class SnakeState {
   }
 }
 
-export class FoodState {
+export class FoodModel {
   public color: string = '#FFFFFF';
 
   constructor(
@@ -103,17 +103,17 @@ export class FoodState {
   static create({point, scale}: {
     point: Point,
     scale: number,
-  }): FoodState {
-    return new FoodState(point, scale);
+  }): FoodModel {
+    return new FoodModel(point, scale);
   }
 }
 
-export class GameState {
+export class GameModel {
   constructor(
     public bounds: Size,
     public scale: number,
-    public snake: SnakeState,
-    public food: FoodState,
+    public snake: SnakeModel,
+    public food: FoodModel,
   ) {
     // no-op
   }
@@ -121,22 +121,22 @@ export class GameState {
   static create({bounds, scale}: {
     bounds: Size,
     scale: number,
-  }): GameState {
+  }): GameModel {
     const random = Point.of({
       x: Math.floor(Math.random() * bounds.width / scale) * scale,
       y: Math.floor(Math.random() * bounds.height / scale) * scale,
     });
 
-    const snake = SnakeState.create({
+    const snake = SnakeModel.create({
       scale: scale,
     });
 
-    const food = FoodState.create({
+    const food = FoodModel.create({
       point: random,
       scale: scale,
     });
 
-    return new GameState(bounds, scale, snake, food);
+    return new GameModel(bounds, scale, snake, food);
   }
 
   update() {
@@ -145,7 +145,7 @@ export class GameState {
     if (this.snake.testOvershoot(this.bounds) || this.snake.testUroboros()) {
       const oldState = this.snake;
 
-      this.snake = SnakeState.create({
+      this.snake = SnakeModel.create({
         scale: this.scale,
       });
       this.snake.color = oldState.color;
@@ -159,7 +159,7 @@ export class GameState {
         y: Math.floor(Math.random() * this.bounds.height / this.scale) * this.scale,
       });
 
-      this.food = FoodState.create({
+      this.food = FoodModel.create({
         point: random,
         scale: this.scale,
       });
