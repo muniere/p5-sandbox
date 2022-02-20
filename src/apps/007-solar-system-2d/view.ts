@@ -1,7 +1,7 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
-import { PlanetState, SolarSystemState } from './model';
+import { PlanetModel, SolarSystemModel } from './model';
 
 export class PlanetWidget {
   public readonly center: Point;
@@ -9,7 +9,7 @@ export class PlanetWidget {
   constructor(
     public readonly context: p5,
     public readonly anchor: Point,
-    public readonly state: PlanetState,
+    public readonly state: PlanetModel,
   ) {
     this.center = this.anchor.plus({
       x: state.distance * Math.cos(state.angle),
@@ -20,7 +20,7 @@ export class PlanetWidget {
   static create({context, anchor, state}: {
     context: p5,
     anchor: Point,
-    state: PlanetState,
+    state: PlanetModel,
   }): PlanetWidget {
     return new PlanetWidget(context, anchor, state);
   }
@@ -36,7 +36,7 @@ export class PlanetWidget {
 export class SolarSystemWidget {
   constructor(
     public readonly context: p5,
-    public state: SolarSystemState,
+    public state: SolarSystemModel,
   ) {
     // no-op
   }
@@ -60,4 +60,8 @@ export class SolarSystemWidget {
       anchors.set(planet.name, widget.center);
     });
   }
+}
+
+export class ApplicationWidget {
+
 }

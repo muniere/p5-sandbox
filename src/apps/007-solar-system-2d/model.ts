@@ -1,68 +1,93 @@
 import { Numeric } from '../../lib/stdlib';
 
-export class PlanetState {
+export class PlanetModel {
   public color: string = '#FFFFFF';
-  public angle: number = 0;
-  private _children: PlanetState[] = [];
 
-  constructor(
-    public readonly name: string,
-    public readonly radius: number,
-    public readonly distance: number,
-    public readonly velocity: number,
-    public readonly parent?: PlanetState,
-  ) {
-    // no-op
-  }
+  private readonly _name: string;
+  private readonly _radius: number;
+  private readonly _distance: number;
+  private readonly _velocity: number;
+  private _angle: number;
 
-  static create({name, radius, distance, velocity}: {
+  private _parent: PlanetModel | undefined;
+  private _children: PlanetModel[] = [];
+
+  constructor(nargs: {
     name: string,
     radius: number,
     distance: number,
     velocity: number,
-  }): PlanetState {
-    return new PlanetState(name, radius, distance, velocity);
+    angle?: number;
+  }) {
+    this._name = nargs.name;
+    this._radius = nargs.radius;
+    this._distance = nargs.distance;
+    this._velocity = nargs.velocity;
+    this._angle = nargs.angle ?? 0;
   }
 
-  children(): PlanetState[] {
+  get name(): string {
+    return this._name;
+  }
+
+  get radius(): number {
+    return this._radius;
+  }
+
+  get distance(): number {
+    return this._distance;
+  }
+
+  get angle(): number {
+    return this._angle;
+  }
+
+  get parent(): PlanetModel | undefined {
+    return this._parent;
+  }
+
+  get children(): PlanetModel[] {
     return [...this._children];
   }
 
-  forward(duration?: number) {
-    this.angle += this.velocity * (duration ?? 1);
+  update() {
+    this._angle += this._velocity;
   }
 
-  also(mutate: (planet: PlanetState) => void): PlanetState {
+  also(mutate: (planet: PlanetModel) => void): PlanetModel {
     mutate(this);
     return this;
   }
 
-  spawn({name, radius, distance, velocity}: {
+  spawn(nargs: {
     name: string,
     radius: number,
     distance: number,
     velocity: number,
-  }): PlanetState {
-    const child = new PlanetState(name, radius, distance, velocity, this);
+    angle?: number,
+  }): PlanetModel {
+    const child = new PlanetModel(nargs).also(it => it._parent = this);
     this._children.push(child);
     return child;
   }
 }
 
-export class SolarSystemState {
-  constructor(
-    public readonly sun: PlanetState,
-  ) {
-    // no-op
+export class SolarSystemModel {
+  private readonly _sun: PlanetModel;
+
+  constructor(nargs: {
+    sun: PlanetModel,
+  }) {
+    this._sun = nargs.sun;
   }
 
-  static assemble(): SolarSystemState {
+  static assemble(): SolarSystemModel {
     const angles = Numeric.rangeOf({
       start: 0,
       stop: Math.PI * 2,
     });
 
-    const sun = PlanetState.create({
+    const sun = new PlanetModel({
       name: 'sun',
       radius: 25,
       distance: 0,
@@ -76,8 +101,8 @@ export class SolarSystemState {
       radius: sun.radius / 4,
       distance: sun.radius * 3,
       velocity: Math.PI / 256,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#22FFFF';
     });
 
@@ -86,8 +111,8 @@ export class SolarSystemState {
       radius: sun.radius / 3,
       distance: sun.radius * 5,
       velocity: Math.PI / 512,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#FFFF22';
     });
 
@@ -96,8 +121,8 @@ export class SolarSystemState {
       radius: sun.radius / 2,
       distance: sun.radius * 8,
       velocity: Math.PI / 768,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#44AAFF';
     });
 
@@ -106,8 +131,8 @@ export class SolarSystemState {
       radius: earth.radius / 4,
       distance: 25,
       velocity: Math.PI / 64,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#FF8800';
     });
 
@@ -116,8 +141,8 @@ export class SolarSystemState {
       radius: sun.radius / 2,
       distance: sun.radius * 12,
       velocity: Math.PI / 768,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#FF6633';
     });
 
@@ -126,8 +151,8 @@ export class SolarSystemState {
       radius: mars.radius / 3,
       distance: 25,
       velocity: Math.PI / 128,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
       it.color = '#AAAAAA';
     });
 
@@ -136,29 +161,29 @@ export class SolarSystemState {
       radius: mars.radius / 2,
       distance: 40,
       velocity: Math.PI / 128,
+      angle: angles.sample(),
     }).also(it => {
-      it.angle = angles.sample();
+      it.color = '#FFFFFF';
     });
 
-    return new SolarSystemState(sun);
+    return new SolarSystemModel({sun});
   }
 
-  walk(callback: (planet: PlanetState) => void) {
-    const stack = [this.sun];
+  walk(callback: (planet: PlanetModel) => void) {
+    const stack = [this._sun];
 
     while (stack.length > 0) {
       const planet = stack.pop()!;
 
       callback(planet);
 
-      const children = planet.children().sort(
-        (a, b) => b.distance - a.distance,
-      );
+      const children = planet.children.sortedDesc((it) => it.distance);
+
       stack.push(...children);
     }
   }
 
-  forward(duration?: number) {
-    this.walk(it => it.forward(duration));
+  update() {
+    this.walk(it => it.update());
   }
 }

@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=l8SiJ-RmeHU
 import * as p5 from 'p5';
-import { SolarSystemState } from './model';
+import { SolarSystemModel } from './model';
 import { SolarSystemWidget } from './view';
 
 const Params = Object.freeze({
@@ -8,7 +8,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: SolarSystemState;
+  let model: SolarSystemModel;
   let widget: SolarSystemWidget;
 
   context.setup = function () {
@@ -18,8 +18,8 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = SolarSystemState.assemble();
-    widget = new SolarSystemWidget(context, state);
+    model = SolarSystemModel.assemble();
+    widget = new SolarSystemWidget(context, model);
   };
 
   context.draw = function () {
@@ -31,7 +31,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.forward();
+    model.update();
   }
 
   context.mousePressed = function () {
