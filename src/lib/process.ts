@@ -1,4 +1,4 @@
-import p5 from 'p5';
+import p5, { Vector } from 'p5';
 
 export type ShapeStyle = 'open' | 'closed';
 
@@ -54,5 +54,16 @@ export class Widget {
   also(mutate: (widget: this) => void): this {
     mutate(this);
     return this;
+  }
+}
+
+export namespace Vectors {
+
+  export function of(nargs: {
+    x?: number,
+    y?: number,
+    z?: number,
+  }) : Vector {
+    return new Vector().set(nargs.x, nargs.y, nargs.z);
   }
 }

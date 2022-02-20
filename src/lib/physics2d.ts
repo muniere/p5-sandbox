@@ -156,6 +156,22 @@ export class Acceleration {
     return this._vector.copy();
   }
 
+  public plus(delta: Acceleration): Acceleration {
+    return Acceleration.of(this.vector.add(delta.vector));
+  }
+
+  public plusAssign(delta: Acceleration) {
+    this._vector.add(delta.vector);
+  }
+
+  public minus(delta: Acceleration): Acceleration {
+    return Acceleration.of(this.vector.sub(delta.vector));
+  }
+
+  public minusAssign(delta: Acceleration) {
+    this._vector.sub(delta.vector);
+  }
+
   public with(other: Acceleration): Acceleration {
     return Acceleration.of(other.vector);
   }
@@ -511,7 +527,7 @@ export class CircularMaterial extends Material {
 
   public apply(force: Force): void {
     const newValue = force.acceleration({mass: this._mass});
-    this._acceleration.assign(newValue);
+    this._acceleration.plusAssign(newValue);
   }
 
   public update() {
