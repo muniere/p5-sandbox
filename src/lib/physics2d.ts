@@ -333,6 +333,11 @@ export abstract class Material {
   public abstract update(): void;
 
   public abstract coerceIn(bounds: Size): void;
+
+  public also(mutate: (model: this) => void): this {
+    mutate(this);
+    return this;
+  }
 }
 
 export class RectangularMaterial extends Material {
@@ -345,29 +350,19 @@ export class RectangularMaterial extends Material {
   private readonly _velocity: Velocity;
   private readonly _acceleration: Acceleration;
 
-  public constructor(
+  public constructor(nargs: {
     size?: Size,
     mass?: number,
     center?: Point,
     velocity?: Velocity,
     acceleration?: Acceleration,
-  ) {
+  }) {
     super();
-    this._size = size ?? Size.zero();
-    this._mass = mass ?? 1;
-    this._center = center ?? Point.zero();
-    this._velocity = velocity ?? Velocity.zero();
-    this._acceleration = acceleration ?? Acceleration.zero();
-  }
-
-  public static create({size, mass, center, velocity, acceleration}: {
-    size?: Size,
-    mass?: number,
-    center?: Point,
-    velocity?: Velocity,
-    acceleration?: Acceleration,
-  }): RectangularMaterial {
-    return new RectangularMaterial(size, mass, center, velocity, acceleration);
+    this._size = nargs.size ?? Size.zero();
+    this._mass = nargs.mass ?? 1;
+    this._center = nargs.center ?? Point.zero();
+    this._velocity = nargs.velocity ?? Velocity.zero();
+    this._acceleration = nargs.acceleration ?? Acceleration.zero();
   }
 
   public get size(): Size {
@@ -412,11 +407,6 @@ export class RectangularMaterial extends Material {
 
   public get acceleration(): Acceleration {
     return this._acceleration.copy();
-  }
-
-  public also(mutate: (model: RectangularMaterial) => void): RectangularMaterial {
-    mutate(this);
-    return this;
   }
 
   public apply(force: Force): void {
@@ -468,29 +458,19 @@ export class CircularMaterial extends Material {
   private readonly _velocity: Velocity;
   private readonly _acceleration: Acceleration;
 
-  public constructor(
+  public constructor(nargs: {
     radius?: number,
     mass?: number,
     center?: Point,
     velocity?: Velocity,
     acceleration?: Acceleration,
-  ) {
+  }) {
     super();
-    this._radius = radius ?? 0;
-    this._mass = mass ?? 1;
-    this._center = center ?? Point.zero();
-    this._velocity = velocity ?? Velocity.zero();
-    this._acceleration = acceleration ?? Acceleration.zero();
-  }
-
-  public static create({radius, mass, center, velocity, acceleration}: {
-    radius?: number,
-    mass?: number,
-    center?: Point,
-    velocity?: Velocity,
-    acceleration?: Acceleration,
-  }): CircularMaterial {
-    return new CircularMaterial(radius, mass, center, velocity, acceleration);
+    this._radius = nargs.radius ?? 0;
+    this._mass = nargs.mass ?? 1;
+    this._center = nargs.center ?? Point.zero();
+    this._velocity = nargs.velocity ?? Velocity.zero();
+    this._acceleration = nargs.acceleration ?? Acceleration.zero();
   }
 
   public get radius(): number {
@@ -527,11 +507,6 @@ export class CircularMaterial extends Material {
 
   public get acceleration(): Acceleration {
     return this._acceleration.copy();
-  }
-
-  public also(mutate: (model: CircularMaterial) => void): CircularMaterial {
-    mutate(this);
-    return this;
   }
 
   public apply(force: Force): void {

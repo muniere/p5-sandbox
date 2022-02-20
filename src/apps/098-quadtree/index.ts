@@ -50,7 +50,7 @@ export function sketch(context: p5) {
         y: Math.random(),
       });
 
-      const material = BallState.create({
+      const material = new BallState({
         radius: Params.MATERIAL_RADIUS,
         center: center
       }).also(it => {

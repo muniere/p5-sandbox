@@ -32,7 +32,7 @@ export function sketch(context: p5) {
     state = WorldState.create({
       bounds: Size.of(context),
       balls: Arrays.generate(Params.CONTROL_COUNT, () => {
-        return BallState.create({
+        return new BallState({
           radius: Params.CONTROL_RADIUS,
           center: Point.of({
             x: Math.random() * context.width,

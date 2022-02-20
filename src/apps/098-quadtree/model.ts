@@ -9,16 +9,6 @@ export enum BallTag {
 export class BallState extends CircularMaterial {
   public tag = BallTag.normal;
 
-  public static create({radius, mass, center, velocity, acceleration}: {
-    radius?: number,
-    mass?: number,
-    center?: Point,
-    velocity?: Velocity,
-    acceleration?: Acceleration,
-  }): BallState {
-    return new BallState(radius, mass, center, velocity, acceleration);
-  }
-
   get zone(): Rect {
     return Rect.of({
       origin: Point.of({
@@ -27,11 +17,6 @@ export class BallState extends CircularMaterial {
       }),
       size: Size.square(this.radius * 4)
     });
-  }
-
-  also(mutate: (state: BallState) => void): BallState {
-    mutate(this);
-    return this;
   }
 }
 

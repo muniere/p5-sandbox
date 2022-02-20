@@ -2,16 +2,7 @@ import { Point, PointRange, Size } from '../../lib/graphics2d';
 import { Acceleration, CircularMaterial, Velocity } from '../../lib/physics2d';
 
 export class BallState extends CircularMaterial {
-
-  public static create({radius, mass, center, velocity, acceleration}: {
-    radius?: number,
-    mass?: number,
-    center?: Point,
-    velocity?: Velocity,
-    acceleration?: Acceleration,
-  }): BallState {
-    return new BallState(radius, mass, center, velocity, acceleration);
-  }
+  // no-op
 }
 
 export type BezierCallback = (p1: Point, p2: Point) => void;
