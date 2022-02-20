@@ -48,7 +48,9 @@ export function sketch(context: p5) {
       })
     });
 
-    widget = new ApplicationWidget(context, model);
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
+    });
   };
 
   context.draw = function () {
@@ -60,6 +62,5 @@ export function sketch(context: p5) {
 
     // update
     model.update(Params.GENERATION_SPEED);
-    console.log(context.frameRate());
   };
 }
