@@ -1,3 +1,10 @@
+export namespace Filters {
+
+  export function notNull<T>(item: T | undefined): item is T {
+    return item != undefined;
+  }
+}
+
 declare global {
   interface Array<T> {
     first(): T
@@ -15,6 +22,8 @@ declare global {
     droppingFirst(n?: number): Array<T>
 
     droppingLast(n?: number): Array<T>
+
+    compactMap<U>(callback: (item: T) => U | null | undefined): U[];
 
     remove(i: number): T;
 
@@ -108,6 +117,10 @@ Array.prototype.droppingFirst = function (n?: number) {
 Array.prototype.droppingLast = function (n?: number) {
   const drop = Math.max(n ?? 1, 1);
   return this.slice(0, this.length - drop);
+}
+
+Array.prototype.compactMap = function (callback: (item: any) => any | undefined | null) {
+  return this.map(callback).filter(Filters.notNull);
 }
 
 Array.prototype.remove = function (i: number) {
@@ -424,4 +437,3 @@ declare global {
 Math.average = function (...values: number[]) {
   return values.reduce((acc, x) => acc + x) / values.length;
 }
-

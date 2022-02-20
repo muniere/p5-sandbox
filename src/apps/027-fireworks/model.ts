@@ -26,12 +26,7 @@ export class FireworkModel {
   }
 
   get particles(): CircularMaterial[] {
-    const arr = [] as CircularMaterial[];
-    if (this._core) {
-      arr.push(this._core);
-    }
-    arr.push(...this._petals);
-    return arr;
+    return [this._core, ...this._petals].compactMap(it => it);
   }
 
   get remaining(): number {
