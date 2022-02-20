@@ -19,7 +19,10 @@ export function sketch(context: p5) {
     );
 
     model = SolarSystemModel.assemble();
-    widget = new SolarSystemWidget(context, model);
+
+    widget = new SolarSystemWidget(context).also(it => {
+      it.model = model;
+    });
   };
 
   context.draw = function () {

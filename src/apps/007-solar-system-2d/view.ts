@@ -4,64 +4,78 @@ import { Point } from '../../lib/graphics2d';
 import { PlanetModel, SolarSystemModel } from './model';
 
 export class PlanetWidget {
-  public readonly center: Point;
+  public model: PlanetModel | undefined;
+  public anchor: Point = Point.zero();
 
   constructor(
     public readonly context: p5,
-    public readonly anchor: Point,
-    public readonly state: PlanetModel,
   ) {
-    this.center = this.anchor.plus({
-      x: state.distance * Math.cos(state.angle),
-      y: state.distance * Math.sin(state.angle),
+    // no-op
+  }
+
+  center(): Point {
+    const model = this.model;
+    if (!model) {
+      return this.anchor;
+    }
+
+    return this.anchor.plus({
+      x: model.distance * Math.cos(model.angle),
+      y: model.distance * Math.sin(model.angle),
     });
   }
 
-  static create({context, anchor, state}: {
-    context: p5,
-    anchor: Point,
-    state: PlanetModel,
-  }): PlanetWidget {
-    return new PlanetWidget(context, anchor, state);
-  }
-
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    const center = this.center();
+
     Context.scope(this.context, $ => {
-      $.fill(this.state.color);
-      $.circle(this.center.x, this.center.y, this.state.radius * 2);
+      $.fill(model.color);
+      $.circle(center.x, center.y, model.radius * 2);
     });
   }
 }
 
 export class SolarSystemWidget {
+  public model: SolarSystemModel | undefined;
+
+  private readonly _planet: PlanetWidget;
+
   constructor(
     public readonly context: p5,
-    public state: SolarSystemModel,
   ) {
-    // no-op
+    this._planet = new PlanetWidget(context);
+  }
+
+  also(mutate: (widget: SolarSystemWidget) => void): SolarSystemWidget {
+    mutate(this);
+    return this;
   }
 
   draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
     const anchors = new Map<string, Point>();
 
-    this.state.walk((planet) => {
+    model.walk((planet) => {
       const parent = planet.parent;
 
       const anchor = parent ? anchors.get(parent.name)! : Point.zero();
 
-      const widget = PlanetWidget.create({
-        context: this.context,
-        anchor: anchor,
-        state: planet,
-      });
+      this._planet.model = planet;
+      this._planet.anchor = anchor;
+      this._planet.draw();
 
-      widget.draw();
+      const center = this._planet.center();
 
-      anchors.set(planet.name, widget.center);
+      anchors.set(planet.name, center);
     });
   }
-}
-
-export class ApplicationWidget {
-
 }
