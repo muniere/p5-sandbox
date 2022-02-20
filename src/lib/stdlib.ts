@@ -16,8 +16,6 @@ declare global {
 
     droppingLast(n?: number): Array<T>
 
-    flatMap<U>(callback: (item: T) => Array<U>): Array<U>;
-
     remove(i: number): T;
 
     removeWhere(predicate: (item: T) => boolean): T[];
@@ -110,10 +108,6 @@ Array.prototype.droppingFirst = function (n?: number) {
 Array.prototype.droppingLast = function (n?: number) {
   const drop = Math.max(n ?? 1, 1);
   return this.slice(0, this.length - drop);
-}
-
-Array.prototype.flatMap = function (callback: (item: any) => any[]) {
-  return this.map(it => callback(it)).reduce((acc, arr) => acc.concat(arr));
 }
 
 Array.prototype.remove = function (i: number) {
