@@ -1,8 +1,10 @@
 // https://www.youtube.com/watch?v=jxGS3fKPKJA
 import * as p5 from 'p5';
+import { Arrays } from '../../lib/stdlib';
+import { Colors } from '../../lib/drawing';
 import { Point, Size } from '../../lib/graphics2d';
-import { WorldState } from './model';
-import { WorldWidget } from './view';
+import { CellModel, ApplicationModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
@@ -12,8 +14,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -22,14 +24,24 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = WorldState.random({
+    model = new ApplicationModel({
       bounds: Size.of(context),
-      radius: Params.CELL_RADIUS,
-      growth: Params.CELL_GROWTH,
-      count: Params.CELL_COUNT,
+      cells: Arrays.generate(Params.CELL_COUNT, () => {
+        return new CellModel({
+          center: Point.of({
+            x: context.width * Math.random(),
+            y: context.height * Math.random()
+          }),
+          radius: Params.CELL_RADIUS,
+          growth: Params.CELL_GROWTH,
+          limit: Params.CELL_RADIUS,
+        }).also(it => {
+          it.fillColor = Colors.sample({alpha: 128});
+        });
+      }),
     });
 
-    widget = new WorldWidget(context, state);
+    widget = new ApplicationWidget(context, model);
   }
 
   context.draw = function () {
@@ -40,7 +52,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 
   context.mouseClicked = function () {
@@ -49,9 +61,9 @@ export function sketch(context: p5) {
       y: context.mouseY,
     });
 
-    const index = state.findIndex(point);
+    const index = model.findIndex(point);
     if (index >= 0) {
-      state.split(index);
+      model.split(index);
     }
   }
 }

@@ -1,12 +1,12 @@
 import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
-import { CellState, WorldState } from './model';
+import { ApplicationModel, CellModel } from './model';
 
 export class CellWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: CellState,
+    public readonly state: CellModel,
   ) {
     // no-op
   }
@@ -28,10 +28,10 @@ export class CellWidget {
   }
 }
 
-export class WorldWidget {
+export class ApplicationWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: WorldState,
+    public readonly state: ApplicationModel,
   ) {
     // no-op
   }

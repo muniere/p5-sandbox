@@ -1,9 +1,8 @@
 import { Vector } from 'p5';
-import { Arrays, Numeric } from '../../lib/stdlib';
+import { Numeric } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
-import { Colors } from '../../lib/drawing';
 
-export class CellState {
+export class CellModel {
   public fillColor: string = '#FFFFFF';
   public strokeColor: string = '#FFFFFF';
 
@@ -11,24 +10,20 @@ export class CellState {
   private _center: Point;
   private _radius: number
 
-  constructor(
-    center: Point,
-    radius: number,
-    public readonly growth: number,
-    public readonly limit: number,
-  ) {
-    this._velocity = new Vector();
-    this._center = center;
-    this._radius = radius;
-  }
+  private readonly _growth: number;
+  private readonly _limit: number;
 
-  static create({center, radius, growth, limit}: {
+  constructor(nargs: {
     center: Point,
     radius: number,
     growth: number,
     limit: number,
-  }): CellState {
-    return new CellState(center, radius, growth, limit);
+  }) {
+    this._velocity = new Vector();
+    this._center = nargs.center;
+    this._radius = nargs.radius;
+    this._growth = nargs.growth;
+    this._limit = nargs.limit;
   }
 
   get center(): Point {
@@ -39,26 +34,31 @@ export class CellState {
     return this._radius;
   }
 
+  also(mutate: (model: CellModel) => void): CellModel {
+    mutate(this);
+    return this;
+  }
+
   update() {
     const accel = Vector.random2D().div(5);
     this._velocity = Vector.add(this._velocity, accel).normalize();
     this._center = this._center.plus(this._velocity);
-    this._radius = Math.min(this._radius * this.growth, this.limit);
+    this._radius = Math.min(this._radius * this._growth, this._limit);
   }
 
-  split(): CellState[] {
+  split(): CellModel[] {
     const children = [
-      CellState.create({
+      new CellModel({
         center: this._center.minus({x: this._radius / 4}),
         radius: this._radius / 2,
-        growth: this.growth,
-        limit: this.limit,
+        growth: this._growth,
+        limit: this._limit,
       }),
-      CellState.create({
+      new CellModel({
         center: this._center.plus({x: this._radius / 4}),
         radius: this._radius / 2,
-        growth: this.growth,
-        limit: this.limit,
+        growth: this._growth,
+        limit: this._limit,
       }),
     ];
 
@@ -89,40 +89,20 @@ export class CellState {
   }
 }
 
-export class WorldState {
-  constructor(
-    private _bounds: Size,
-    private _cells: CellState[]
-  ) {
+export class ApplicationModel {
+  private readonly _bounds: Size;
+  private readonly _cells: CellModel[];
+
+  constructor(nargs: {
+    bounds: Size,
+    cells: CellModel[]
+  }) {
+    this._bounds = nargs.bounds;
+    this._cells = [...nargs.cells];
     // no-op
   }
 
-  static random({bounds, radius, growth, count}: {
-    bounds: Size,
-    radius: number,
-    growth: number,
-    count: number,
-  }): WorldState {
-    const cells = Arrays.generate(count, () => {
-      return CellState.create({
-        center: Point.of({
-          x: bounds.width * Math.random(),
-          y: bounds.height * Math.random()
-        }),
-        radius: radius,
-        growth: growth,
-        limit: radius,
-      });
-    });
-
-    cells.forEach(it => {
-      it.fillColor = Colors.sample({alpha: 128});
-    });
-
-    return new WorldState(bounds, cells);
-  }
-
-  get cells(): CellState[] {
+  get cells(): CellModel[] {
     return [...this._cells];
   }
 
