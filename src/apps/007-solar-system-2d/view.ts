@@ -1,7 +1,7 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
-import { PlanetModel, SolarSystemModel } from './model';
+import { ApplicationModel, PlanetModel, SolarSystemModel } from './model';
 
 export class PlanetWidget {
   public model: PlanetModel | undefined;
@@ -77,5 +77,32 @@ export class SolarSystemWidget {
 
       anchors.set(planet.name, center);
     });
+  }
+}
+
+export class ApplicationWidget {
+  public model: ApplicationModel | undefined;
+
+  private _solarSystem: SolarSystemWidget;
+
+  constructor(
+    public readonly context: p5,
+  ) {
+    this._solarSystem = new SolarSystemWidget(context);
+  }
+
+  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
+    mutate(this);
+    return this;
+  }
+
+  draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    this._solarSystem.model = model.solarSystem;
+    this._solarSystem.draw();
   }
 }

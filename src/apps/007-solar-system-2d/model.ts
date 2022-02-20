@@ -187,3 +187,21 @@ export class SolarSystemModel {
     this.walk(it => it.update());
   }
 }
+
+export class ApplicationModel {
+  private readonly _solarSystem: SolarSystemModel;
+
+  constructor(nargs: {
+    solarSystem: SolarSystemModel,
+  }) {
+    this._solarSystem = nargs.solarSystem;
+  }
+
+  get solarSystem(): SolarSystemModel {
+    return this._solarSystem;
+  }
+
+  update() {
+    this._solarSystem.update();
+  }
+}

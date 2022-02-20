@@ -1,15 +1,15 @@
 // https://www.youtube.com/watch?v=l8SiJ-RmeHU
-import * as p5 from 'p5';
-import { SolarSystemModel } from './model';
-import { SolarSystemWidget } from './view';
+import p5 from 'p5';
+import { ApplicationModel, SolarSystemModel } from './model';
+import { ApplicationWidget, SolarSystemWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#000000',
 });
 
 export function sketch(context: p5) {
-  let model: SolarSystemModel;
-  let widget: SolarSystemWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -18,9 +18,11 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = SolarSystemModel.assemble();
+    model = new ApplicationModel({
+      solarSystem: SolarSystemModel.assemble(),
+    });
 
-    widget = new SolarSystemWidget(context).also(it => {
+    widget = new ApplicationWidget(context).also(it => {
       it.model = model;
     });
   };
