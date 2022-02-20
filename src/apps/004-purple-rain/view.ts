@@ -1,15 +1,9 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { ApplicationModel, DropModel } from './model';
 
-export class DropWidget {
+export class DropWidget extends Widget {
   public model: DropModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -17,7 +11,7 @@ export class DropWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(model.color);
       $.line(
         model.point.x, model.point.y,
@@ -27,20 +21,14 @@ export class DropWidget {
   }
 }
 
-export class ApplicationWidget {
+export class ApplicationWidget extends Widget {
   public model: ApplicationModel | undefined;
 
   private readonly _drop: DropWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._drop = new DropWidget(context);
-  }
-
-  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {

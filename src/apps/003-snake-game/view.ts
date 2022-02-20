@@ -1,15 +1,9 @@
 import * as p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { FoodModel, GameModel, SnakeModel } from './model';
 
-export class SnakeWidget {
+export class SnakeWidget extends Widget {
   public model: SnakeModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -17,7 +11,7 @@ export class SnakeWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(model.color);
 
       model.body.forEach(
@@ -27,14 +21,8 @@ export class SnakeWidget {
   }
 }
 
-export class FoodWidget {
+export class FoodWidget extends Widget {
   public model: FoodModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -42,29 +30,23 @@ export class FoodWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(model.color);
       $.square(model.point.x, model.point.y, model.scale);
     });
   }
 }
 
-export class GameWidget {
+export class GameWidget extends Widget {
   public model: GameModel | undefined;
 
   private readonly _snake: SnakeWidget;
   private readonly _food: FoodWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._snake = new SnakeWidget(context);
     this._food = new FoodWidget(context);
-  }
-
-  also(mutate: (widget: GameWidget) => void) : GameWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {
@@ -90,7 +72,7 @@ export class GameMaster {
     // no-op
   }
 
-  also(mutate: (master: GameMaster) => void) : GameMaster {
+  also(mutate: (master: GameMaster) => void): GameMaster {
     mutate(this);
     return this;
   }

@@ -1,17 +1,11 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { ApplicationModel, PlanetModel, SolarSystemModel } from './model';
 
-export class PlanetWidget {
+export class PlanetWidget extends Widget {
   public model: PlanetModel | undefined;
   public anchor: Point = Point.zero();
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   center(): Point {
     const model = this.model;
@@ -33,27 +27,21 @@ export class PlanetWidget {
 
     const center = this.center();
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(model.color);
       $.circle(center.x, center.y, model.radius * 2);
     });
   }
 }
 
-export class SolarSystemWidget {
+export class SolarSystemWidget extends Widget {
   public model: SolarSystemModel | undefined;
 
   private readonly _planet: PlanetWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._planet = new PlanetWidget(context);
-  }
-
-  also(mutate: (widget: SolarSystemWidget) => void): SolarSystemWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {

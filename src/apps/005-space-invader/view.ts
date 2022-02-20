@@ -1,15 +1,9 @@
 import p5 from "p5";
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { EnemyModel, GameModel, MissileModel, ShipModel } from './model';
 
-export class ShipWidget {
+export class ShipWidget extends Widget {
   public model: ShipModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -17,7 +11,7 @@ export class ShipWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(model.color);
       $.rectMode($.CENTER);
       $.square(model.center.x, model.center.y, model.radius * 2);
@@ -25,14 +19,8 @@ export class ShipWidget {
   }
 }
 
-export class EnemyWidget {
+export class EnemyWidget extends Widget {
   public model: EnemyModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -43,21 +31,15 @@ export class EnemyWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(model.color);
       $.circle(model.center.x, model.center.y, model.radius * 2);
     });
   }
 }
 
-export class MissileWidget {
+export class MissileWidget extends Widget {
   public model: MissileModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
 
   draw() {
     const model = this.model;
@@ -68,7 +50,7 @@ export class MissileWidget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.noStroke();
       $.fill(model.color);
       $.circle(model.center.x, model.center.y, model.radius * 2);
@@ -76,24 +58,18 @@ export class MissileWidget {
   }
 }
 
-export class GameWidget {
+export class GameWidget extends Widget {
   public model: GameModel | undefined;
 
   private _ship: ShipWidget;
   private _enemy: EnemyWidget;
   private _missile: MissileWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._ship = new ShipWidget(context);
     this._enemy = new EnemyWidget(context);
     this._missile = new MissileWidget(context);
-  }
-
-  also(mutate: (widget: GameWidget) => void): GameWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {

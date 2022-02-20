@@ -1,21 +1,10 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { ApplicationModel, StarFieldModel, StarModel } from './model';
 
-class StarWidget {
+export class StarWidget extends Widget {
   public model: StarModel | undefined;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: StarWidget) => void): StarWidget {
-    mutate(this);
-    return this;
-  }
 
   draw(): void {
     const model = this.model;
@@ -53,7 +42,7 @@ class StarWidget {
       target: Numeric.range(0, this.context.height)
     });
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.fill(255);
       $.noStroke();
       $.ellipse(currentX, currentY, currentRadius, currentRadius);
@@ -64,20 +53,14 @@ class StarWidget {
   }
 }
 
-export class StarFieldWidget {
+export class StarFieldWidget extends Widget {
   public model: StarFieldModel | undefined;
 
   private _star: StarWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._star = new StarWidget(context);
-  }
-
-  also(mutate: (widget: StarFieldWidget) => void): StarFieldWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {
@@ -98,20 +81,14 @@ export class StarFieldWidget {
   }
 }
 
-export class ApplicationWidget {
+export class ApplicationWidget extends Widget {
   public model: ApplicationModel | undefined;
 
   private _starField: StarFieldWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._starField = new StarFieldWidget(context);
-  }
-
-  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
-    mutate(this);
-    return this;
   }
 
   draw() {

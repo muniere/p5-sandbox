@@ -31,3 +31,26 @@ export class Context {
     }
   }
 }
+
+export abstract class Widget {
+  protected constructor(
+    public readonly context: p5,
+  ) {
+    //no-op
+  }
+
+  abstract draw(): void;
+
+  scope<T>(callback: (context: p5) => T): T {
+    return Context.scope(this.context, callback);
+  }
+
+  shape(style: ShapeStyle, callback: (context: p5) => void) {
+    Context.shape(this.context, style, callback);
+  }
+
+  also(mutate: (widget: this) => void): this {
+    mutate(this);
+    return this;
+  }
+}
