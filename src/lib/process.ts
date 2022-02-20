@@ -32,14 +32,16 @@ export class Context {
   }
 }
 
-export abstract class Widget {
-  protected constructor(
+export class Widget {
+  public constructor(
     public readonly context: p5,
   ) {
     //no-op
   }
 
-  abstract draw(): void;
+  draw(): void {
+    // do nothing; must be overridden by subclasses
+  }
 
   scope<T>(callback: (context: p5) => T): T {
     return Context.scope(this.context, callback);
