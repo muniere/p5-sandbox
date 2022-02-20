@@ -69,7 +69,7 @@ export function sketch(context: p5) {
   };
 
   context.draw = function () {
-    const ctx = GameContext.create({
+    const ctx = new GameContext({
       frameCount: context.frameCount,
       canvasSize: Size.of(context),
       direction: (() => {

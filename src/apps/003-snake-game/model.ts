@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 
 export class SnakeModel {
@@ -9,22 +10,14 @@ export class SnakeModel {
   private readonly _velocity: Vector;
   private readonly _scale: number;
 
-  constructor(
-    head: Point,
-    velocity: Vector,
+  constructor(nargs: {
     scale: number,
-  ) {
-    this._head = head;
+  }) {
+    this._head = Point.zero();
     this._tail = [];
-    this._velocity = velocity;
-    this._scale = scale;
+    this._velocity = new Vector().set(1, 0);
+    this._scale = nargs.scale;
     // no-op
-  }
-
-  static create({scale}: { scale: number }): SnakeModel {
-    const head = Point.zero();
-    const velocity = new Vector().set(1, 0);
-    return new SnakeModel(head, velocity, scale);
   }
 
   get body(): Point[] {
@@ -53,6 +46,19 @@ export class SnakeModel {
 
   get velocity(): Vector {
     return this._velocity;
+  }
+
+  also(mutate: (model: SnakeModel) => void): SnakeModel {
+    mutate(this);
+    return this;
+  }
+
+  spawn(): SnakeModel {
+    return new SnakeModel({
+      scale: this.scale,
+    }).also(it => {
+      it.color = this.color;
+    });
   }
 
   update() {
@@ -109,70 +115,59 @@ export class SnakeModel {
 export class FoodModel {
   public color: string = '#FFFFFF';
 
-  private readonly _point: Point;
   private readonly _scale: number;
+  private readonly _point: Point;
 
-  constructor(
-    point: Point,
+  constructor(nargs: {
     scale: number,
-  ) {
-    this._point = point;
-    this._scale = scale;
+    point: Point,
+  }) {
+    this._scale = nargs.scale;
+    this._point = nargs.point;
   }
 
-  static create({point, scale}: {
-    point: Point,
-    scale: number,
-  }): FoodModel {
-    return new FoodModel(point, scale);
+  get scale(): number {
+    return this._scale;
   }
 
   get point(): Point {
     return this._point;
   }
 
-  get scale(): number {
-    return this._scale;
+  also(mutate: (model: FoodModel) => void): FoodModel {
+    mutate(this);
+    return this;
+  }
+
+  spawn(nargs: { point: Point }): FoodModel {
+    return new FoodModel({
+      scale: this._scale,
+      point: nargs.point,
+    }).also(it => {
+      it.color = this.color;
+    });
   }
 }
 
 export class GameModel {
   private readonly _bounds: Size;
-  private readonly _scale: number;
   private _snake: SnakeModel;
   private _food: FoodModel;
 
-  constructor(
+  private _xrange: NumberRange;
+  private _yrange: NumberRange;
+
+  constructor(nargs: {
     bounds: Size,
-    scale: number,
     snake: SnakeModel,
     food: FoodModel,
-  ) {
-    this._bounds = bounds;
-    this._scale = scale;
-    this._snake = snake;
-    this._food = food;
-  }
+  }) {
+    this._bounds = nargs.bounds;
+    this._snake = nargs.snake;
+    this._food = nargs.food;
 
-  static create({bounds, scale}: {
-    bounds: Size,
-    scale: number,
-  }): GameModel {
-    const random = Point.of({
-      x: Math.floor(Math.random() * bounds.width / scale) * scale,
-      y: Math.floor(Math.random() * bounds.height / scale) * scale,
-    });
-
-    const snake = SnakeModel.create({
-      scale: scale,
-    });
-
-    const food = FoodModel.create({
-      point: random,
-      scale: scale,
-    });
-
-    return new GameModel(bounds, scale, snake, food);
+    this._xrange = new NumberRange(0, nargs.bounds.width);
+    this._yrange = new NumberRange(0, nargs.bounds.height);
   }
 
   get snake(): SnakeModel {
@@ -187,27 +182,16 @@ export class GameModel {
     this._snake.update();
 
     if (this._snake.testOvershoot(this._bounds) || this._snake.testUroboros()) {
-      const oldState = this._snake;
-
-      this._snake = SnakeModel.create({
-        scale: this._scale,
-      });
-      this._snake.color = oldState.color;
+      this._snake = this._snake.spawn();
     }
 
     if (this._snake.eat(this._food)) {
-      const oldState = this._food;
-
-      const random = Point.of({
-        x: Math.floor(Math.random() * this._bounds.width / this._scale) * this._scale,
-        y: Math.floor(Math.random() * this._bounds.height / this._scale) * this._scale,
+      this._food = this._food.spawn({
+        point: Point.of({
+          x: this._xrange.sample(),
+          y: this._yrange.sample(),
+        })
       });
-
-      this._food = FoodModel.create({
-        point: random,
-        scale: this._scale,
-      });
-      this._food.color = oldState.color
     }
   }
 }

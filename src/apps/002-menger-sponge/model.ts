@@ -6,19 +6,12 @@ export class CubeModel {
   private readonly _size: number;
   private readonly _center: Point3D;
 
-  constructor(
+  constructor(nargs: {
     size: number,
     center: Point3D,
-  ) {
-    this._size = size;
-    this._center = center;
-  }
-
-  static create({size, center}: {
-    size: number,
-    center: Point3D,
-  }): CubeModel {
-    return new CubeModel(size, center);
+  }) {
+    this._size = nargs.size;
+    this._center = nargs.center;
   }
 
   get size(): number {
@@ -47,7 +40,7 @@ export class CubeModel {
             z: z * newSize,
           });
 
-          const newCube = CubeModel.create({
+          const newCube = new CubeModel({
             size: newSize,
             center: newCenter,
           });
@@ -67,20 +60,15 @@ export class SpongeModel {
   private _cubes: CubeModel[];
   private _rotation: number;
 
-  constructor(
-    cubes: CubeModel[],
-  ) {
-    this._cubes = cubes;
-    this._rotation = 0;
-  }
-
-  static create({size}: { size: number }): SpongeModel {
-    const seed = CubeModel.create({
-      size: size,
+  constructor(nargs: {
+    size: number,
+  }) {
+    const seed = new CubeModel({
+      size: nargs.size,
       center: Point3D.zero(),
     });
-
-    return new SpongeModel([seed]);
+    this._cubes = [seed];
+    this._rotation = 0;
   }
 
   get fillColor(): string {
@@ -118,15 +106,10 @@ export class SpongeModel {
 export class ApplicationModel {
   private readonly _sponge: SpongeModel;
 
-  constructor(
+  constructor(nargs: {
     sponge: SpongeModel,
-  ) {
-    this._sponge = sponge;
-  }
-
-  static create({size}: { size: number }): ApplicationModel {
-    const sponge = SpongeModel.create({size});
-    return new ApplicationModel(sponge);
+  }) {
+    this._sponge = nargs.sponge;
   }
 
   also(mutate: (model: ApplicationModel) => void): ApplicationModel {

@@ -7,21 +7,14 @@ export class StarModel {
   private readonly _center: Point3D;
   private readonly _velocity: Velocity3D;
 
-  constructor(
-    radius: number,
-    origin: Point3D,
-  ) {
-    this._radius = radius;
-    this._origin = origin.copy();
-    this._center = origin.copy();
-    this._velocity = Velocity3D.zero();
-  }
-
-  static create({radius, center}: {
+  constructor(nargs: {
     radius: number,
     center: Point3D,
-  }): StarModel {
-    return new StarModel(radius, center);
+  }) {
+    this._radius = nargs.radius;
+    this._origin = nargs.center.copy();
+    this._center = nargs.center.copy();
+    this._velocity = Velocity3D.zero();
   }
 
   get radius(): number {
@@ -66,16 +59,10 @@ export class StarModel {
 export class StarFieldModel {
   private readonly _stars: StarModel[];
 
-  constructor(
+  constructor(nargs: {
     stars: StarModel[],
-  ) {
-    this._stars = [...stars];
-  }
-
-  static create({stars}: {
-    stars: StarModel[]
-  }): StarFieldModel {
-    return new StarFieldModel(stars);
+  }) {
+    this._stars = [...nargs.stars];
   }
 
   get stars(): StarModel[] {
@@ -108,17 +95,18 @@ export class StarFieldModel {
 export class ApplicationModel {
   private readonly _starField: StarFieldModel;
 
-  constructor(
+  constructor(args: {
     starField: StarFieldModel,
-  ) {
-    this._starField = starField;
+  }) {
+    this._starField = args.starField;
   }
 
-  static create({stars}: {
+  static create(nargs: {
     stars: StarModel[]
   }): ApplicationModel {
-    const starField = StarFieldModel.create({stars})
-    return new ApplicationModel(starField);
+    return new ApplicationModel({
+      starField: new StarFieldModel(nargs),
+    });
   }
 
   get starField(): StarFieldModel {

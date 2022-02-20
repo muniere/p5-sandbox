@@ -3,7 +3,7 @@ import p5 from 'p5';
 import { Arrays, Numeric } from '../../lib/stdlib';
 import { Point as Point2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
-import { ApplicationModel, StarModel } from './model';
+import { ApplicationModel, StarFieldModel, StarModel } from './model';
 import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
@@ -26,17 +26,19 @@ export function sketch(context: p5) {
     );
     context.noLoop();
 
-    model = ApplicationModel.create({
-      stars: Arrays.generate(Params.STAR_COUNT, () => {
-        return StarModel.create({
-          radius: Params.STAR_RADIUS,
-          center: Point3D.of({
-            x: Math.floor(context.width * (Math.random() - 0.5)),
-            y: Math.floor(context.height * (Math.random() - 0.5)),
-            z: Math.random() * context.width,
-          }),
-        });
-      })
+    model = new ApplicationModel({
+      starField: new StarFieldModel({
+        stars: Arrays.generate(Params.STAR_COUNT, () => {
+          return new StarModel({
+            radius: Params.STAR_RADIUS,
+            center: Point3D.of({
+              x: Math.floor(context.width * (Math.random() - 0.5)),
+              y: Math.floor(context.height * (Math.random() - 0.5)),
+              z: Math.random() * context.width,
+            }),
+          });
+        }),
+      }),
     });
 
     widget = new ApplicationWidget(context).also(it => {

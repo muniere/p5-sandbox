@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=LG8ZK-rRkXo
 import p5 from 'p5';
-import { ApplicationModel } from './model';
+import { ApplicationModel, SpongeModel } from './model';
 import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
@@ -22,11 +22,13 @@ export function sketch(context: p5) {
       context.WEBGL,
     );
 
-    model = ApplicationModel.create({
-      size: Params.SPONGE_SIZE,
-    }).also(it => {
-      it.sponge.fillColor = Params.FILL_COLOR;
-      it.sponge.strokeColor = Params.STROKE_COLOR;
+    model = new ApplicationModel({
+      sponge: new SpongeModel({
+        size: Params.SPONGE_SIZE,
+      }).also(it => {
+        it.fillColor = Params.FILL_COLOR;
+        it.strokeColor = Params.STROKE_COLOR;
+      })
     });
 
     widget = new ApplicationWidget(context).also(it => {

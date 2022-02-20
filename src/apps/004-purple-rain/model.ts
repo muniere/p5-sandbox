@@ -11,21 +11,14 @@ export class DropModel {
   private readonly _point: Point3D;
   private readonly _velocity: Velocity3D;
 
-  constructor(
+  constructor(nargs: {
     length: number,
     origin: Point3D,
-  ) {
+  }) {
     this._length = length;
-    this._origin = origin.copy();
-    this._point = origin.copy();
+    this._origin = nargs.origin.copy();
+    this._point = nargs.origin.copy();
     this._velocity = Velocity3D.zero();
-  }
-
-  static create({length, origin}: {
-    length: number,
-    origin: Point3D,
-  }): DropModel {
-    return new DropModel(length, origin);
   }
 
   get length(): number {
@@ -66,19 +59,12 @@ export class ApplicationModel {
   private readonly _bounds: Size2D;
   private readonly _drops: DropModel[];
 
-  public constructor(
+  public constructor(nargs: {
     bounds: Size2D,
     drops: DropModel[],
-  ) {
-    this._bounds = bounds;
-    this._drops = [...drops];
-  }
-
-  static create({bounds, drops}: {
-    bounds: Size2D,
-    drops: DropModel[],
-  }): ApplicationModel {
-    return new ApplicationModel(bounds, drops);
+  }) {
+    this._bounds = nargs.bounds;
+    this._drops = [...nargs.drops];
   }
 
   get drops(): DropModel[] {

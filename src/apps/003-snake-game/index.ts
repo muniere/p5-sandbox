@@ -1,7 +1,8 @@
 // https://www.youtube.com/watch?v=AaGK-fj-BAM
 import * as p5 from 'p5';
-import { Size } from '../../lib/graphics2d';
-import { GameModel } from './model';
+import { IntegerRange } from '../../lib/stdlib';
+import { Point, Size } from '../../lib/graphics2d';
+import { FoodModel, GameModel, SnakeModel } from './model';
 import { GameWidget, GameMaster } from './view';
 
 const Params = Object.freeze({
@@ -26,13 +27,26 @@ export function sketch(context: p5) {
     context.frameRate(10);
     context.noLoop();
 
-    model = GameModel.create({
-      bounds: Size.of(context),
-      scale: Params.GAME_SCALE,
-    });
+    const xrange = new IntegerRange(0, Math.floor(context.width));
+    const yrange = new IntegerRange(0, Math.floor(context.height));
 
-    model.snake.color = Params.SNAKE_COLOR;
-    model.food.color = Params.FOOD_COLOR;
+    model = new GameModel({
+      bounds: Size.of(context),
+      snake: new SnakeModel({
+        scale: Params.GAME_SCALE,
+      }).also(it => {
+        it.color = Params.SNAKE_COLOR;
+      }),
+      food: new FoodModel({
+        scale: Params.GAME_SCALE,
+        point: Point.of({
+          x: xrange.sample(),
+          y: yrange.sample(),
+        }),
+      }).also(it => {
+        it.color = Params.FOOD_COLOR;
+      }),
+    });
 
     widget = new GameWidget(context).also(it => {
       it.model = model;

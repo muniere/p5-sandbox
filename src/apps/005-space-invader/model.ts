@@ -10,14 +10,14 @@ export abstract class ObjectModel {
 
   protected _active: boolean = true;
 
-  protected constructor(
+  protected constructor(nargs: {
     radius: number,
     center: Point,
     speed: number,
-  ) {
-    this._radius = radius;
-    this._center = center;
-    this._speed = speed;
+  }) {
+    this._radius = nargs.radius;
+    this._center = nargs.center;
+    this._speed = nargs.speed;
   }
 
   get radius(): number {
@@ -63,12 +63,17 @@ export abstract class ObjectModel {
 }
 
 export class ShipModel extends ObjectModel {
-  static create({radius, center, speed}: {
+  public constructor(nargs: {
     radius: number,
     center: Point,
     speed: number,
-  }): ShipModel {
-    return new ShipModel(radius, center, speed);
+  }) {
+    super(nargs);
+  }
+
+  also(mutate: (model: ShipModel) => void): ShipModel {
+    mutate(this);
+    return this;
   }
 
   moveLeft() {
@@ -81,12 +86,17 @@ export class ShipModel extends ObjectModel {
 }
 
 export class EnemyModel extends ObjectModel {
-  static create({radius, center, speed}: {
+  public constructor(nargs: {
     radius: number,
     center: Point,
     speed: number,
-  }): EnemyModel {
-    return new EnemyModel(radius, center, speed);
+  }) {
+    super(nargs);
+  }
+
+  also(mutate: (model: EnemyModel) => void): EnemyModel {
+    mutate(this);
+    return this;
   }
 
   moveLeft() {
@@ -107,22 +117,32 @@ export class EnemyModel extends ObjectModel {
 }
 
 export class MissileBlueprint extends ObjectModel {
-  static create({radius, center, speed}: {
+  public constructor(nargs: {
     radius: number,
     center: Point,
     speed: number,
-  }): MissileBlueprint {
-    return new MissileBlueprint(radius, center, speed);
+  }) {
+    super(nargs);
+  }
+
+  also(mutate: (model: MissileBlueprint) => void): MissileBlueprint {
+    mutate(this);
+    return this;
   }
 }
 
 export class MissileModel extends ObjectModel {
-  static create({radius, center, speed}: {
+  public constructor(nargs: {
     radius: number,
     center: Point,
     speed: number,
-  }): MissileModel {
-    return new MissileModel(radius, center, speed);
+  }) {
+    super(nargs);
+  }
+
+  also(mutate: (model: MissileModel) => void): MissileModel {
+    mutate(this);
+    return this;
   }
 
   update() {
@@ -162,21 +182,22 @@ export class GameBuilder {
   }
 
   public build(): GameModel {
-    const rule = GameRule.create({
+    const rule = new GameRule({
       enemyTick: this.enemyTick,
       enemyStep: this.enemyStep,
       missileLimit: this.missileLimit
     });
 
-    const ship = ShipModel.create({
+    const ship = new ShipModel({
       center: Point.of({
         x: this.bounds.width / 2,
         y: this.bounds.height - this.shipRadius,
       }),
       radius: this.shipRadius,
       speed: this.shipSpeed,
+    }).also(it => {
+      it.color = this.shipColor;
     });
-    ship.color = this.shipColor;
 
     const enemies = [] as EnemyModel[];
 
@@ -186,62 +207,58 @@ export class GameBuilder {
       for (let column = 0; column < this.enemyGrid.width; column++) {
         const x = this.enemyOrigin.x + this.enemyRadius + (this.enemyRadius * 2 + this.enemyMargin.width) * column;
 
-        const enemy = EnemyModel.create({
+        const enemy = new EnemyModel({
           center: Point.of({x, y}),
           radius: this.enemyRadius,
           speed: this.enemySpeed,
+        }).also(it => {
+          it.color = this.enemyColor;
         });
-        enemy.color = this.enemyColor;
         enemies.push(enemy);
       }
     }
 
-    const missile = MissileModel.create({
+    const missile = new MissileBlueprint({
       center: Point.zero(),
       radius: this.missileRadius,
       speed: this.missileSpeed,
+    }).also(it => {
+      it.color = this.missileColor;
     });
-    missile.color = this.missileColor;
 
-    return new GameModel(rule, ship, enemies, missile);
+    return new GameModel({rule, ship, enemies, missile});
   }
 }
 
 export class GameContext {
+  public readonly frameCount: number;
+  public readonly canvasSize: Size;
+  public readonly direction?: number;
 
-  public constructor(
-    public readonly frameCount: number,
-    public readonly canvasSize: Size,
-    public readonly direction?: number,
-  ) {
-    // no-op
-  }
-
-  static create({frameCount, canvasSize, direction}: {
+  public constructor(nargs: {
     frameCount: number,
     canvasSize: Size,
     direction?: number,
-  }): GameContext {
-    return new GameContext(frameCount, canvasSize, direction);
+  }) {
+    this.frameCount = nargs.frameCount;
+    this.canvasSize = nargs.canvasSize;
+    this.direction = nargs.direction;
   }
 }
 
 export class GameRule {
+  public readonly enemyTick: number;
+  public readonly enemyStep: number;
+  public readonly missileLimit: number;
 
-  constructor(
-    public readonly enemyTick: number,
-    public readonly enemyStep: number,
-    public readonly missileLimit: number,
-  ) {
-    // no-op
-  }
-
-  static create({enemyTick, enemyStep, missileLimit}: {
+  public constructor(nargs: {
     enemyTick: number,
     enemyStep: number,
     missileLimit: number,
-  }): GameRule {
-    return new GameRule(enemyTick, enemyStep, missileLimit);
+  }) {
+    this.enemyTick = nargs.enemyTick;
+    this.enemyStep = nargs.enemyStep;
+    this.missileLimit = nargs.missileLimit;
   }
 }
 
@@ -254,16 +271,16 @@ export class GameModel {
   private readonly _missile: MissileBlueprint;
   private readonly _missiles: MissileModel[] = [];
 
-  constructor(
+  constructor(nargs: {
     rule: GameRule,
     ship: ShipModel,
     enemies: EnemyModel[],
     missile: MissileBlueprint,
-  ) {
-    this._rule = rule;
-    this._ship = ship;
-    this._enemies = [...enemies];
-    this._missile = missile;
+  }) {
+    this._rule = nargs.rule;
+    this._ship = nargs.ship;
+    this._enemies = [...nargs.enemies];
+    this._missile = nargs.missile;
   }
 
   static create(build: (builder: GameBuilder) => void): GameModel {
@@ -287,7 +304,7 @@ export class GameModel {
       return;
     }
 
-    const newMissile = MissileModel.create({
+    const newMissile = new MissileModel({
       center: this._ship.center.copy(),
       radius: this._missile.radius,
       speed: this._missile.speed,

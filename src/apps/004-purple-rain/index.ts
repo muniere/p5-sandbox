@@ -23,7 +23,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = ApplicationModel.create({
+    model = new ApplicationModel({
       bounds: Size.of(context),
       drops: Arrays.generate(Params.DROP_COUNT, () => {
         const origin = Point3D.of({
@@ -36,7 +36,7 @@ export function sketch(context: p5) {
           domain: Numeric.range(0, 20),
           target: Numeric.range(10, 20),
         });
-        return DropModel.create({origin, length});
+        return new DropModel({origin, length});
       }),
     });
     model.color = Params.DROP_COLOR;
