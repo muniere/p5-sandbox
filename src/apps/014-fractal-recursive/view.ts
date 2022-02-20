@@ -1,49 +1,38 @@
-import * as p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Context, Widget } from '../../lib/process';
+import { TreeModel } from './model';
 
-export class TreeWidget {
+export class TreeWidget extends Widget {
+  public model: TreeModel | undefined;
   public angle: number = Math.PI / 4;
 
-  constructor(
-    public readonly context: p5,
-    public readonly stem: number,
-    public readonly scale: number,
-    public readonly limit: number,
-  ) {
-    // no-op
-  }
-
-  static create({context, stem, scale, limit}: {
-    context: p5,
-    stem: number,
-    scale: number,
-    limit: number
-  }): TreeWidget {
-    return new TreeWidget(context, stem, scale, limit);
-  }
-
   draw() {
-    this._draw(this.stem)
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+    this._draw(model)
   }
 
-  private _draw(length: number) {
+  private _draw(model: TreeModel) {
     Context.scope(this.context, $ => {
-      $.line(0, 0, 0, -length);
-      $.translate(0, -length);
+      $.line(0, 0, 0, -model.length);
     });
 
-    if (length < this.limit) {
+    this.context.translate(0, -model.length);
+
+    const next = model.branch();
+    if (!next) {
       return;
     }
 
     Context.scope(this.context, $ => {
       $.rotate(this.angle);
-      this._draw(length * this.scale);
+      this._draw(next);
     });
 
     Context.scope(this.context, $ => {
       $.rotate(-this.angle);
-      this._draw(length * this.scale);
+      this._draw(next);
     });
   }
 }

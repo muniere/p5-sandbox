@@ -1,6 +1,6 @@
-import * as p5 from 'p5';
-import { Element } from 'p5';
+import p5, { Element } from 'p5';
 import { TreeWidget } from './view';
+import { TreeModel } from './model';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
@@ -12,6 +12,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
+  let model: TreeModel;
   let widget: TreeWidget;
   let slider: Element;
 
@@ -23,11 +24,14 @@ export function sketch(context: p5) {
     );
     context.noLoop();
 
-    widget = TreeWidget.create({
-      context: context,
-      stem: context.height * Params.STEM_SCALE,
+    model = new TreeModel({
+      length: context.height * Params.STEM_SCALE,
       scale: Params.BRANCH_SCALE,
       limit: Params.LENGTH_LIMIT,
+    });
+
+    widget = new TreeWidget(context).also(it => {
+      it.model = model;
     });
 
     slider = context.createSlider(0, Math.PI, Math.PI / 4, 0.01);
