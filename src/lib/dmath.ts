@@ -13,7 +13,7 @@ export type SpotMaybe = {
   column?: number,
 }
 
-export type SpotFactory<T> = (spot: Spot) => T;
+export type SpotCallback<T> = (spot: Spot) => T;
 
 export class Spot {
   public constructor(
@@ -163,6 +163,10 @@ export class Dimen {
   }
 }
 
+export interface MatrixFactory<T> {
+  create(spot: Spot): T
+}
+
 export class Matrix<T> {
   private constructor(
     public readonly dimen: Dimen,
@@ -191,10 +195,10 @@ export class Matrix<T> {
     return new Matrix<T>(Dimen.of(dimen), values);
   }
 
-  public static generate<T>(dimen: DimenCompat, factory: SpotFactory<T>): Matrix<T> {
+  public static generate<T>(dimen: DimenCompat, callback: SpotCallback<T>): Matrix<T> {
     const values = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
-        (_, column) => factory(Spot.of({row, column}))
+        (_, column) => callback(Spot.of({row, column}))
       )
     );
 

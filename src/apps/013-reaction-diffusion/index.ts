@@ -1,9 +1,10 @@
 // https://www.youtube.com/watch?v=BV9ny785UNc
 // see http://www.karlsims.com/rd.html for details
 import * as p5 from 'p5';
-import { Size } from '../../lib/graphics2d';
-import { Diffusion, WorldState } from './model';
-import { WorldWidget } from './view';
+import { Dimen } from '../../lib/dmath';
+import { Point, Rect, Size } from '../../lib/graphics2d';
+import { ApplicationModel, DefaultGridFactory, DiffusionModel, GridModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#333333',
@@ -17,25 +18,29 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
-    const size = Math.min(context.windowWidth, context.windowHeight, Params.CANVAS_LIMIT);
+    const size = Math.min(context.windowWidth, context.windowHeight);
 
     context.createCanvas(size, size, context.P2D);
     context.pixelDensity(1);
 
-    state = WorldState.create({
-      bounds: Size.of({
-        width: context.width,
-        height: context.height,
+    model = new ApplicationModel({
+      grid: new GridModel({
+        dimen: Dimen.of(context),
+        factory: new DefaultGridFactory({
+          drop: Rect.of({
+            origin: Point.of({
+              x: Math.floor(context.width / 2) - Params.SEED_RADIUS,
+              y: Math.floor(context.height / 2) - Params.SEED_RADIUS,
+            }),
+            size: Size.square(Params.SEED_RADIUS),
+          })
+        })
       }),
-      drop: Size.of({
-        width: Params.SEED_RADIUS,
-        height: Params.SEED_RADIUS,
-      }),
-      diffusion: Diffusion.create({
+      diffusion: new DiffusionModel({
         a: Params.DIFFUSION_A,
         b: Params.DIFFUSION_B,
         feed: Params.FEED_RATE,
@@ -43,7 +48,7 @@ export function sketch(context: p5) {
       })
     });
 
-    widget = new WorldWidget(context, state);
+    widget = new ApplicationWidget(context, model);
   };
 
   context.draw = function () {
@@ -54,6 +59,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update(Params.GENERATION_SPEED);
+    model.update(Params.GENERATION_SPEED);
+    console.log(context.frameRate());
   };
 }

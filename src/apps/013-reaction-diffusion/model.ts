@@ -1,101 +1,124 @@
-import { Dimen, Matrix, Spot } from '../../lib/dmath';
-import { Point, Rect, Size } from '../../lib/graphics2d';
+import { Dimen, Matrix, MatrixFactory, Spot, SpotCompat } from '../../lib/dmath';
+import { Point, Rect } from '../../lib/graphics2d';
 
 // This process uses mutable operations with primitive structures,
 // to reduce memory allocation costs for too many small objects.
 
-export type CellState = {
+export type CellModel = {
   a: number,
   b: number,
 };
 
-export class GridState {
-  constructor(
-    public readonly matrix: Matrix<CellState>
-  ) {
-    // no-op
+export type GridFactory = MatrixFactory<CellModel>;
+
+export class DefaultGridFactory implements GridFactory {
+  private _drop: Rect;
+
+  constructor(nargs: {
+    drop: Rect,
+  }) {
+    this._drop = nargs.drop;
   }
 
-  static create({dimen, factory}: {
+  create(spot: Spot): CellModel {
+    const point = Point.of({
+      x: spot.column,
+      y: spot.row,
+    });
+
+    if (this._drop.includes(point)) {
+      return {a: 0, b: 1};
+    } else {
+      return {a: 1, b: 0};
+    }
+  }
+}
+
+export class EmptyGridFactory implements GridFactory {
+  create(_: Spot): CellModel {
+    return {a: 0, b: 0};
+  }
+}
+
+export class GridModel {
+  private _matrix: Matrix<CellModel>;
+
+  constructor(nargs: {
     dimen: Dimen,
-    factory: (spot: Spot) => CellState,
-  }): GridState {
-    return new GridState(
-      Matrix.generate(dimen, factory)
-    );
+    factory: GridFactory,
+  }) {
+    this._matrix = Matrix.generate(nargs.dimen, (spot: Spot) => {
+      return nargs.factory.create(spot);
+    });
   }
 
   get width(): number {
-    return this.matrix.width;
+    return this._matrix.width;
   }
 
   get height(): number {
-    return this.matrix.height;
+    return this._matrix.height;
   }
 
   get dimen(): Dimen {
-    return this.matrix.dimen;
+    return this._matrix.dimen;
   }
 
-  getValue(spot: Spot): CellState {
-    return this.matrix.get(spot);
+  getValue(spot: SpotCompat): CellModel {
+    return this._matrix.get(spot);
   }
 
-  setValue(spot: Spot, cell: CellState) {
-    this.matrix.set(spot, cell);
+  setValue(spot: SpotCompat, values: CellModel) {
+    const cell = this._matrix.get(spot);
+    cell.a = values.a;
+    cell.b = values.b;
   }
 
-  laplace(spot: Spot): CellState {
+  laplace(spot: SpotCompat): CellModel {
+    const {row, column} = spot;
+
     let {a, b} = this.getValue(spot);
     {
       a *= -1;
       b *= -1;
     }
     {
-      const s = spot.shift({column: +1})
-      const v = this.getValue(s);
+      const v = this.getValue({row: row, column: column + 1});
       a += v.a * 0.2;
       b += v.b * 0.2;
     }
     {
-      const s = spot.shift({column: -1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row, column: column - 1});
       a += v.a * 0.2;
       b += v.b * 0.2;
     }
     {
-      const s = spot.shift({row: -1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row - 1, column: column});
       a += v.a * 0.2;
       b += v.b * 0.2;
     }
     {
-      const s = spot.shift({row: +1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row + 1, column: column});
       a += v.a * 0.2;
       b += v.b * 0.2;
     }
     {
-      const s = spot.shift({column: -1, row: -1})
-      const v = this.getValue(s);
+      const v = this.getValue({row: row - 1, column: column - 1});
       a += v.a * 0.05;
       b += v.b * 0.05;
     }
     {
-      const s = spot.shift({column: -1, row: +1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row + 1, column: column - 1});
       a += v.a * 0.05;
       b += v.b * 0.05;
     }
     {
-      const s = spot.shift({column: +1, row: -1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row - 1, column: column + 1});
       a += v.a * 0.05;
       b += v.b * 0.05;
     }
     {
-      const s = spot.shift({column: +1, row: +1});
-      const v = this.getValue(s);
+      const v = this.getValue({row: row + 1, column: column + 1});
       a += v.a * 0.05;
       b += v.b * 0.05;
     }
@@ -103,31 +126,29 @@ export class GridState {
   }
 }
 
-export class Diffusion {
-  constructor(
-    public a: number,
-    public b: number,
-    public feed: number,
-    public kill: number,
-  ) {
-    // no-op
-  }
+export class DiffusionModel {
+  private readonly _a: number;
+  private readonly _b: number;
+  private readonly _feed: number;
+  private readonly _kill: number;
 
-  static create({a, b, feed, kill}: {
+  constructor(nargs: {
     a: number,
     b: number,
     feed: number,
     kill: number,
-  }): Diffusion {
-    return new Diffusion(a, b, feed, kill);
+  }) {
+    this._a = nargs.a;
+    this._b = nargs.b;
+    this._feed = nargs.feed;
+    this._kill = nargs.kill;
   }
 
-  next(grid: GridState, result: GridState) {
+  next(grid: GridModel, result: GridModel) {
     for (let row = 0; row < grid.height; row++) {
       for (let column = 0; column < grid.width; column++) {
-        const spot = Spot.of({row, column});
+        const spot = {row, column};
         const cell = grid.getValue(spot);
-        const {a, b} = cell;
 
         if (column <= 0 || grid.width - 1 <= column) {
           result.setValue(spot, cell);
@@ -139,77 +160,52 @@ export class Diffusion {
           continue;
         }
 
+        const {a, b} = cell;
         const lap = grid.laplace(spot);
 
         const newA = a
-          + (this.a * lap.a)
+          + (this._a * lap.a)
           - (a * b * b)
-          + (this.feed * (1.0 - a));
+          + (this._feed * (1.0 - a));
 
         const newB = b
-          + (this.b * lap.b)
+          + (this._b * lap.b)
           + (a * b * b)
-          - (this.kill + this.feed) * b
+          - (this._kill + this._feed) * b
 
-        const newCell = {a: newA, b: newB};
-        result.setValue(spot, newCell);
+        result.setValue(spot, {a: newA, b: newB});
       }
     }
   }
 }
 
-export class WorldState {
-  private _grid: GridState;
-  private readonly _work: GridState;
+export class ApplicationModel {
+  private _grid: GridModel;
+  private _work: GridModel;
+  private readonly _diffusion: DiffusionModel;
 
-  constructor(
-    seed: GridState,
-    private diffusion: Diffusion,
-  ) {
-    this._grid = seed;
-    this._work = GridState.create({
-      dimen: seed.dimen,
-      factory: () => ({a: 0, b: 0})
+  constructor(nargs: {
+    grid: GridModel,
+    diffusion: DiffusionModel,
+  }) {
+    this._grid = nargs.grid;
+    this._work = new GridModel({
+      dimen: nargs.grid.dimen,
+      factory: new EmptyGridFactory(),
     });
+    this._diffusion = nargs.diffusion;
   }
 
-  static create({bounds, drop, diffusion}: {
-    bounds: Size,
-    drop: Size,
-    diffusion: Diffusion,
-  }): WorldState {
-    const frame = Rect.of({
-      origin: Point.of({
-        x: Math.floor(bounds.width / 2) - drop.width,
-        y: Math.floor(bounds.height / 2) - drop.height,
-      }),
-      size: drop,
-    });
-
-    const grid = GridState.create({
-      dimen: Dimen.of(bounds),
-      factory: () => ({a: 1, b: 0}),
-    });
-
-    for (let row = frame.top; row < frame.bottom; row++) {
-      for (let column = frame.left; column < frame.right; column++) {
-        const spot = Spot.of({row, column});
-        const cell = {a: 0, b: 1};
-        grid.setValue(spot, cell);
-      }
-    }
-
-    return new WorldState(grid, diffusion);
-  }
-
-  get grid(): GridState {
+  get grid(): GridModel {
     return this._grid;
   }
 
   update(speed: number) {
     for (let i = 0; i < speed; i++) {
-      this.diffusion.next(this._grid, this._work);
-      this._grid = this._work;
+      this._diffusion.next(this._grid, this._work);
+      const temp = this._work;
+      this._work = this._grid;
+      this._grid = temp;
     }
   }
 }

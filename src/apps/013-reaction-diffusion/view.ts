@@ -2,18 +2,18 @@ import * as p5 from 'p5';
 import { Context } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { Spot } from '../../lib/dmath';
-import { WorldState } from './model';
+import { ApplicationModel } from './model';
 
-export class WorldWidget {
+export class ApplicationWidget {
   constructor(
     public readonly context: p5,
-    public readonly state: WorldState,
+    public readonly model: ApplicationModel,
   ) {
     // no-op
   }
 
   draw() {
-    const grid = this.state.grid;
+    const grid = this.model.grid;
     const valueRange = Numeric.range(0, 255);
 
     Context.scope(this.context, $ => {
