@@ -1,5 +1,6 @@
 import { Context, Widget } from '../../lib/process';
-import { TreeModel } from './model';
+import { ApplicationModel, TreeModel } from './model';
+import p5 from 'p5';
 
 export class TreeWidget extends Widget {
   public model: TreeModel | undefined;
@@ -34,5 +35,30 @@ export class TreeWidget extends Widget {
       $.rotate(-this.angle);
       this._draw(next);
     });
+  }
+}
+
+export class ApplicationWidget extends Widget {
+  public model: ApplicationModel | undefined;
+
+  private readonly _tree: TreeWidget;
+
+  constructor(context: p5) {
+    super(context);
+    this._tree = new TreeWidget(context);
+  }
+
+  set angle(value: number) {
+    this._tree.angle = value;
+  }
+
+  draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    this._tree.model = model.tree;
+    this._tree.draw();
   }
 }

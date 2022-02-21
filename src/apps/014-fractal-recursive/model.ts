@@ -37,3 +37,17 @@ export class TreeModel {
     });
   }
 }
+
+export class ApplicationModel {
+  private _tree: TreeModel;
+
+  constructor(nargs: {
+    tree: TreeModel,
+  }) {
+    this._tree = nargs.tree;
+  }
+
+  get tree(): TreeModel {
+    return this._tree;
+  }
+}
