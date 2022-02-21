@@ -1,58 +1,53 @@
 import { Image } from 'p5';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 
-export class CircleState {
+export class CircleModel {
   public strokeWeight: number = 1;
   public strokeColor?: string = '#FFFFFF';
   public fillColor?: string;
 
-  public readonly center: Point;
+  private readonly _center: Point;
 
   private _radius: number;
   private _growing: boolean = false;
 
-  constructor(
-    center: Point,
+  constructor(nargs: {
     radius: number,
-  ) {
-    this.center = center;
-    this._radius = radius;
+    center: Point,
+  }) {
+    this._radius = nargs.radius;
+    this._center = nargs.center;
   }
 
-  static create({center, radius}: {
-    center: Point,
-    radius: number,
-  }): CircleState {
-    return new CircleState(center, radius);
-  }
-
-  static dist(a: CircleState, b: CircleState): number {
-    return Math.sqrt(
-      Math.pow(a.center.x - b.center.x, 2.0) + Math.pow(a.center.y - b.center.y, 2.0)
-    )
+  static dist(a: CircleModel, b: CircleModel): number {
+    return Point.dist(a._center, b._center);
   }
 
   get radius(): number {
     return this._radius;
   }
 
+  get center(): Point {
+    return this._center;
+  }
+
   get top(): number {
-    return this.center.y - this._radius;
+    return this._center.y - this._radius;
   }
 
   get left(): number {
-    return this.center.x - this._radius;
+    return this._center.x - this._radius;
   }
 
   get right(): number {
-    return this.center.x + this._radius;
+    return this._center.x + this._radius;
   }
 
   get bottom(): number {
-    return this.center.y + this._radius;
+    return this._center.y + this._radius;
   }
 
-  also(mutate: (circle: CircleState) => void): CircleState {
+  also(mutate: (circle: CircleModel) => void): CircleModel {
     mutate(this);
     return this;
   }
@@ -75,64 +70,55 @@ export class CircleState {
     this._growing = false;
   }
 
-  testCover(point: Point): boolean {
-    const dist = Math.sqrt(
-      Math.pow(this.center.x - point.x, 2.0) + Math.pow(this.center.y - point.y, 2.0)
-    );
-    return dist < this._radius;
+  includes(point: Point): boolean {
+    return Point.dist(this._center, point) < this._radius;
   }
 
-  testOverlap(circle: CircleState) {
-    return CircleState.dist(this, circle) < this._radius + circle._radius;
+  intersects(circle: CircleModel) {
+    return CircleModel.dist(this, circle) < this._radius + circle._radius;
   }
 
-  testOverflow(rect: Rect): boolean {
+  overflows(rect: Rect): boolean {
     return this.top < rect.top || rect.bottom < this.bottom || this.left < rect.left || rect.right < this.right;
   }
 }
 
-export class CrowdState {
-  private readonly _box: Rect;
-  private readonly _circles: CircleState[];
+export class CircleCrowdModel {
+  private readonly _frame: Rect;
+  private readonly _circles: CircleModel[];
 
-  constructor(
+  constructor(nargs: {
     frame: Rect,
-    circles: CircleState[],
-  ) {
-    this._box = frame;
-    this._circles = [...circles];
+    circles: CircleModel[],
+  }) {
+    this._frame = nargs.frame;
+    this._circles = [...nargs.circles];
   }
 
-  static create({frame}: {
-    frame: Rect,
-  }): CrowdState {
-    return new CrowdState(frame, []);
-  }
-
-  get circles(): CircleState[] {
+  get circles(): CircleModel[] {
     return [...this._circles];
   }
 
-  testCover(point: Point): boolean {
-    return this._circles.some(it => it.testCover(point));
+  includes(point: Point): boolean {
+    return this._circles.some(it => it.includes(point));
   }
 
-  testOverlap(circle: CircleState) {
-    return this._circles.some(it => it.testOverlap(circle));
+  intersects(circle: CircleModel) {
+    return this._circles.some(it => it.intersects(circle));
   }
 
-  spawn({shape, radius}: {
-    shape: ShapeState,
+  trySpawn({radius, center}: {
     radius: number,
+    center: Point,
   }): boolean {
-    const circle = CircleState.create({
-      center: shape.sample(),
+    const circle = new CircleModel({
+      center: center,
       radius: radius,
     }).also(it => {
       it.startGrow();
     });
 
-    if (this._circles.some(it => it.testOverlap(circle))) {
+    if (this._circles.some(it => it.intersects(circle))) {
       return false;
     }
 
@@ -143,12 +129,12 @@ export class CrowdState {
   update() {
     this._circles
       .filter(it => it.growing)
-      .filter(it => it.testOverflow(this._box))
+      .filter(it => it.overflows(this._frame))
       .forEach(it => it.stopGrow());
 
     this._circles
       .filter(it => it.growing)
-      .filter(it => this._circles.some(other => it != other && it.testOverlap(other)))
+      .filter(it => this._circles.some(other => it != other && it.intersects(other)))
       .forEach(it => it.stopGrow());
 
     this._circles.forEach(
@@ -157,17 +143,19 @@ export class CrowdState {
   }
 }
 
-export class ShapeState {
-  constructor(
-    public points: Point[],
-  ) {
-    // no-op
+export class PixelCrowdModel {
+  private readonly _points: Point[];
+
+  constructor(nargs: {
+    points: Point[],
+  }) {
+    this._points = [...nargs.points];
   }
 
   static analyze({image, predicate}: {
     image: Image,
     predicate: (pixel: number[]) => boolean,
-  }): ShapeState {
+  }): PixelCrowdModel {
     let points = [] as Point[];
 
     for (let x = 0; x < image.width; x++) {
@@ -178,64 +166,65 @@ export class ShapeState {
       }
     }
 
-    return new ShapeState(points);
+    return new PixelCrowdModel({points});
   }
 
   sample(): Point {
-    return this.points.sample();
+    return this._points.sample();
   }
 
-  also(mutate: (shape: ShapeState) => void): ShapeState {
+  also(mutate: (shape: PixelCrowdModel) => void): PixelCrowdModel {
     mutate(this);
     return this;
   }
 
-  filter(predicate: (point: Point) => boolean) {
-    this.points = this.points.filter(predicate);
+  removeWhere(predicate: (point: Point) => boolean) {
+    this._points.removeWhere(predicate);
   }
 
   translate({x, y}: {
     x?: number,
     y?: number,
   }) {
-    this.points = this.points.map(
-      it => Point.of({
-        x: it.x + (x ?? 0),
-        y: it.y + (y ?? 0),
-      })
-    );
+    this._points.forEach(it => {
+      it.plusAssign({x, y});
+    });
   }
 
   scale({sx, sy}: {
     sx?: number,
     sy?: number,
   }) {
-    this.points = this.points.map(
-      it => Point.of({
+    this._points.forEach(it => {
+      it.assign({
         x: it.x * (sx ?? 1),
         y: it.y * (sy ?? 1),
-      })
-    );
+      });
+    });
   }
 }
 
-export class WorldState {
+export class ApplicationModel {
   public spawnChance: number = 0;
   public spawnRadius: number = 0;
   public spawnSpeed: number = 0;
 
-  constructor(
-    public readonly shape: ShapeState,
-    public readonly crowd: CrowdState,
-  ) {
-    // no-op
+  private readonly _pixelCrowd: PixelCrowdModel;
+  private readonly _circleCrowd: CircleCrowdModel;
+
+  constructor(nargs: {
+    pixelCrowd: PixelCrowdModel,
+    circleCrowd: CircleCrowdModel,
+  }) {
+    this._pixelCrowd = nargs.pixelCrowd;
+    this._circleCrowd = nargs.circleCrowd;
   }
 
   static create({bounds, image, predicate}: {
     bounds: Size,
     image: Image,
     predicate: (pixel: number[]) => boolean,
-  }): WorldState {
+  }): ApplicationModel {
     const scale = Math.min(
       bounds.width / image.width,
       bounds.height / image.height,
@@ -246,7 +235,7 @@ export class WorldState {
     const originX = (bounds.width - scaledWidth) / 2;
     const originY = (bounds.height - scaledHeight) / 2;
 
-    const shape = ShapeState.analyze({
+    const pixelCrowd = PixelCrowdModel.analyze({
       image: image,
       predicate: predicate,
     }).also(it => {
@@ -254,19 +243,28 @@ export class WorldState {
       it.translate({x: originX, y: originY});
     });
 
-    const crowd = CrowdState.create({
+    const circleCrowd = new CircleCrowdModel({
       frame: Rect.of({
         origin: Point.zero(),
         size: bounds,
       }),
+      circles: [],
     });
 
-    return new WorldState(shape, crowd);
+    return new ApplicationModel({pixelCrowd, circleCrowd});
   }
 
-  also(mutate: (world: WorldState) => void): WorldState {
+  also(mutate: (world: ApplicationModel) => void): ApplicationModel {
     mutate(this);
     return this;
+  }
+
+  get circleCrowd(): CircleCrowdModel {
+    return this._circleCrowd;
+  }
+
+  get pixelCrowd(): PixelCrowdModel {
+    return this._pixelCrowd;
   }
 
   update(): boolean {
@@ -274,12 +272,12 @@ export class WorldState {
     let chance = this.spawnChance;
 
     while (chance > 0) {
-      const result = this.crowd.spawn({
-        shape: this.shape,
+      const success = this._circleCrowd.trySpawn({
         radius: this.spawnRadius,
+        center: this._pixelCrowd.sample(),
       });
 
-      if (result) {
+      if (success) {
         count += 1;
       }
       if (count >= this.spawnSpeed) {
@@ -293,8 +291,8 @@ export class WorldState {
       return false;
     }
 
-    this.crowd.update();
-    this.shape.filter(point => !this.crowd.testCover(point));
+    this._circleCrowd.update();
+    this._pixelCrowd.removeWhere(point => this._circleCrowd.includes(point));
     return true;
   }
 }

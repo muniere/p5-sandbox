@@ -1,8 +1,7 @@
-import * as p5 from 'p5';
-import { Image } from 'p5';
+import p5, { Image } from 'p5';
 import { Size } from '../../lib/graphics2d';
-import { WorldState } from './model';
-import { WorldWidget } from './view';
+import { ApplicationModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -15,8 +14,8 @@ const Params = Object.freeze({
 
 export function sketch(context: p5) {
   let image: Image;
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.preload = function () {
     image = context.loadImage('shape.png');
@@ -31,7 +30,7 @@ export function sketch(context: p5) {
 
     image.loadPixels();
 
-    state = WorldState.create({
+    model = ApplicationModel.create({
       bounds: Size.of(context),
       image: image,
       predicate: (pixel: number[]) => context.brightness(pixel) > 1
@@ -41,7 +40,9 @@ export function sketch(context: p5) {
       it.spawnRadius = Params.SPAWN_RADIUS;
     });
 
-    widget = new WorldWidget(context, state);
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
+    });
   }
 
   context.draw = function () {
@@ -52,7 +53,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    const success = state.update();
+    const success = model.update();
     if (!success) {
       context.noLoop();
     }

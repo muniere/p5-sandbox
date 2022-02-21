@@ -1,112 +1,70 @@
-import * as p5 from 'p5';
-import { Image } from 'p5';
-import { Context } from '../../lib/process';
-import { Point, Rect } from '../../lib/graphics2d';
-import { CircleState, CrowdState, WorldState } from './model';
+import p5, { Image } from 'p5';
+import { Widget } from '../../lib/process';
+import { Rect } from '../../lib/graphics2d';
+import { ApplicationModel, CircleCrowdModel, CircleModel } from './model';
 
-export class CircleWidget {
-  constructor(
-    public readonly context: p5,
-    public readonly state: CircleState
-  ) {
-    // no-op
-  }
+export class CircleWidget extends Widget<CircleModel> {
 
-  private get strokeWeight(): number {
-    return this.state.strokeWeight;
-  }
+  protected doDraw(model: CircleModel) {
+    this.scope($ => {
+      $.strokeWeight(model.strokeWeight);
 
-  private get strokeColor(): string | undefined {
-    return this.state.strokeColor;
-  }
-
-  private get fillColor(): string | undefined {
-    return this.state.fillColor;
-  }
-
-  private get center(): Point {
-    return this.state.center;
-  }
-
-  private get radius(): number {
-    return this.state.radius;
-  }
-
-  draw() {
-    Context.scope(this.context, $ => {
-      $.strokeWeight(this.strokeWeight);
-
-      if (this.strokeColor) {
-        $.stroke(this.strokeColor);
+      if (model.strokeColor) {
+        $.stroke(model.strokeColor);
       } else {
         $.noStroke();
       }
 
-      if (this.fillColor) {
-        $.fill(this.fillColor);
+      if (model.fillColor) {
+        $.fill(model.fillColor);
       } else {
         $.noFill();
       }
 
-      $.circle(this.center.x, this.center.y, this.radius * 2);
+      $.circle(model.center.x, model.center.y, model.radius * 2);
     });
   }
 }
 
-export class CrowdWidget {
-  constructor(
-    public readonly context: p5,
-    public readonly state: CrowdState,
-  ) {
-    // no-op
+export class CircleCrowdWidget extends Widget<CircleCrowdModel> {
+  private _circle: CircleWidget;
+
+  constructor(context: p5) {
+    super(context);
+    this._circle = new CircleWidget(context);
   }
 
-  draw() {
-    this.state.circles.forEach(it => {
-      new CircleWidget(this.context, it).draw();
+  protected doDraw(model: CircleCrowdModel) {
+    model.circles.forEach(it => {
+      this._circle.model = it;
+      this._circle.draw();
     });
   }
 }
 
-export class ImageWidget {
+export class ImageWidget extends Widget<Image> {
+  public frame: Rect = Rect.zero();
   public alpha: number = 1.0
 
-  constructor(
-    public readonly context: p5,
-    public readonly frame: Rect,
-    public readonly image: Image,
-  ) {
-    // no-op
-  }
-
-  static create({context, frame, image}: {
-    context: p5,
-    frame: Rect,
-    image: Image,
-  }): ImageWidget {
-    return new ImageWidget(context, frame, image);
-  }
-
-  draw() {
-    Context.scope(this.context, $ => {
+  protected doDraw(image: Image) {
+    this.scope($ => {
       $.tint(255, 255 * this.alpha);
-      $.image(this.image, this.frame.left, this.frame.top, this.frame.width, this.frame.height);
+      $.image(image, this.frame.left, this.frame.top, this.frame.width, this.frame.height);
       $.noTint();
     });
   }
 }
 
-export class WorldWidget {
-  private crowd: CrowdWidget;
+export class ApplicationWidget extends Widget<ApplicationModel> {
+  private readonly _circleCrowd: CircleCrowdWidget;
 
-  constructor(
-    public readonly context: p5,
-    public readonly state: WorldState,
-  ) {
-    this.crowd = new CrowdWidget(context, state.crowd);
+  constructor(context: p5) {
+    super(context);
+    this._circleCrowd = new CircleCrowdWidget(context);
   }
 
-  draw() {
-    this.crowd.draw();
+  protected doDraw(model: ApplicationModel) {
+    this._circleCrowd.model = model.circleCrowd;
+    this._circleCrowd.draw();
   }
 }
