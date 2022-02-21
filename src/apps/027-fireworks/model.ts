@@ -11,18 +11,12 @@ export class FireworkModel {
   private _lifespan: number = 0;
   private _age: number = 0;
 
-  constructor(
+  constructor(nargs: {
     explosion: ExplosionModel,
-  ) {
+  }) {
     this._core = undefined;
     this._petals = [];
-    this._explosion = explosion;
-  }
-
-  public static create({explosion}: {
-    explosion: ExplosionModel,
-  }): FireworkModel {
-    return new FireworkModel(explosion);
+    this._explosion = nargs.explosion;
   }
 
   get particles(): CircularMaterial[] {
@@ -99,19 +93,12 @@ export class FireSeedModel {
   private readonly _core: CircularMaterial;
   private readonly _lifespan: number;
 
-  constructor(
+  constructor(nargs: {
     core: CircularMaterial,
     lifetime: number,
-  ) {
-    this._core = core;
-    this._lifespan = lifetime;
-  }
-
-  static create({core, lifetime}: {
-    core: CircularMaterial,
-    lifetime: number,
-  }): FireSeedModel {
-    return new FireSeedModel(core, lifetime);
+  }) {
+    this._core = nargs.core;
+    this._lifespan = nargs.lifetime;
   }
 
   get core(): CircularMaterial {
@@ -142,8 +129,8 @@ export class RandomIgnitionModel implements IgnitionModel {
   }
 
   perform({bounds}: { bounds: Size }): FireSeedModel {
-    return FireSeedModel.create({
-      core: CircularMaterial.create({
+    return new FireSeedModel({
+      core: new CircularMaterial({
         radius: this.radiusRange.sample(),
         center: Point.of({
           x: bounds.width * Math.random(),
@@ -181,7 +168,7 @@ export class RandomExplosionModel implements ExplosionModel {
 
   perform(core: CircularMaterial): CircularMaterial[] {
     return Arrays.generate(this.count, () => {
-      return CircularMaterial.create({
+      return new CircularMaterial({
         radius: core.radius * this.scale,
         center: core.center.copy(),
         velocity: Velocity.of({
@@ -201,25 +188,16 @@ export class ApplicationModel {
   private readonly _ignition: IgnitionModel;
   private readonly _fireworks: FireworkModel[];
 
-  constructor(
-    bounds: Size,
-    gravity: Acceleration,
-    ignition: IgnitionModel,
-    fireworks: FireworkModel[],
-  ) {
-    this._bounds = bounds;
-    this._gravity = gravity;
-    this._ignition = ignition;
-    this._fireworks = [...fireworks];
-  }
-
-  static create({bounds, gravity, ignition, fireworks}: {
+  constructor(nargs: {
     bounds: Size,
     gravity: Acceleration,
     ignition: IgnitionModel,
     fireworks: FireworkModel[],
   }) {
-    return new ApplicationModel(bounds, gravity, ignition, fireworks);
+    this._bounds = nargs.bounds;
+    this._gravity = nargs.gravity;
+    this._ignition = nargs.ignition;
+    this._fireworks = [...nargs.fireworks];
   }
 
   get fireworks(): FireworkModel[] {

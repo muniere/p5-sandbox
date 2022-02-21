@@ -29,7 +29,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = ApplicationModel.create({
+    model = new ApplicationModel({
       bounds: Size.of(context),
       gravity: Acceleration.of({
         x: 0,
@@ -41,7 +41,7 @@ export function sketch(context: p5) {
         it.lifespanRange = Params.FIREWORKS_LIFESPAN_RANGE;
       }),
       fireworks: Arrays.generate(Params.FIREWORKS_COUNT, () => {
-        return FireworkModel.create({
+        return new FireworkModel({
           explosion: RandomExplosionModel.create().also(it => {
             it.count = Params.EXPLOSION_COUNT;
             it.scale = Params.EXPLOSION_SCALE;

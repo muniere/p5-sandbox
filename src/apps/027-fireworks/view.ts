@@ -1,32 +1,20 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { CircularMaterial, Material, RectangularMaterial } from '../../lib/physics2d';
 import { ApplicationModel, FireworkModel } from './model';
 
-export class ParticleWidget {
-  public model: Material | undefined;
+export class ParticleWidget extends Widget<Material> {
   public alpha: number = -1;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: Material) {
     const alphaRange = Numeric.range(0, 255);
 
     const alphaSuffix = this.alpha >= 0
       ? Math.floor(alphaRange.coerce(this.alpha)).toString(16).padStart(2, '0')
       : null;
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       if (model.fillColor && alphaSuffix) {
         $.fill(model.fillColor.slice(0, 7) + alphaSuffix);
       } else if (model.fillColor) {
@@ -53,27 +41,15 @@ export class ParticleWidget {
   }
 }
 
-export class FireworkWidget {
-  public model: FireworkModel | undefined;
-
+export class FireworkWidget extends Widget<FireworkModel> {
   private readonly _particle: ParticleWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._particle = new ParticleWidget(context);
   }
 
-  also(mutate: (widget: FireworkWidget) => void): FireworkWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
+  protected doDraw(model: FireworkModel) {
     if (!model.active) {
       return;
     }
@@ -88,28 +64,15 @@ export class FireworkWidget {
   }
 }
 
-export class ApplicationWidget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private readonly _firework: FireworkWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._firework = new FireworkWidget(context);
   }
 
-  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     model.fireworks.forEach(it => {
       this._firework.model = it;
       this._firework.draw();
