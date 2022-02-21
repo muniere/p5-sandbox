@@ -1,77 +1,80 @@
 import { Vector } from 'p5';
 import { Point } from '../../lib/graphics2d';
 
-export class BranchState {
-  private _children: BranchState[];
+export class BranchModel {
+  private readonly _begin: Point;
+  private readonly _end: Point;
+  private readonly _children: BranchModel[];
 
-  constructor(
-    public begin: Point,
-    public end: Point,
-  ) {
+  constructor(nargs: {
+    begin: Point,
+    end: Point,
+  }) {
+    this._begin = nargs.begin;
+    this._end = nargs.end;
     this._children = [];
   }
 
-  static create({begin, end}: {
-    begin: Point,
-    end: Point,
-  }): BranchState {
-    return new BranchState(begin, end);
+  get begin(): Point {
+    return this._begin;
+  }
+
+  get end(): Point {
+    return this._end;
   }
 
   get length(): number {
-    return Point.dist(this.begin, this.end);
+    return Point.dist(this._begin, this._end);
   }
 
-  get children(): BranchState[] {
+  get children(): BranchModel[] {
     return [...this._children];
   }
 
-  get leaf(): boolean {
+  get isLeaf(): boolean {
     return this._children.length == 0;
   }
 
-  branch({angle, scale}: {angle: number, scale: number}) {
+  branch({angle, scale}: {
+    angle: number,
+    scale: number,
+  }) {
     if (this._children.length > 0) {
       throw new Error('branch can call only once')
     }
 
     const vec = new Vector().set(
-      this.end.x - this.begin.x,
-      this.end.y - this.begin.y,
+      this._end.x - this._begin.x,
+      this._end.y - this._begin.y,
     );
 
     const dir1 = vec.copy().mult(scale).rotate(-Math.abs(angle));
-    const child1 = BranchState.create({
-      begin: this.end.copy(),
-      end: this.end.plus(dir1),
+    const child1 = new BranchModel({
+      begin: this._end.copy(),
+      end: this._end.plus(dir1),
     });
 
     const dir2 = vec.copy().mult(scale).rotate(Math.abs(angle));
-    const child2 = BranchState.create({
-      begin: this.end.copy(),
-      end: this.end.plus(dir2),
+    const child2 = new BranchModel({
+      begin: this._end.copy(),
+      end: this._end.plus(dir2),
     });
 
-    this._children = [child1, child2];
+    this._children.push(child1, child2);
   }
 }
 
-export class TreeState {
-  constructor(
-    public readonly root: BranchState,
-  ) {
-    // no-op
+export class TreeModel {
+  private readonly _root: BranchModel;
+
+  constructor(nargs: {
+    root: BranchModel,
+  }) {
+    this._root = nargs.root;
   }
 
-  static create({begin, end}: {
-    begin: Point,
-    end: Point,
-  }): TreeState {
-    return new TreeState(BranchState.create({begin, end}));
-  }
-
-  walk(callback: (branch: BranchState) => void) {
-    const queue = [this.root];
+  walk(callback: (branch: BranchModel) => void) {
+    const queue = [this._root];
 
     while (queue.length > 0) {
       const node = queue.shift()!;
@@ -80,22 +83,22 @@ export class TreeState {
     }
   }
 
-  branch({angle, scale}: {angle: number, scale: number}) {
-    this.leaves().forEach(it => it.branch({angle, scale}));
+  branch(nargs: { angle: number, scale: number }) {
+    this.leaves().forEach(it => it.branch(nargs));
   }
 
-  leaves(): BranchState[] {
-    if (this.root.leaf) {
-      return [this.root];
+  leaves(): BranchModel[] {
+    if (this._root.isLeaf) {
+      return [this._root];
     }
 
-    const stack = [this.root];
-    const leaves = [] as BranchState[];
+    const stack = [this._root];
+    const leaves = [] as BranchModel[];
 
     while (stack.length > 0) {
       const node = stack.pop()!;
       const children = node.children;
-      leaves.push(...children.filter(it => it.leaf));
+      leaves.push(...children.filter(it => it.isLeaf));
       stack.push(...children.reverse());
     }
 

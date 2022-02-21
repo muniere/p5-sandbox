@@ -1,7 +1,6 @@
-import * as p5 from 'p5';
-import { Element } from 'p5';
+import p5, { Element } from 'p5';
 import { Point } from '../../lib/graphics2d';
-import { TreeState } from './model';
+import { BranchModel, TreeModel } from './model';
 import { TreeWidget } from './view';
 
 const Params = Object.freeze({
@@ -13,7 +12,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: TreeState;
+  let model: TreeModel;
   let widget: TreeWidget;
   let slider: Element;
 
@@ -25,18 +24,22 @@ export function sketch(context: p5) {
     );
     context.noLoop();
 
-    state = TreeState.create({
-      begin: Point.of({
-        x: context.width / 2,
-        y: context.height,
-      }),
-      end: Point.of({
-        x: context.width / 2,
-        y: context.height - Params.STEM_LENGTH,
-      }),
+    model = new TreeModel({
+      root: new BranchModel({
+        begin: Point.of({
+          x: context.width / 2,
+          y: context.height,
+        }),
+        end: Point.of({
+          x: context.width / 2,
+          y: context.height - Params.STEM_LENGTH,
+        }),
+      })
     });
 
-    widget = new TreeWidget(context, state);
+    widget = new TreeWidget(context).also(it => {
+      it.model = model;
+    });
 
     slider = context.createSlider(0, Math.PI, Math.PI / 4, 0.01);
     slider.size(context.windowWidth);
@@ -51,7 +54,7 @@ export function sketch(context: p5) {
   }
 
   context.mouseClicked = function () {
-    state.branch({
+    model.branch({
       angle: Number(slider.value()),
       scale: Params.BRANCH_SCALE,
     });
