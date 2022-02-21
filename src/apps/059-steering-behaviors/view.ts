@@ -2,14 +2,9 @@ import p5 from 'p5';
 import { Widget } from '../../lib/process';
 import { ApplicationModel, VehicleModel } from './model';
 
-export class VehicleWidget extends Widget {
-  public model: VehicleModel | undefined;
+export class VehicleWidget extends Widget<VehicleModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
+  protected doDraw(model: VehicleModel) {
     this.scope($ => {
       if (model.fillColor) {
         $.fill(model.fillColor);
@@ -23,9 +18,7 @@ export class VehicleWidget extends Widget {
   }
 }
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private readonly _vehicle: VehicleWidget;
 
   constructor(context: p5) {
@@ -33,12 +26,7 @@ export class ApplicationWidget extends Widget {
     this._vehicle = new VehicleWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     model.vehicles.forEach(it => {
       this._vehicle.model = it;
       this._vehicle.draw();

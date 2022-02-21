@@ -3,18 +3,12 @@ import { Widget } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { ApplicationModel } from './model';
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   constructor(context: p5) {
     super(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
+  protected doDraw(model: ApplicationModel) {
     const valueRange = Numeric.range(0, 255);
 
     this.scope($ => {

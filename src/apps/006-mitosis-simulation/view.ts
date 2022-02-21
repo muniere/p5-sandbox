@@ -2,15 +2,9 @@ import * as p5 from 'p5';
 import { Widget } from '../../lib/process';
 import { ApplicationModel, CellModel } from './model';
 
-export class CellWidget extends Widget {
-  public model: CellModel | undefined;
+export class CellWidget extends Widget<CellModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: CellModel) {
     this.scope($ => {
       $.fill(model.fillColor);
       $.stroke(model.strokeColor);
@@ -19,9 +13,7 @@ export class CellWidget extends Widget {
   }
 }
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private readonly _cell: CellWidget;
 
   constructor(context: p5) {
@@ -29,12 +21,7 @@ export class ApplicationWidget extends Widget {
     this._cell = new CellWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     model.cells.reversed().forEach(it => {
       this._cell.model = it;
       this._cell.draw();

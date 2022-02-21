@@ -1,21 +1,16 @@
-import { Context, Widget } from '../../lib/process';
-import { ApplicationModel, TreeModel } from './model';
 import p5 from 'p5';
+import { Widget } from '../../lib/process';
+import { ApplicationModel, TreeModel } from './model';
 
-export class TreeWidget extends Widget {
-  public model: TreeModel | undefined;
+export class TreeWidget extends Widget<TreeModel> {
   public angle: number = Math.PI / 4;
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-    this._draw(model)
+  protected doDraw(model: TreeModel) {
+    this._doDraw(model)
   }
 
-  private _draw(model: TreeModel) {
-    Context.scope(this.context, $ => {
+  private _doDraw(model: TreeModel) {
+    this.scope($ => {
       $.line(0, 0, 0, -model.length);
     });
 
@@ -26,21 +21,19 @@ export class TreeWidget extends Widget {
       return;
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.rotate(this.angle);
-      this._draw(next);
+      this._doDraw(next);
     });
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.rotate(-this.angle);
-      this._draw(next);
+      this._doDraw(next);
     });
   }
 }
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private readonly _tree: TreeWidget;
 
   constructor(context: p5) {
@@ -52,12 +45,7 @@ export class ApplicationWidget extends Widget {
     this._tree.angle = value;
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     this._tree.model = model.tree;
     this._tree.draw();
   }

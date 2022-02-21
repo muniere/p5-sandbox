@@ -2,15 +2,9 @@ import p5 from "p5";
 import { Widget } from '../../lib/process';
 import { EnemyModel, GameModel, MissileModel, ShipModel } from './model';
 
-export class ShipWidget extends Widget {
-  public model: ShipModel | undefined;
+export class ShipWidget extends Widget<ShipModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ShipModel) {
     this.scope($ => {
       $.fill(model.color);
       $.rectMode($.CENTER);
@@ -19,14 +13,9 @@ export class ShipWidget extends Widget {
   }
 }
 
-export class EnemyWidget extends Widget {
-  public model: EnemyModel | undefined;
+export class EnemyWidget extends Widget<EnemyModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
+  protected doDraw(model: EnemyModel) {
     if (!model.active) {
       return;
     }
@@ -38,14 +27,9 @@ export class EnemyWidget extends Widget {
   }
 }
 
-export class MissileWidget extends Widget {
-  public model: MissileModel | undefined;
+export class MissileWidget extends Widget<MissileModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
+  protected doDraw(model: MissileModel) {
     if (!model.active) {
       return;
     }
@@ -58,9 +42,7 @@ export class MissileWidget extends Widget {
   }
 }
 
-export class GameWidget extends Widget {
-  public model: GameModel | undefined;
-
+export class GameWidget extends Widget<GameModel> {
   private _ship: ShipWidget;
   private _enemy: EnemyWidget;
   private _missile: MissileWidget;
@@ -72,12 +54,7 @@ export class GameWidget extends Widget {
     this._missile = new MissileWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: GameModel) {
     this._ship.model = model.ship;
     this._ship.draw();
 

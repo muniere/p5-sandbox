@@ -3,8 +3,7 @@ import { Widget } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { ApplicationModel, PlanetModel, SolarSystemModel } from './model';
 
-export class PlanetWidget extends Widget {
-  public model: PlanetModel | undefined;
+export class PlanetWidget extends Widget<PlanetModel> {
   public anchor: Point = Point.zero();
 
   center(): Point {
@@ -19,12 +18,7 @@ export class PlanetWidget extends Widget {
     });
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: PlanetModel) {
     const center = this.center();
 
     this.scope($ => {
@@ -34,9 +28,7 @@ export class PlanetWidget extends Widget {
   }
 }
 
-export class SolarSystemWidget extends Widget {
-  public model: SolarSystemModel | undefined;
-
+export class SolarSystemWidget extends Widget<SolarSystemModel> {
   private readonly _planet: PlanetWidget;
 
   constructor(context: p5) {
@@ -44,12 +36,7 @@ export class SolarSystemWidget extends Widget {
     this._planet = new PlanetWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: SolarSystemModel) {
     const anchors = new Map<string, Point>();
 
     model.walk((planet) => {

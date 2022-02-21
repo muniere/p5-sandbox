@@ -3,15 +3,9 @@ import { Widget } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { ApplicationModel, StarFieldModel, StarModel } from './model';
 
-export class StarWidget extends Widget {
-  public model: StarModel | undefined;
+export class StarWidget extends Widget<StarModel> {
 
-  draw(): void {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: StarModel) {
     const currentX = Numeric.map({
       value: model.center.x / model.center.z,
       domain: Numeric.range(0, 1),
@@ -53,9 +47,7 @@ export class StarWidget extends Widget {
   }
 }
 
-export class StarFieldWidget extends Widget {
-  public model: StarFieldModel | undefined;
-
+export class StarFieldWidget extends Widget<StarFieldModel> {
   private _star: StarWidget;
 
   constructor(context: p5) {
@@ -63,12 +55,7 @@ export class StarFieldWidget extends Widget {
     this._star = new StarWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: StarFieldModel) {
     this.context.translate(
       this.context.width / 2,
       this.context.height / 2,
@@ -81,9 +68,7 @@ export class StarFieldWidget extends Widget {
   }
 }
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private _starField: StarFieldWidget;
 
   constructor(context: p5) {
@@ -91,12 +76,7 @@ export class ApplicationWidget extends Widget {
     this._starField = new StarFieldWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     this._starField.model = model.starField;
     this._starField.draw();
   }

@@ -32,7 +32,7 @@ export class Context {
   }
 }
 
-export class Widget {
+export class BaseWidget {
   public constructor(
     public readonly context: p5,
   ) {
@@ -57,13 +57,29 @@ export class Widget {
   }
 }
 
+export class Widget<Model> extends BaseWidget {
+  public model: Model | undefined;
+
+  draw() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+    this.doDraw(model);
+  }
+
+  protected doDraw(model: Model) {
+    // do nothing; must be overridden by subclasses
+  }
+}
+
 export namespace Vectors {
 
   export function of(nargs: {
     x?: number,
     y?: number,
     z?: number,
-  }) : Vector {
+  }): Vector {
     return new Vector().set(nargs.x, nargs.y, nargs.z);
   }
 }

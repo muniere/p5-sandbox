@@ -2,15 +2,9 @@ import * as p5 from 'p5';
 import { Widget } from '../../lib/process';
 import { FoodModel, GameModel, SnakeModel } from './model';
 
-export class SnakeWidget extends Widget {
-  public model: SnakeModel | undefined;
+export class SnakeWidget extends Widget<SnakeModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: SnakeModel) {
     this.scope($ => {
       $.fill(model.color);
 
@@ -21,15 +15,9 @@ export class SnakeWidget extends Widget {
   }
 }
 
-export class FoodWidget extends Widget {
-  public model: FoodModel | undefined;
+export class FoodWidget extends Widget<FoodModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: FoodModel) {
     this.scope($ => {
       $.fill(model.color);
       $.square(model.point.x, model.point.y, model.scale);
@@ -37,9 +25,7 @@ export class FoodWidget extends Widget {
   }
 }
 
-export class GameWidget extends Widget {
-  public model: GameModel | undefined;
-
+export class GameWidget extends Widget<GameModel> {
   private readonly _snake: SnakeWidget;
   private readonly _food: FoodWidget;
 
@@ -49,12 +35,7 @@ export class GameWidget extends Widget {
     this._food = new FoodWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: GameModel) {
     this._snake.model = model.snake;
     this._snake.draw();
 

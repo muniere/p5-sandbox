@@ -2,15 +2,9 @@ import p5 from 'p5';
 import { Widget } from '../../lib/process';
 import { ApplicationModel, CubeModel, SpongeModel } from './model';
 
-export class CubeWidget extends Widget {
-  public model: CubeModel | undefined;
+export class CubeWidget extends Widget<CubeModel> {
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: CubeModel) {
     this.scope($ => {
       $.translate(model.center.x, model.center.y, model.center.z);
       $.fill(model.color);
@@ -19,9 +13,7 @@ export class CubeWidget extends Widget {
   }
 }
 
-export class SpongeWidget extends Widget {
-  public model: SpongeModel | undefined;
-
+export class SpongeWidget extends Widget<SpongeModel> {
   private _cube: CubeWidget;
 
   constructor(context: p5) {
@@ -29,12 +21,7 @@ export class SpongeWidget extends Widget {
     this._cube = new CubeWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: SpongeModel) {
     this.scope($ => {
       $.rotateX(model.rotation);
       $.rotateY(model.rotation * 0.5)
@@ -50,9 +37,7 @@ export class SpongeWidget extends Widget {
   }
 }
 
-export class ApplicationWidget extends Widget {
-  public model: ApplicationModel | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private _sponge: SpongeWidget;
 
   constructor(context: p5) {
@@ -60,12 +45,7 @@ export class ApplicationWidget extends Widget {
     this._sponge = new SpongeWidget(context);
   }
 
-  draw() {
-    const model = this.model;
-    if (!model) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     this._sponge.model = model.sponge;
     this._sponge.draw();
   }
