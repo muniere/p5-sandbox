@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=8Z9FRiW2Jlc
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Grammar, Machine, Rule } from './model';
 import { MachineWidget } from './view';
 
@@ -15,7 +15,7 @@ export function sketch(context: p5) {
     context.createCanvas(context.windowWidth, 200);
     context.noLoop();
 
-    machine = Machine.create({
+    machine = new Machine({
       grammar: Grammar.assemble([
         Rule.of("S", ["x"]),
         Rule.of("S", ["y"]),
@@ -28,7 +28,9 @@ export function sketch(context: p5) {
       seed: "S"
     })
 
-    widget = new MachineWidget(context, machine);
+    widget = new MachineWidget(context).also(it => {
+      it.model = machine;
+    });
 
     context.createButton("forward")
       .position(10, context.height + 10)

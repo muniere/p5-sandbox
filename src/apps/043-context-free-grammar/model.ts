@@ -58,38 +58,41 @@ export class Grammar {
 }
 
 export class Machine {
-  public stack: string[];
-  public result: string[];
+  private readonly _grammar: Grammar;
+  private readonly _stack: string[];
+  private readonly _result: string[];
 
-  constructor(
-    private grammar: Grammar,
-    seed: string
-  ) {
-    this.stack = [seed];
-    this.result = [];
-  }
-
-  static create({grammar, seed}: {
+  constructor(nargs: {
     grammar: Grammar,
     seed: string,
-  }): Machine {
-    return new Machine(grammar, seed);
+  }) {
+    this._grammar = nargs.grammar;
+    this._stack = [nargs.seed];
+    this._result = [];
+  }
+
+  get stack(): string[] {
+    return [...this._stack];
+  }
+
+  get result(): string[] {
+    return [...this._result];
   }
 
   update() {
-    const token = this.stack.pop();
+    const token = this._stack.pop();
     if (!token) {
       return;
     }
 
-    const next = this.grammar.expand(token);
+    const next = this._grammar.expand(token);
     if (next.length == 0) {
-      this.result.push(token);
+      this._result.push(token);
       return;
     }
 
     next.reverse().forEach(
-      it => this.stack.push(it)
+      it => this._stack.push(it)
     );
   }
 }

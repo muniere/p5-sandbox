@@ -1,42 +1,27 @@
-import * as p5 from 'p5';
-import { Context } from '../../lib/process';
+import p5 from 'p5';
+import { Widget } from '../../lib/process';
 import { Point, Size } from '../../lib/graphics2d';
 import { Machine } from './model';
 
-export class BoxListWidget {
-  public values: string[] = [];
+export class BoxListWidget extends Widget<string[]> {
+  public origin: Point = Point.zero();
+  public boxSize: Size = Size.zero();
 
-  constructor(
-    public readonly context: p5,
-    public readonly origin: Point,
-    public readonly boxSize: Size,
-  ) {
-    // no-op
-  }
-
-  static create({context, origin, itemSize}: {
-    context: p5,
-    origin: Point,
-    itemSize: Size,
-  }): BoxListWidget {
-    return new BoxListWidget(context, origin, itemSize);
-  }
-
-  draw() {
-    Context.scope(this.context, $ => {
+  protected doDraw(model: string[]) {
+    this.scope($ => {
       $.stroke(0);
       $.textAlign($.CENTER);
       $.textStyle($.NORMAL);
 
       $.translate(this.origin.x, this.origin.y);
 
-      if (this.values.length > 0) {
+      if (model.length > 0) {
         let origin = new p5.Vector();
         let size = this.boxSize;
 
-        this.values.forEach((value) => {
+        model.forEach((char) => {
           $.rect(origin.x, origin.y, size.width, size.height);
-          $.text(value, origin.x + size.width / 2, origin.y + size.height / 2 + 5);
+          $.text(char, origin.x + size.width / 2, origin.y + size.height / 2 + 5);
 
           origin = origin.copy().add(size.width);
 
@@ -58,39 +43,35 @@ export class BoxListWidget {
   }
 }
 
-export class MachineWidget {
-  private stackWidget: BoxListWidget;
-  private listWidget: BoxListWidget;
+export class MachineWidget extends Widget<Machine> {
+  private _stack: BoxListWidget;
+  private _list: BoxListWidget;
 
-  constructor(
-    public readonly context: p5,
-    public readonly machine: Machine,
-  ) {
-    this.stackWidget = BoxListWidget.create({
-      context: context,
-      origin: Point.of({x: 10, y: 25}),
-      itemSize: Size.of({width: 50, height: 50}),
+  constructor(context: p5) {
+    super(context);
+
+    this._stack = new BoxListWidget(context).also(it => {
+      it.origin = Point.of({x: 10, y: 25});
+      it.boxSize = Size.of({width: 50, height: 50});
     });
 
-    this.listWidget = BoxListWidget.create({
-      context: context,
-      origin: Point.of({x: 10, y: 105}),
-      itemSize: Size.of({width: 50, height: 50}),
+    this._list = new BoxListWidget(context).also(it => {
+      it.origin = Point.of({x: 10, y: 105});
+      it.boxSize = Size.of({width: 50, height: 50});
     });
-    // no-op
   }
 
-  draw() {
-    Context.scope(this.context, $ => {
-      $.text(`Stack (${this.machine.stack.length})`, 10, 20);
+  protected doDraw(model: Machine) {
+    this.scope($ => {
+      $.text(`Stack (${model.stack.length})`, 10, 20);
 
-      this.stackWidget.values = this.machine.stack;
-      this.stackWidget.draw();
+      this._stack.model = model.stack;
+      this._stack.draw();
 
-      $.text(`Result (${this.machine.result.length})`, 10, 100);
+      $.text(`Result (${model.result.length})`, 10, 100);
 
-      this.listWidget.values = this.machine.result;
-      this.listWidget.draw();
+      this._list.model = model.result;
+      this._list.draw();
     });
   }
 }
