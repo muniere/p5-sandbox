@@ -1,5 +1,5 @@
 import p5, { Element } from 'p5';
-import { ApplicationWidget, TreeWidget } from './view';
+import { ApplicationWidget } from './view';
 import { ApplicationModel, TreeModel } from './model';
 
 const Params = Object.freeze({

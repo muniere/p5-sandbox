@@ -57,7 +57,7 @@ export class LexicographicSolver {
 
   static create({points}: {
     points: Point[],
-  }) : LexicographicSolver {
+  }): LexicographicSolver {
     const generator = PathGenerator.create({
       points: [...points],
     });

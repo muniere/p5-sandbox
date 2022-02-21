@@ -75,7 +75,7 @@ export class ImageMachine {
   dither() {
     const speed = this._speed > 0 ? this._speed : Infinity;
 
-    for (let i = 0; i < speed && this.hasNext; i++){
+    for (let i = 0; i < speed && this.hasNext; i++) {
       this.ditherPixel(this._cursor);
       this._cursor += 1;
     }

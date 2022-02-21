@@ -1,5 +1,5 @@
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { Acceleration, CircularMaterial, Velocity } from '../../lib/physics2d';
+import { CircularMaterial } from '../../lib/physics2d';
 
 export enum BallTag {
   normal,

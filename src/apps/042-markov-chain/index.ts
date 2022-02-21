@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=eGFJ8vugIWA
 import * as p5 from 'p5';
-import { MarkovChain, MarkovWriter } from './model';
+import { MarkovWriter } from './model';
 
 const Params = Object.freeze({
   SRC_PATH: 'names.txt',
@@ -10,7 +10,7 @@ const Params = Object.freeze({
 export function sketch(context: p5) {
   let texts: string[];
 
-  context.preload = function() {
+  context.preload = function () {
     context.loadStrings(Params.SRC_PATH, (result) => {
       texts = result;
     });

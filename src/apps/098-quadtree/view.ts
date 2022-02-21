@@ -1,6 +1,6 @@
 import p5 from 'p5';
 import { Context } from '../../lib/process';
-import { DivisionState, BallState, BallTag, TreeState, WorldState } from './model';
+import { BallState, BallTag, DivisionState, TreeState, WorldState } from './model';
 
 export class MaterialWidget {
   public state: BallState | undefined;

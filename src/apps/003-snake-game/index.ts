@@ -3,7 +3,7 @@ import * as p5 from 'p5';
 import { IntegerRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 import { FoodModel, GameModel, SnakeModel } from './model';
-import { GameWidget, GameMaster } from './view';
+import { GameMaster, GameWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',

@@ -1,5 +1,4 @@
 import { Image } from 'p5';
-import { Arrays } from '../../lib/stdlib';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 
 export class CircleState {

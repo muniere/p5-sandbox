@@ -22,7 +22,7 @@ export class SimulationWidget {
     // no-op
   }
 
-  map<T>(callback: (widget: SimulationWidget) => T): T{
+  map<T>(callback: (widget: SimulationWidget) => T): T {
     return callback(this);
   }
 

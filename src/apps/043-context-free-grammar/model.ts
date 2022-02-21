@@ -1,5 +1,3 @@
-import { Arrays } from '../../lib/stdlib';
-
 export class Token {
   constructor(
     public readonly value: string,

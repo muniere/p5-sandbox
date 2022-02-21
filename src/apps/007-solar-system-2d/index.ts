@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=l8SiJ-RmeHU
 import p5 from 'p5';
 import { ApplicationModel, SolarSystemModel } from './model';
-import { ApplicationWidget, SolarSystemWidget } from './view';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#000000',

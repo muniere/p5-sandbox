@@ -3,7 +3,7 @@ import * as p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
 import { Colors } from '../../lib/drawing';
 import { Point, Size } from '../../lib/graphics2d';
-import { CellModel, ApplicationModel } from './model';
+import { ApplicationModel, CellModel } from './model';
 import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
