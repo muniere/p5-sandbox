@@ -129,12 +129,17 @@ Array.prototype.remove = function (i: number) {
 }
 
 Array.prototype.removeWhere = function (predicate: (item: any) => boolean) {
+  const carried = [];
   const removed = [];
-  for (let i = this.length - 1; i >= 0; i--) {
-    if (predicate(this[i])) {
-      removed.unshift(this.remove(i));
+  for (let i = 0; i < this.length; i++) {
+    const v = this[i];
+    if (predicate(v)) {
+      removed.push(v);
+    } else {
+      carried.push(v);
     }
   }
+  this.splice(0, this.length, ...carried);
   return removed;
 }
 
