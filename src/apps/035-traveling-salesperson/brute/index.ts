@@ -1,7 +1,6 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Arrays } from '../../../lib/stdlib';
-import { Point, Size } from '../../../lib/graphics2d';
-import { ProgressState } from '../shared/model';
+import { Point, Rect, Size } from '../../../lib/graphics2d';
 import { PathWidget, ProgressWidget } from '../shared/view';
 import { LexicographicSolver } from './model';
 
@@ -18,7 +17,8 @@ const Params = Object.freeze({
 
 export function sketch(context: p5) {
   let solver: LexicographicSolver;
-  let progress: ProgressWidget;
+  let pathWidget: PathWidget;
+  let progressWidget: ProgressWidget;
 
   context.setup = function () {
     context.createCanvas(context.windowWidth, context.windowHeight);
@@ -32,16 +32,19 @@ export function sketch(context: p5) {
       })
     });
 
-    progress = ProgressWidget.create({
-      context: context,
-      origin: Point.of({
-        x: Params.LABEL_MARGIN,
-        y: Params.LABEL_MARGIN,
-      }),
-      size: Size.of({
-        width: context.width - Params.LABEL_MARGIN * 2,
-        height: context.height - Params.LABEL_MARGIN * 2,
-      }),
+    pathWidget = new PathWidget(context);
+
+    progressWidget = new ProgressWidget(context).also(it => {
+      it.frame = Rect.of({
+        origin: Point.of({
+          x: Params.LABEL_MARGIN,
+          y: Params.LABEL_MARGIN,
+        }),
+        size: Size.of({
+          width: context.width - Params.LABEL_MARGIN * 2,
+          height: context.height - Params.LABEL_MARGIN * 2,
+        }),
+      });
     });
   }
 
@@ -50,32 +53,29 @@ export function sketch(context: p5) {
     context.background(Params.CANVAS_COLOR);
 
     // widget
-    if (solver.state && solver.hasNext) {
-      const widget = new PathWidget(context, solver.state);
-      widget.color = Params.SHAPE_COLOR;
-      widget.weight = 1;
-      widget.draw();
+    if (solver.path && solver.hasNext) {
+      pathWidget.model = solver.path;
+      pathWidget.color = Params.SHAPE_COLOR;
+      pathWidget.weight = 1;
+      pathWidget.draw();
     }
 
     if (solver.answer) {
-      const widget = new PathWidget(context, solver.answer);
+      pathWidget.model = solver.answer;
 
       if (solver.hasNext) {
-        widget.color = Params.CANDIDATE_COLOR;
-        widget.weight = Params.CANDIDATE_WEIGHT;
+        pathWidget.color = Params.CANDIDATE_COLOR;
+        pathWidget.weight = Params.CANDIDATE_WEIGHT;
       } else {
-        widget.color = Params.ANSWER_COLOR;
-        widget.weight = Params.ANSWER_WEIGHT;
+        pathWidget.color = Params.ANSWER_COLOR;
+        pathWidget.weight = Params.ANSWER_WEIGHT;
       }
 
-      widget.draw();
+      pathWidget.draw();
     }
 
-    progress.state = ProgressState.of({
-      total: solver.size,
-      current: solver.count,
-    });
-    progress.draw();
+    progressWidget.model = solver.progress;
+    progressWidget.draw();
 
     // update
     if (solver.hasNext) {

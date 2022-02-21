@@ -1,31 +1,31 @@
 import { Arrays } from '../../../lib/stdlib';
 import { Point } from '../../../lib/graphics2d';
-import { PathState } from '../shared/model';
+import { PathModel, ProgressModel } from '../shared/model';
 
-export abstract class Cross {
-  abstract perform(a: PathState, b: PathState): PathState
+export abstract class CrossModel {
+  abstract perform(a: PathModel, b: PathModel): PathModel
 }
 
-export class CloneCross extends Cross {
+export class CloneCrossModel extends CrossModel {
 
-  static create(): CloneCross {
-    return new CloneCross();
+  static create(): CloneCrossModel {
+    return new CloneCrossModel();
   }
 
-  perform(a: PathState, b: PathState): PathState {
-    return PathState.create({
+  perform(a: PathModel, b: PathModel): PathModel {
+    return new PathModel({
       points: [...a.points],
     });
   }
 }
 
-export class JointCross extends Cross {
+export class JointCrossModel extends CrossModel {
 
-  static create(): JointCross {
-    return new JointCross();
+  static create(): JointCrossModel {
+    return new JointCrossModel();
   }
 
-  perform(a: PathState, b: PathState): PathState {
+  perform(a: PathModel, b: PathModel): PathModel {
     const i = Math.random() * a.points.length;
     const j = Math.random() * a.points.length;
 
@@ -35,35 +35,32 @@ export class JointCross extends Cross {
     const head = a.points.slice(start, end);
     const tail = b.points.filter(it1 => head.findIndex(it2 => it1.equals(it2)) == -1);
 
-    return PathState.create({
+    return new PathModel({
       points: [...head, ...tail],
     });
   }
 }
 
-export abstract class Mutation {
+export abstract class MutationModel {
   abstract rate: number;
 
-  abstract perform(path: PathState): PathState;
+  abstract perform(path: PathModel): PathModel;
 }
 
-export class NoiseMutation extends Mutation {
+export class NoiseMutationModel extends MutationModel {
+  public readonly rate: number;
+  public readonly depth: number;
 
-  constructor(
-    public readonly rate: number,
-    public readonly depth: number,
-  ) {
-    super();
-  }
-
-  static create({rate, depth}: {
+  constructor(nargs: {
     rate: number,
     depth: number,
-  }): NoiseMutation {
-    return new NoiseMutation(rate, depth);
+  }) {
+    super();
+    this.rate = nargs.rate;
+    this.depth = nargs.depth;
   }
 
-  perform(path: PathState): PathState {
+  perform(path: PathModel): PathModel {
     return path.also(it => {
       for (let i = 0; i < this.depth; i++) {
         it.noise();
@@ -72,34 +69,23 @@ export class NoiseMutation extends Mutation {
   }
 }
 
-export class PathCrowdState {
-  private _paths: PathState[];
+export class PathGroupModel {
+  private _paths: PathModel[];
   private _generation: number = 1;
+  public readonly cross: CrossModel;
+  public readonly mutation: MutationModel;
 
-  constructor(
-    paths: PathState[],
-    public readonly cross: Cross,
-    public readonly mutation: Mutation,
-  ) {
-    this._paths = [...paths];
+  constructor(nargs: {
+    paths: PathModel[],
+    cross: CrossModel,
+    mutation: MutationModel,
+  }) {
+    this._paths = [...nargs.paths];
+    this.cross = nargs.cross;
+    this.mutation = nargs.mutation;
   }
 
-  static create({breadth, points, cross, mutation}: {
-    breadth: number
-    points: Point[],
-    cross: Cross,
-    mutation: Mutation,
-  }): PathCrowdState {
-    const paths = Arrays.generate(breadth, () => {
-      return PathState.create({
-        points: points.shuffled(),
-      });
-    });
-
-    return new PathCrowdState(paths, cross, mutation);
-  }
-
-  get paths(): PathState[] {
+  get paths(): PathModel[] {
     return [...this._paths];
   }
 
@@ -107,7 +93,7 @@ export class PathCrowdState {
     return this._generation;
   }
 
-  best(): PathState {
+  best(): PathModel {
     return this._paths.minBy(it => it.measure());
   }
 
@@ -145,53 +131,62 @@ export class PathCrowdState {
 }
 
 export class GeneticSolver {
-  private _answer: PathState | undefined;
+  private readonly _group: PathGroupModel;
+  private readonly _limit: number;
+  private _answer: PathModel | undefined;
 
-  constructor(
-    private readonly _crowd: PathCrowdState,
-    private readonly _limit: number,
-  ) {
-    // no-op
+  constructor(nargs: {
+    paths: PathModel[],
+    cross: CrossModel,
+    mutation: MutationModel,
+    limit: number,
+  }) {
+    this._group = new PathGroupModel({
+      paths: nargs.paths,
+      cross: nargs.cross,
+      mutation: nargs.mutation,
+    });
+    this._limit = nargs.limit;
   }
 
-  static create({breadth, points, cross, mutation, limit}: {
-    breadth: number
+  static create({points, concurrency, cross, mutation, limit}: {
     points: Point[],
-    cross: Cross,
-    mutation: Mutation,
+    concurrency: number,
+    cross: CrossModel,
+    mutation: MutationModel,
     limit: number,
   }): GeneticSolver {
-    const crowd = PathCrowdState.create({
-      breadth, points, cross, mutation
+    const paths = Arrays.generate(concurrency, () => {
+      return new PathModel({
+        points: points.shuffled(),
+      });
     });
-
-    return new GeneticSolver(crowd, limit);
+    return new GeneticSolver({paths, cross, mutation, limit});
   }
 
   get hasNext(): boolean {
-    return this._crowd.generation < this._limit;
+    return this._group.generation < this._limit;
   }
 
-  get generation(): number {
-    return this._crowd.generation;
+  get paths(): PathModel[] {
+    return this._group.paths;
   }
 
-  get limit(): number {
-    return this._limit;
+  get progress(): ProgressModel {
+    return new ProgressModel({
+      total: this._limit,
+      current: this._group.generation,
+    });
   }
 
-  get state(): PathState[] {
-    return this._crowd.paths;
-  }
-
-  get answer(): PathState | undefined {
+  get answer(): PathModel | undefined {
     return this._answer;
   }
 
   next() {
-    this._crowd.cycle();
+    this._group.cycle();
 
-    const path = this._crowd.best();
+    const path = this._group.best();
     if (!path) {
       return;
     }

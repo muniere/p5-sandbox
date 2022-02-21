@@ -1,21 +1,20 @@
 import { Point } from '../../../lib/graphics2d';
 
-export class PathState {
+export class PathModel {
+  private readonly _points: Point[];
   private _length: number = -1;
 
-  constructor(
-    public readonly points: Point[],
-  ) {
-    // no-op
-  }
-
-  static create({points}: {
+  constructor(nargs: {
     points: Point[]
-  }): PathState {
-    return new PathState(points);
+  }) {
+    this._points = [...nargs.points];
   }
 
-  also(mutate: (path: PathState) => void): PathState {
+  get points(): Point[] {
+    return this._points;
+  }
+
+  also(mutate: (path: PathModel) => void): PathModel {
     mutate(this);
     return this;
   }
@@ -26,34 +25,29 @@ export class PathState {
     }
 
     let length = 0
-    for (let i = 1; i < this.points.length; i++) {
-      length += Point.dist(this.points[i], this.points[i - 1]);
+    for (let i = 1; i < this._points.length; i++) {
+      length += Point.dist(this._points[i], this._points[i - 1]);
     }
     this._length = length;
     return length;
   }
 
   noise() {
-    const i = this.points.sampleIndex();
-    const j = this.points.sampleIndex();
-    const tmp = this.points[i];
-    this.points[i] = this.points[j];
-    this.points[j] = tmp;
+    const i = this._points.sampleIndex();
+    const j = this._points.sampleIndex();
+    this._points.swap(i, j);
   }
 }
 
-export class ProgressState {
-  constructor(
-    public readonly total: number,
-    public readonly current: number,
-  ) {
-    // no-op
-  }
+export class ProgressModel {
+  public readonly total: number;
+  public readonly current: number;
 
-  static of({total, current}: {
+  constructor(nargs: {
     total: number,
     current: number,
-  }): ProgressState {
-    return new ProgressState(total, current);
+  }) {
+    this.total = nargs.total;
+    this.current = nargs.current;
   }
 }

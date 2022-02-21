@@ -1,42 +1,30 @@
-import * as p5 from 'p5';
-import { Context } from '../../../lib/process';
-import { Point, Rect, Size } from '../../../lib/graphics2d';
-import { PathState, ProgressState } from './model';
+import { Widget } from '../../../lib/process';
+import { Rect } from '../../../lib/graphics2d';
+import { PathModel, ProgressModel } from './model';
 
-export class PathWidget {
+export class PathWidget extends Widget<PathModel> {
   public color: string = '#FFFFFF';
   public weight: number = 1;
 
-  constructor(
-    public readonly context: p5,
-    public readonly state: PathState,
-  ) {
-    // no-op
-  }
-
-  private get points(): Point[] {
-    return this.state.points;
-  }
-
-  draw() {
+  protected doDraw(model: PathModel) {
     // nodes
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(this.color);
       $.fill(this.color);
 
-      this.points.forEach(
+      model.points.forEach(
         it => this.context.ellipse(it.x, it.y, 8)
       );
     });
 
     // edges
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(this.color);
       $.strokeWeight(this.weight);
       $.noFill();
 
-      Context.shape($, 'open', $$ => {
-        this.points.forEach(
+      this.shape('open', $$ => {
+        model.points.forEach(
           it => $$.vertex(it.x, it.y)
         );
       });
@@ -44,55 +32,37 @@ export class PathWidget {
   }
 }
 
-export class ProgressWidget {
+export class ProgressWidget extends Widget<ProgressModel> {
   private integerFormat = Intl.NumberFormat([]);
   private fractionFormat = Intl.NumberFormat([], {
     minimumFractionDigits: 3,
     maximumFractionDigits: 3,
   });
 
+  public frame: Rect = Rect.zero();
   public textSize: number = 20;
   public textColor: string = '#FFFFFF';
 
-  public state: ProgressState | undefined;
-
-  constructor(
-    public context: p5,
-    public frame: Rect,
-  ) {
-    // no-op
+  protected doDraw(model: ProgressModel) {
+    this.scope($ => {
+      $.push();
+      $.noStroke();
+      $.fill(this.textColor);
+      $.textAlign($.RIGHT, $.TOP)
+      $.textSize(this.textSize);
+      $.text(
+        this.format(model),
+        this.frame.left, this.frame.top,
+        this.frame.right, this.frame.bottom,
+      );
+      $.pop();
+    });
   }
 
-  static create({context, origin, size}: {
-    context: p5,
-    origin: Point,
-    size: Size,
-  }): ProgressWidget {
-    return new ProgressWidget(context, Rect.of({origin, size}));
-  }
-
-  draw() {
-    if (!this.state) {
-      return;
-    }
-
-    this.context.push();
-    this.context.noStroke();
-    this.context.fill(this.textColor);
-    this.context.textAlign(this.context.RIGHT, this.context.TOP)
-    this.context.textSize(this.textSize);
-    this.context.text(
-      this.format(this.state),
-      this.frame.left, this.frame.top,
-      this.frame.right, this.frame.bottom,
-    );
-    this.context.pop();
-  }
-
-  private format(state: ProgressState): string {
-    const currentLabel = this.integerFormat.format(state.current);
-    const totalLabel = this.integerFormat.format(state.total);
-    const percentLabel = this.fractionFormat.format(100 * state.current / state.total)
+  private format(model: ProgressModel): string {
+    const currentLabel = this.integerFormat.format(model.current);
+    const totalLabel = this.integerFormat.format(model.total);
+    const percentLabel = this.fractionFormat.format(100 * model.current / model.total)
 
     return `${currentLabel} / ${totalLabel}\n(${percentLabel}%)`;
   }

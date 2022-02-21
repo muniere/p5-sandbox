@@ -1,27 +1,18 @@
 import { Generators } from '../../../lib/stdlib';
 import { Point } from '../../../lib/graphics2d';
-import { PathState } from '../shared/model';
+import { PathModel, ProgressModel } from '../shared/model';
 
 export class PathGenerator {
-  public color: string = '#FFFFFF';
-  public weight: number = 1;
-
   private readonly _points: Point[];
   private readonly _size: number;
   private readonly _permutation: Generator<number[]>;
 
-  constructor(
+  constructor(nargs: {
     points: Point[],
-  ) {
-    this._points = points.sortedAsc(it => Point.dist(it, Point.zero()));
-    this._size = points.map((_, i) => i + 1).reduce((acc, n) => acc * n, 1);
-    this._permutation = Generators.permutation(points.map((_, i) => i));
-  }
-
-  static create({points}: {
-    points: Point[],
-  }): PathGenerator {
-    return new PathGenerator(points);
+  }) {
+    this._points = nargs.points.sortedAsc(it => Point.dist(it, Point.zero()));
+    this._size = nargs.points.map((_, i) => i + 1).reduce((acc, n) => acc * n, 1);
+    this._permutation = Generators.permutation(nargs.points.map((_, i) => i));
   }
 
   get size(): number {
@@ -33,62 +24,60 @@ export class PathGenerator {
     return this;
   }
 
-  next(): PathState | undefined {
+  next(): PathModel | undefined {
     const result = this._permutation.next();
     if (result.done) {
       return undefined;
     }
-    return PathState.create({
+    return new PathModel({
       points: result.value.map(i => this._points[i])
     });
   }
 }
 
 export class LexicographicSolver {
-  private _state: PathState | undefined;
-  private _answer: PathState | undefined;
+  private _path: PathModel | undefined;
+  private _answer: PathModel | undefined;
   private _count: number = 0;
+  private readonly _generator: PathGenerator;
 
-  constructor(
-    private readonly _generator: PathGenerator,
-  ) {
-    // no-op
+  constructor(nargs: {
+    points: Point[],
+  }) {
+    this._generator = new PathGenerator({
+      points: [...nargs.points],
+    });
   }
 
   static create({points}: {
     points: Point[],
   }): LexicographicSolver {
-    const generator = PathGenerator.create({
-      points: [...points],
-    });
-
-    return new LexicographicSolver(generator);
+    return new LexicographicSolver({points});
   }
 
   get hasNext(): boolean {
     return this._count < this._generator.size;
   }
 
-  get count(): number {
-    return this._count;
+  get path(): PathModel | undefined {
+    return this._path;
   }
 
-  get size(): number {
-    return this._generator.size;
+  get progress(): ProgressModel {
+    return new ProgressModel({
+      total: this._generator.size,
+      current: this._count,
+    });
   }
 
-  get state(): PathState | undefined {
-    return this._state;
-  }
-
-  get answer(): PathState | undefined {
+  get answer(): PathModel | undefined {
     return this._answer;
   }
 
   next() {
     const path = this._generator.next();
 
-    this._state = path;
+    this._path = path;
 
     if (!path) {
       return;
