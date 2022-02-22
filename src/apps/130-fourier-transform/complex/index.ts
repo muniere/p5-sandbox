@@ -2,9 +2,10 @@ import * as p5 from 'p5';
 import { Complex } from '../../../lib/cmath';
 import { Point } from '../../../lib/graphics2d';
 import * as data from '../shared/data';
-import { ChainState, CircleState, Clock, PathState } from '../shared/model';
+import { ChainState, CircleState, PathState } from '../shared/model';
 import { ComplexWorldState } from './model';
 import { ComplexWorldWidget } from './view';
+import { FrameClock } from '../../../lib/process';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -39,7 +40,7 @@ export function sketch(context: p5) {
     });
 
     state = ComplexWorldState.create({
-      clock: Clock.create({
+      clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / values.length,
       }),

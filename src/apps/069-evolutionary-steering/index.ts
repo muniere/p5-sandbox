@@ -1,16 +1,8 @@
 import * as p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
+import { FrameClock } from '../../lib/process';
 import { Point, Size } from '../../lib/graphics2d';
-import {
-  Clock,
-  ItemFeeder,
-  ItemState,
-  ScoreGenome,
-  SenseGenome,
-  VehicleGenome,
-  VehicleState,
-  WorldState
-} from './model';
+import { ItemFeeder, ItemState, ScoreGenome, SenseGenome, VehicleGenome, VehicleState, WorldState } from './model';
 import { WorldWidget } from './view';
 
 const Params = Object.freeze({
@@ -91,7 +83,7 @@ export function sketch(context: p5) {
       });
     });
 
-    const clock = Clock.create({
+    const clock = new FrameClock({
       context: context,
       speed: Params.FEED_CLOCK,
     });

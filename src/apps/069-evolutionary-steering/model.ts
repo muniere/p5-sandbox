@@ -1,5 +1,5 @@
-import * as p5 from 'p5';
 import { Vector } from 'p5';
+import { FrameClock } from '../../lib/process';
 import { NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 import { Acceleration, Force, Velocity } from '../../lib/physics2d';
@@ -9,26 +9,6 @@ const Rule = Object.freeze({
   MAX_SPEED: 5,
   MAX_FORCE: 0.5,
 });
-
-export class Clock {
-  constructor(
-    public context: p5,
-    public speed: number,
-  ) {
-    // no-op
-  }
-
-  static create({context, speed}: {
-    context: p5,
-    speed: number,
-  }): Clock {
-    return new Clock(context, speed);
-  }
-
-  time(): number {
-    return this.context.frameCount * this.speed;
-  }
-}
 
 export enum ItemType {
   medicine,
@@ -404,12 +384,12 @@ export class VehicleState {
 export class ItemFeeder {
   public target?: ItemState[];
 
-  private readonly _clock: Clock;
+  private readonly _clock: FrameClock;
   private readonly _interval: number;
   private readonly _factory: () => ItemState[];
 
   constructor(
-    clock: Clock,
+    clock: FrameClock,
     interval: number,
     factory: () => ItemState[],
   ) {
@@ -419,7 +399,7 @@ export class ItemFeeder {
   }
 
   static create({clock, interval, factory}: {
-    clock: Clock,
+    clock: FrameClock,
     interval: number,
     factory: () => ItemState[],
   }): ItemFeeder {

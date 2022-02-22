@@ -27,6 +27,31 @@ export module Context {
   }
 }
 
+export class FrameClock {
+  private readonly _context: p5;
+  private readonly _speed: number;
+
+  public constructor(nargs: {
+    context: p5,
+    speed: number,
+  }) {
+    this._context = nargs.context;
+    this._speed = nargs.speed;
+  }
+
+  time(): number {
+    return this._context.frameCount * this._speed;
+  }
+
+  get speed(): number {
+    return this._speed;
+  }
+
+  get frameCount(): number {
+    return this._context.frameCount
+  }
+}
+
 export class BaseWidget {
   public constructor(
     public readonly context: p5,

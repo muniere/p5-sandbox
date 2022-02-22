@@ -1,8 +1,9 @@
 import * as p5 from 'p5';
+import { FrameClock } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { Complex } from '../../../lib/cmath';
 import * as data from '../shared/data';
-import { ChainState, CircleState, Clock, PathState } from '../shared/model';
+import { ChainState, CircleState, PathState } from '../shared/model';
 import { RealWorldState } from './model';
 import { RealWorldWidget } from './view';
 
@@ -39,7 +40,7 @@ export function sketch(context: p5) {
     });
 
     state = RealWorldState.create({
-      clock: Clock.create({
+      clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / points.length,
       }),

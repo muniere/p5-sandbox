@@ -1,8 +1,9 @@
 // https://www.youtube.com/watch?v=Mm2eYfj0SgA
 import * as p5 from 'p5';
 import { Point } from '../../lib/graphics2d';
-import { ChainState, Clock, PathState, WorldState } from './model';
+import { ChainState, PathState, WorldState } from './model';
 import { WorldWidget } from './view';
+import { FrameClock } from '../../lib/process';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -27,7 +28,7 @@ export function sketch(context: p5) {
     );
 
     state = WorldState.create({
-      clock: Clock.create({
+      clock: new FrameClock({
         context: context,
         speed: Params.CLOCK_SPEED,
       }),

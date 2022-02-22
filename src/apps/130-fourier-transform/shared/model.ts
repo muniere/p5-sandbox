@@ -1,7 +1,7 @@
-import * as p5 from 'p5';
 import { Arrays } from '../../../lib/stdlib';
 import { Complex } from '../../../lib/cmath';
 import { Point } from '../../../lib/graphics2d';
+import { FrameClock } from '../../../lib/process';
 
 export namespace Formula {
 
@@ -16,26 +16,6 @@ export namespace Formula {
         )
       );
     });
-  }
-}
-
-export class Clock {
-  constructor(
-    public context: p5,
-    public speed: number,
-  ) {
-    // no-op
-  }
-
-  static create({context, speed}: {
-    context: p5,
-    speed: number,
-  }): Clock {
-    return new Clock(context, speed);
-  }
-
-  time(): number {
-    return this.context.frameCount * this.speed;
   }
 }
 
@@ -154,8 +134,8 @@ export class ChainState {
     return this;
   }
 
-  update({clock, offset}: { clock: Clock, offset: number }) {
-    const time = clock.time();
+  update({clock, offset}: { clock: FrameClock, offset: number }) {
+    const t = clock.time();
 
     let center = this.circles[0].center;
 
@@ -163,7 +143,7 @@ export class ChainState {
       const freq = circle.seed.frequency;
       const phase = circle.seed.phase;
       circle.center = center;
-      circle.angle = freq * time + phase + offset;
+      circle.angle = freq * t + phase + offset;
       center = circle.epicycleCenter;
     });
   }

@@ -1,26 +1,7 @@
 import * as p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
 import { Point } from '../../lib/graphics2d';
-
-export class Clock {
-  constructor(
-    public context: p5,
-    public speed: number,
-  ) {
-    // no-op
-  }
-
-  static create({context, speed}: {
-    context: p5,
-    speed: number,
-  }): Clock {
-    return new Clock(context, speed);
-  }
-
-  time(): number {
-    return this.context.frameCount * this.speed;
-  }
-}
+import { FrameClock } from '../../lib/process';
 
 export class CircleState {
   public color: string = '#FFFFFF';
@@ -92,15 +73,15 @@ export class ChainState {
     return this.circles.last();
   }
 
-  update(clock: Clock) {
-    const time = clock.time();
+  update(clock: FrameClock) {
+    const t = clock.time();
 
     let center = Point.zero();
 
     this.circles.forEach((circle, i) => {
       const n = i * 2 + 1;
       circle.center = center;
-      circle.angle = n * time;
+      circle.angle = n * t;
       center = circle.epicycleCenter;
     });
   }
@@ -151,7 +132,7 @@ export class PathState {
 export class WorldState {
 
   constructor(
-    public readonly clock: Clock,
+    public readonly clock: FrameClock,
     public readonly chain: ChainState,
     public readonly path: PathState,
   ) {
@@ -159,7 +140,7 @@ export class WorldState {
   }
 
   static create({clock, chain, path}: {
-    clock: Clock,
+    clock: FrameClock,
     chain: ChainState,
     path: PathState,
   }): WorldState {
