@@ -2,21 +2,16 @@ import p5, { Vector } from 'p5';
 
 export type ShapeStyle = 'open' | 'closed';
 
-export class Context {
-  public constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
+export module Context {
 
-  static scope<T>(context: p5, callback: (context: p5) => T) {
+  export function scope<T>(context: p5, callback: (context: p5) => T) {
     context.push();
     const result = callback(context);
     context.pop();
     return result;
   }
 
-  static shape(context: p5, style: ShapeStyle, callback: (context: p5) => void) {
+  export function shape(context: p5, style: ShapeStyle, callback: (context: p5) => void) {
     context.beginShape();
 
     callback(context);
