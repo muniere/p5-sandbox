@@ -1,7 +1,8 @@
-import * as p5 from 'p5';
-import { Color } from 'p5';
-import { Context } from '../../lib/process';
-import { ItemState, ItemType, VehicleState, WorldState } from './model';
+import p5, { Color } from 'p5';
+import { Widget } from '../../lib/process';
+import { ItemModel, ItemType } from './model.item';
+import { VehicleModel } from './model.vehicle';
+import { ApplicationModel } from './model.app';
 import { Flags } from './debug';
 
 export const VehiclePalette = {
@@ -15,36 +16,19 @@ export const ItemPalette = {
   nothing: '#FFFFFF',
 }
 
-export class ItemWidget {
-  public state: ItemState | undefined;
+export class ItemWidget extends Widget<ItemModel> {
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: ItemWidget) => void): ItemWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
-      $.fill(this.color(state));
+  protected doDraw(model: ItemModel) {
+    this.scope($ => {
+      $.fill(this.color(model));
       $.noStroke();
 
-      $.translate(state.center.x, state.center.y);
-      $.circle(0, 0, state.radius * 2);
+      $.translate(model.center.x, model.center.y);
+      $.circle(0, 0, model.radius * 2);
     });
   }
 
-  private color(item: ItemState): Color {
+  private color(item: ItemModel): Color {
     switch (item.type) {
       case ItemType.medicine:
         return this.context.color(ItemPalette.medicine);
@@ -56,94 +40,66 @@ export class ItemWidget {
   }
 }
 
-export class VehicleWidget {
-  public state: VehicleState | undefined;
+export class VehicleWidget extends Widget<VehicleModel> {
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
+  protected doDraw(model: VehicleModel) {
+    this.scope($ => {
+      $.translate(model.center.x, model.center.y);
+      $.rotate(model.velocity.vector.heading() + Math.PI / 2);
 
-  also(mutate: (widget: VehicleWidget) => void): VehicleWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
-      $.translate(state.center.x, state.center.y);
-      $.rotate(state.velocity.vector.heading() + Math.PI / 2);
-
-      $.fill(this.color(state));
+      $.fill(this.color(model));
       $.noStroke();
 
       $.beginShape();
-      $.vertex(0, -state.radius);
-      $.vertex(-state.radius / 2, state.radius);
-      $.vertex(state.radius / 2, state.radius);
+      $.vertex(0, -model.radius);
+      $.vertex(-model.radius / 2, model.radius);
+      $.vertex(model.radius / 2, model.radius);
       $.endShape($.CLOSE);
 
       if (Flags.debug) {
         $.stroke(VehiclePalette.body);
         $.noFill();
-        $.circle(0, 0, state.radius * 2);
+        $.circle(0, 0, model.radius * 2);
 
         $.stroke(ItemPalette.medicine);
         $.noFill();
-        $.line(0, 0, 0, -state.scoreGenome.reward * 100);
-        $.circle(0, 0, state.senseGenome.reward * 2);
+        $.line(0, 0, 0, -model.balance.reward * 100);
+        $.circle(0, 0, model.sensor.rewardSight * 2);
 
         $.stroke(ItemPalette.poison);
         $.noFill();
-        $.line(0, 0, 0, -state.scoreGenome.penalty * 100);
-        $.circle(0, 0, state.senseGenome.penalty * 2);
+        $.line(0, 0, 0, -model.balance.penalty * 100);
+        $.circle(0, 0, model.sensor.penaltySight * 2);
       }
     });
   }
 
-  private color(vehicle: VehicleState): Color {
+  private color(vehicle: VehicleModel): Color {
     const color = this.context.color(VehiclePalette.body);
     color.setAlpha(Math.floor(256 * vehicle.scoreFraction));
     return color;
   }
 }
 
-export class WorldWidget {
-  public state: WorldState | undefined;
+export class ApplicationWidget extends Widget<ApplicationModel> {
+  private _item: ItemWidget;
+  private _vehicle: VehicleWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
+  constructor(context: p5) {
+    super(context);
+    this._item = new ItemWidget(context);
+    this._vehicle = new VehicleWidget(context);
   }
 
-  also(mutate: (widget: WorldWidget) => void): WorldWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    state.items.forEach(it => {
-      const widget = new ItemWidget(this.context);
-      widget.state = it;
-      widget.draw();
+  protected doDraw(model: ApplicationModel) {
+    model.items.forEach(it => {
+      this._item.model = it;
+      this._item.draw();
     });
 
-    state.vehicles.forEach(it => {
-      const widget = new VehicleWidget(this.context);
-      widget.state = it;
-      widget.draw();
+    model.vehicles.forEach(it => {
+      this._vehicle.model = it;
+      this._vehicle.draw();
     });
   }
 }

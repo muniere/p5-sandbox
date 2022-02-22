@@ -1,9 +1,11 @@
-import * as p5 from 'p5';
+import p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
 import { FrameClock } from '../../lib/process';
 import { Point, Size } from '../../lib/graphics2d';
-import { ItemFeeder, ItemState, ScoreGenome, SenseGenome, VehicleGenome, VehicleState, WorldState } from './model';
-import { WorldWidget } from './view';
+import { ItemFeeder, ItemModel } from './model.item';
+import { BalanceGenome, SensorGenome, VehicleGenome, VehicleModel } from './model.vehicle';
+import { ApplicationModel } from './model.app';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -30,8 +32,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -41,7 +43,7 @@ export function sketch(context: p5) {
     );
 
     const medicines = Arrays.generate(Params.MEDICINE_COUNT, () => {
-      return ItemState.create({
+      return new ItemModel({
         radius: Params.ITEM_RADIUS,
         center: Point.of({
           x: context.width * Math.random(),
@@ -52,7 +54,7 @@ export function sketch(context: p5) {
     });
 
     const poisons = Arrays.generate(Params.POISON_COUNT, () => {
-      return ItemState.create({
+      return new ItemModel({
         radius: Params.ITEM_RADIUS,
         center: Point.of({
           x: context.width * Math.random(),
@@ -63,20 +65,20 @@ export function sketch(context: p5) {
     });
 
     const vehicles = Arrays.generate(Params.VEHICLE_COUNT, () => {
-      return VehicleState.create({
+      return new VehicleModel({
         radius: Params.VEHICLE_RADIUS,
         center: Point.of({
           x: context.width * Math.random(),
           y: context.height * Math.random(),
         }),
-        genome: VehicleGenome.of({
-          score: ScoreGenome.of({
+        genome: new VehicleGenome({
+          balance: new BalanceGenome({
             reward: Params.VEHICLE_REWARD_WEIGHT,
             penalty: Params.VEHICLE_PENALTY_WEIGHT,
           }),
-          sense: SenseGenome.of({
-            reward: Params.VEHICLE_REWARD_RADIUS,
-            penalty: Params.VEHICLE_PENALTY_RADIUS,
+          sensor: new SensorGenome({
+            rewardSight: Params.VEHICLE_REWARD_RADIUS,
+            penaltySight: Params.VEHICLE_PENALTY_RADIUS,
           })
         }),
         score: Params.VEHICLE_SCORE,
@@ -88,12 +90,12 @@ export function sketch(context: p5) {
       speed: Params.FEED_CLOCK,
     });
 
-    const feeder = ItemFeeder.create({
+    const feeder = new ItemFeeder({
       clock: clock,
       interval: Params.FEED_INTERVAL,
       factory: () => {
         const medicines = Arrays.generate(Params.FEED_MEDICINE_COUNT, () => {
-          return ItemState.create({
+          return new ItemModel({
             radius: Params.ITEM_RADIUS,
             center: Point.of({
               x: context.width * Math.random(),
@@ -104,7 +106,7 @@ export function sketch(context: p5) {
         });
 
         const poisons = Arrays.generate(Params.FEED_POISON_COUNT, () => {
-          return ItemState.create({
+          return new ItemModel({
             radius: Params.ITEM_RADIUS,
             center: Point.of({
               x: context.width * Math.random(),
@@ -118,7 +120,7 @@ export function sketch(context: p5) {
       }
     });
 
-    state = WorldState.create({
+    model = new ApplicationModel({
       bounds: Size.of(context),
       items: Arrays.concat(medicines, poisons),
       vehicles: vehicles,
@@ -126,8 +128,8 @@ export function sketch(context: p5) {
       stress: Params.STRESS_VALUE,
     });
 
-    widget = new WorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
     });
   }
 
@@ -139,8 +141,8 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    if (state.hasNext) {
-      state.update();
+    if (model.hasNext) {
+      model.update();
     } else {
       context.noLoop();
     }
