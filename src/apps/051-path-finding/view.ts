@@ -1,75 +1,59 @@
 import * as p5 from 'p5';
-import { Context } from '../../lib/process';
-import { Spot } from '../../lib/dmath';
-import { Size } from '../../lib/graphics2d';
-import { NodeKind, NodeState, Solver } from './model';
+import { Widget } from '../../lib/process';
+import { NodeKind, NodeModel, SolverModel } from './model';
 
-export class NodeWidget {
+export class NodeWidget extends Widget<NodeModel> {
   public color: string = '#FFFFFF';
 
-  constructor(
-    public readonly context: p5,
-    public readonly state: NodeState
-  ) {
-    // no-op
-  }
-
-  private get spot(): Spot {
-    return this.state.spot;
-  }
-
-  private get size(): Size {
-    return this.state.size;
-  }
-
-  draw() {
-    Context.scope(this.context, $ => {
+  protected doDraw(model: NodeModel) {
+    this.scope($ => {
       $.noStroke();
       $.fill(this.color);
 
       $.rect(
-        this.spot.column * this.size.width,
-        this.spot.row * this.size.height,
-        this.size.width - 1,
-        this.size.height - 1,
+        model.spot.column * model.size.width,
+        model.spot.row * model.size.height,
+        model.size.width - 1,
+        model.size.height - 1,
       );
     });
   }
 }
 
-export class SolverWidget {
+export class SolverWidget extends Widget<SolverModel> {
   public wallColor: string = '#FFFFFF';
   public baseColor: string = '#FFFFFF';
   public openColor: string = '#FFFFFF';
   public closedColor: string = '#FFFFFF';
   public answerColor: string = '#FFFFFF';
 
-  constructor(
-    public readonly context: p5,
-    public readonly solver: Solver,
-  ) {
-    // no-op
+  private _node: NodeWidget;
+
+  constructor(context: p5) {
+    super(context);
+    this._node = new NodeWidget(context);
   }
 
-  draw() {
-    this.solver.graph.walk((node) => {
-      const widget = new NodeWidget(this.context, node)
-      widget.color = this.colorize(node);
-      widget.draw();
+
+  protected doDraw(solver: SolverModel) {
+    solver.graph.walk((node) => {
+      this._node.model = node;
+      this._node.color = this.colorize(node, {solver: solver});
+      this._node.draw();
     });
   }
 
-  private colorize(node: NodeState): string {
+  private colorize(node: NodeModel, {solver}: { solver: SolverModel }): string {
     if (node.kind == NodeKind.wall) {
       return this.wallColor;
     }
-    if (this.solver.answer.includes(node)) {
+    if (solver.answer.includes(node)) {
       return this.answerColor;
     }
-    if (this.solver.closedSet.includes(node)) {
+    if (solver.closedSet.includes(node)) {
       return this.closedColor;
     }
-    if (this.solver.openSet.includes(node)) {
+    if (solver.openSet.includes(node)) {
       return this.openColor;
     }
     return this.baseColor;

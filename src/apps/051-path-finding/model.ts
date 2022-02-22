@@ -1,27 +1,24 @@
-import { Dimen, Matrix, Spot } from '../../lib/dmath';
+import { Dimen, Matrix, Spot, SpotCompat } from '../../lib/dmath';
 import { Size } from '../../lib/graphics2d';
 
-export class CostState {
-  constructor(
-    public g: number,
-    public h: number,
-  ) {
-    // no-op
+export class CostModel {
+  public g: number;
+  public h: number;
+
+  constructor(nargs: {
+    g: number,
+    h: number,
+  }) {
+    this.g = nargs.g
+    this.h = nargs.h;
   }
 
   get f(): number {
     return this.g + this.h;
   }
 
-  static zero(): CostState {
-    return new CostState(0, 0);
-  }
-
-  static create({g, h}: {
-    g: number,
-    h: number,
-  }): CostState {
-    return new CostState(g, h);
+  static zero(): CostModel {
+    return new CostModel({g: 0, h: 0});
   }
 }
 
@@ -30,31 +27,29 @@ export enum NodeKind {
   wall,
 }
 
-export class NodeState {
-  public previous?: NodeState;
+export class NodeModel {
+  public kind: NodeKind;
+  public spot: Spot;
+  public size: Size;
+  public cost: CostModel;
+  public previous?: NodeModel;
 
-  constructor(
-    public kind: NodeKind,
-    public spot: Spot,
-    public size: Size,
-    public cost: CostState,
-  ) {
-    // no-op
-  }
-
-  static create({kind, spot, size, cost}: {
+  constructor(nargs: {
     kind: NodeKind,
     spot: Spot,
     size: Size,
-    cost: CostState,
-  }): NodeState {
-    return new NodeState(kind, spot, size, cost);
+    cost: CostModel,
+  }) {
+    this.kind = nargs.kind;
+    this.spot = nargs.spot;
+    this.size = nargs.size;
+    this.cost = nargs.cost;
   }
 
-  trace(): NodeState[] {
-    const chain = [] as NodeState[];
+  trace(): NodeModel[] {
+    const chain = [] as NodeModel[];
 
-    let cursor: NodeState = this;
+    let cursor: NodeModel = this;
 
     while (cursor.previous) {
       chain.push(cursor);
@@ -67,84 +62,86 @@ export class NodeState {
   }
 }
 
-export class GraphState {
-  constructor(
-    public readonly nodes: Matrix<NodeState>,
-  ) {
-    // no-op
-  }
-
-  static generate({bounds, scale, kind}: {
+export module GraphModels {
+  export function generate({bounds, scale, kind}: {
     bounds: Size,
     scale: number,
     kind: (spot: Spot) => NodeKind,
-  }): GraphState {
+  }): GraphModel {
     const dimen = Dimen.square(scale);
     const itemWidth = bounds.width / scale;
     const itemHeight = bounds.height / scale;
 
     const nodes = Matrix.generate(dimen, (spot) => {
-      return NodeState.create({
+      return new NodeModel({
         kind: kind(spot),
         spot: spot,
         size: Size.of({width: itemWidth, height: itemHeight}),
-        cost: CostState.zero(),
+        cost: CostModel.zero(),
       });
     });
 
-    return new GraphState(nodes);
+    return new GraphModel({nodes});
+  }
+}
+
+export class GraphModel {
+  public readonly nodes: Matrix<NodeModel>;
+
+  constructor(nargs: {
+    nodes: Matrix<NodeModel>,
+  }) {
+    this.nodes = nargs.nodes;
   }
 
-  getNode(spot: Spot): NodeState {
+  getNode(spot: SpotCompat): NodeModel {
     return this.nodes.get(spot);
   }
 
-  getNodeOrNull(spot: Spot): NodeState | undefined {
+  getNodeOrNull(spot: SpotCompat): NodeModel | undefined {
     return this.nodes.getOrNull(spot)
   }
 
-  getNeighbors(spot: Spot): NodeState[] {
+  getNeighbors(spot: Spot): NodeModel[] {
     const row = spot.row;
     const column = spot.column;
 
-    const spots = [
-      Spot.of({row: row, column: column - 1}),
-      Spot.of({row: row, column: column + 1}),
-      Spot.of({row: row - 1, column: column}),
-      Spot.of({row: row + 1, column: column}),
-      Spot.of({row: row - 1, column: column - 1}),
-      Spot.of({row: row - 1, column: column + 1}),
-      Spot.of({row: row + 1, column: column - 1}),
-      Spot.of({row: row + 1, column: column + 1}),
+    const spots: SpotCompat[] = [
+      {row: row, column: column - 1},
+      {row: row, column: column + 1},
+      {row: row - 1, column: column},
+      {row: row + 1, column: column},
+      {row: row - 1, column: column - 1},
+      {row: row - 1, column: column + 1},
+      {row: row + 1, column: column - 1},
+      {row: row + 1, column: column + 1},
     ];
 
     return spots
-      .map(spot => this.getNodeOrNull(spot))
-      .filter(node => node)
-      .map(node => node!)
+      .compactMap(spot => this.getNodeOrNull(spot))
       .filter(node => node.kind == NodeKind.path);
   }
 
-  first(): NodeState {
+  first(): NodeModel {
     return this.nodes.first();
   }
 
-  last(): NodeState {
+  last(): NodeModel {
     return this.nodes.last();
   }
 
-  walk(callback: (node: NodeState) => void) {
+  walk(callback: (node: NodeModel) => void) {
     this.nodes.forEach(callback)
   }
 }
 
-export interface Heuristic {
-  estimate(a: NodeState, b: NodeState): number
+export interface HeuristicFunction {
+  estimate(a: NodeModel, b: NodeModel): number
 }
 
-export class EuclidHeuristic implements Heuristic {
+export class EuclidHeuristicFunction implements HeuristicFunction {
 
-  estimate(a: NodeState, b: NodeState): number {
+  estimate(a: NodeModel, b: NodeModel): number {
     return Math.sqrt(
       Math.pow(a.spot.row - b.spot.row, 2.0)
       + Math.pow(a.spot.column - b.spot.column, 2.0)
@@ -152,9 +149,9 @@ export class EuclidHeuristic implements Heuristic {
   }
 }
 
-export class ManhattanHeuristic implements Heuristic {
+export class ManhattanHeuristicFunction implements HeuristicFunction {
 
-  estimate(a: NodeState, b: NodeState): number {
+  estimate(a: NodeModel, b: NodeModel): number {
     return Spot.dist(a.spot, b.spot);
   }
 }
@@ -165,36 +162,33 @@ export enum SolverState {
   noSolution,
 }
 
-export class Solver {
-  private _openSet: NodeState[];
-  private _closedSet: NodeState[];
-  private _answer: NodeState[];
+export class SolverModel {
+  public readonly graph: GraphModel;
+  public readonly heuristic: HeuristicFunction;
+  private _openSet: NodeModel[];
+  private _closedSet: NodeModel[];
+  private _answer: NodeModel[];
 
-  constructor(
-    public readonly graph: GraphState,
-    public readonly heuristic: Heuristic,
-  ) {
-    this._openSet = [graph.first()];
+  constructor(nargs: {
+    graph: GraphModel,
+    heuristic: HeuristicFunction,
+  }) {
+    this.graph = nargs.graph;
+    this.heuristic = nargs.heuristic;
+    this._openSet = [nargs.graph.first()];
     this._closedSet = [];
     this._answer = [];
   }
 
-  static create({graph, heuristic}: {
-    graph: GraphState,
-    heuristic: Heuristic,
-  }): Solver {
-    return new Solver(graph, heuristic);
-  }
-
-  get openSet(): NodeState[] {
+  get openSet(): NodeModel[] {
     return [...this._openSet];
   }
 
-  get closedSet(): NodeState[] {
+  get closedSet(): NodeModel[] {
     return [...this._closedSet];
   }
 
-  get answer(): NodeState[] {
+  get answer(): NodeModel[] {
     return [...this._answer];
   }
 

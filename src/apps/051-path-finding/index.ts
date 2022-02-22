@@ -2,7 +2,7 @@
 import * as p5 from 'p5';
 import { Spot } from '../../lib/dmath';
 import { Size } from '../../lib/graphics2d';
-import { GraphState, ManhattanHeuristic, NodeKind, Solver, SolverState } from './model';
+import { GraphModels, ManhattanHeuristicFunction, NodeKind, SolverModel, SolverState } from './model';
 import { SolverWidget } from './view';
 
 const Params = Object.freeze({
@@ -17,7 +17,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let solver: Solver;
+  let model: SolverModel;
   let widget: SolverWidget;
 
   context.setup = function () {
@@ -25,8 +25,8 @@ export function sketch(context: p5) {
 
     context.createCanvas(size, size);
 
-    solver = Solver.create({
-      graph: GraphState.generate({
+    model = new SolverModel({
+      graph: GraphModels.generate({
         bounds: Size.of(context),
         scale: Params.GRID_SCALE,
         kind: (spot: Spot) => {
@@ -39,15 +39,17 @@ export function sketch(context: p5) {
           return Math.random() > Params.WALL_RATE ? NodeKind.path : NodeKind.wall;
         }
       }),
-      heuristic: new ManhattanHeuristic(),
+      heuristic: new ManhattanHeuristicFunction(),
     });
 
-    widget = new SolverWidget(context, solver);
-    widget.baseColor = Params.SPOT_BASE_COLOR;
-    widget.wallColor = Params.SPOT_WALL_COLOR;
-    widget.openColor = Params.SPOT_OPEN_COLOR;
-    widget.closedColor = Params.SPOT_CLOSED_COLOR;
-    widget.answerColor = Params.SPOT_ANSWER_COLOR;
+    widget = new SolverWidget(context).also(it => {
+      it.model = model;
+      it.baseColor = Params.SPOT_BASE_COLOR;
+      it.wallColor = Params.SPOT_WALL_COLOR;
+      it.openColor = Params.SPOT_OPEN_COLOR;
+      it.closedColor = Params.SPOT_CLOSED_COLOR;
+      it.answerColor = Params.SPOT_ANSWER_COLOR;
+    });
   }
 
   context.draw = function () {
@@ -58,7 +60,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    const state = solver.state;
+    const state = model.state;
 
     if (state == SolverState.noSolution) {
       console.log('noSolution');
@@ -72,6 +74,6 @@ export function sketch(context: p5) {
       return;
     }
 
-    solver.next();
+    model.next();
   }
 }
