@@ -1,60 +1,43 @@
 import * as p5 from 'p5';
-import { Context } from '../../lib/process';
+import { BaseWidget, Widget } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
-import { ChainState, CircleState, PathState, WorldState } from './model';
+import { ApplicationModel, ChainModel, CircleModel, PathModel } from './model';
 
-export class CircleWidget {
-  public state: CircleState | undefined;
+export class CircleWidget extends Widget<CircleModel> {
   public trackWeight: number = 0;
   public handWeight: number = 0;
   public pointRadius: number = 0;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
+  protected doDraw(model: CircleModel) {
+    const pointCenter = model.epicycleCenter;
 
-  also(mutate: (circle: CircleWidget) => void): CircleWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    const pointCenter = state.epicycleCenter;
-
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       if (this.trackWeight > 0) {
-        $.stroke(state.color);
+        $.stroke(model.color);
         $.strokeWeight(this.trackWeight);
         $.noFill();
 
         $.circle(
-          state.center.x,
-          state.center.y,
-          state.radius * 2
+          model.center.x,
+          model.center.y,
+          model.radius * 2
         );
       }
 
       if (this.handWeight > 0) {
-        $.stroke(state.color);
+        $.stroke(model.color);
         $.strokeWeight(this.handWeight)
         $.noFill();
 
         $.line(
-          state.center.x, state.center.y,
+          model.center.x, model.center.y,
           pointCenter.x, pointCenter.y
         );
       }
 
       if (this.pointRadius) {
         $.noStroke();
-        $.fill(state.color);
+        $.fill(model.color);
 
         $.circle(pointCenter.x, pointCenter.y, this.pointRadius);
       }
@@ -62,165 +45,110 @@ export class CircleWidget {
   }
 }
 
-export class ChainWidget {
-  public state: ChainState | undefined;
+export class ChainWidget extends Widget<ChainModel> {
   public origin = Point.zero();
   public trackWeight: number = 0;
   public handWeight: number = 0;
   public pointRadius: number = 0;
 
-  public constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
+  private _circle: CircleWidget;
 
-  also(mutate: (circle: ChainWidget) => void): ChainWidget {
-    mutate(this);
-    return this;
+  constructor(context: p5) {
+    super(context);
+    this._circle = new CircleWidget(context);
   }
 
   get epicycleCenter(): Point | undefined {
-    return this.state?.last()?.epicycleCenter;
+    return this.model?.last()?.epicycleCenter;
   }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
+  protected doDraw(model: ChainModel) {
+    this.scope($ => {
       $.translate(this.origin.x, this.origin.y);
 
-      state.circles.forEach((circle, i) => {
-        const widget = new CircleWidget($).also(it => {
-          it.state = circle;
-          it.trackWeight = i == 0 ? 1 : 0;
-          it.handWeight = 1;
-          it.pointRadius = 1;
-        });
-
-        widget.draw();
+      model.circles.forEach((circle, i) => {
+        this._circle.model = circle;
+        this._circle.trackWeight = i == 0 ? 1 : 0;
+        this._circle.handWeight = 1;
+        this._circle.pointRadius = 1;
+        this._circle.draw();
       });
     });
   }
 }
 
-export class PathWidget {
-  public state: PathState | undefined;
+export class PathWidget extends Widget<PathModel> {
   public origin = Point.zero();
   public scaleX: number = 1;
   public scaleY: number = 1;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (wave: PathWidget) => void): PathWidget {
-    mutate(this);
-    return this;
-  }
-
   first(): Point | undefined {
-    if (!this.state) {
+    if (!this.model) {
       return undefined;
     }
 
     return this.origin.with({
-      y: this.state.first() * this.scaleY,
+      y: this.model.first() * this.scaleY,
     });
   }
 
   last(): Point | undefined {
-    if (!this.state) {
+    if (!this.model) {
       return undefined;
     }
 
     return this.origin.with({
-      y: this.state.last() * this.scaleY,
+      y: this.model.last() * this.scaleY,
     });
   }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
+  protected doDraw(model: PathModel) {
+    this.scope($ => {
       $.noFill();
-      $.stroke(state.color);
+      $.stroke(model.color);
 
-      $.beginShape();
+      this.shape('open', $$ => {
+        model.values.forEach((value, i) => {
+          const x = this.origin.x + i * this.scaleX;
+          const y = this.origin.y + value * this.scaleY;
 
-      state.values.forEach((value, i) => {
-        const x = this.origin.x + i * this.scaleX;
-        const y = this.origin.y + value * this.scaleY;
-
-        $.vertex(x, y);
+          $$.vertex(x, y);
+        });
       });
-
-      $.endShape();
     });
   }
 }
 
-export class LineWidget {
+export class LineWidget extends BaseWidget {
   public color: string = '#FFFFFF';
   public start = Point.zero();
   public end = Point.zero();
 
-  constructor(
-    public context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (line: LineWidget) => void): LineWidget {
-    mutate(this);
-    return this;
-  }
-
   draw() {
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(this.color);
       $.line(this.start.x, this.start.y, this.end.x, this.end.y);
     });
   }
 }
 
-export class WorldWidget {
-  public state: WorldState | undefined;
+export class ApplicationWidget extends Widget<ApplicationModel> {
   public origin = Point.zero();
 
   public readonly chain: ChainWidget;
   public readonly path: PathWidget;
   public readonly line: LineWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this.chain = new ChainWidget(context);
     this.path = new PathWidget(context);
     this.line = new LineWidget(context);
   }
 
-  also(mutate: (line: WorldWidget) => void): WorldWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    this.chain.state = state.chain;
-    this.path.state = state.path;
+  protected doDraw(model: ApplicationModel) {
+    this.chain.model = model.chain;
+    this.path.model = model.path;
 
     const start = this.chain.epicycleCenter;
     if (start) {
@@ -232,7 +160,7 @@ export class WorldWidget {
       this.line.end = end.with({y: start?.y});
     }
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.translate(this.origin.x, this.origin.y);
 
       this.chain.draw();
