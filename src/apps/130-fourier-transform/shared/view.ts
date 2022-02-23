@@ -123,7 +123,7 @@ export class PathWidget {
       this.context.noFill();
       this.context.stroke(state.color);
 
-      Context.shape($, 'closed', $$ => {
+      Context.shape($, 'open', $$ => {
         state.plots.forEach((value) => {
           $$.vertex(value.x, value.y);
         });
