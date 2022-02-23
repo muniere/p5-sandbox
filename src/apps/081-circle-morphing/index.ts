@@ -1,7 +1,8 @@
 // https://www.youtube.com/watch?v=u2D4sxh3MTs
-import * as p5 from 'p5';
-import { InterpolationMorphing, Path, WorldState } from './model';
-import { WorldWidget } from './view';
+import p5 from 'p5';
+import { DebugManager } from '../../lib/process';
+import { ApplicationModel, InterpolationMorphing, PathModels } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#CCCCCC',
@@ -14,8 +15,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -24,33 +25,39 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = WorldState.create({
-      morphing: InterpolationMorphing.create({
+    model = new ApplicationModel({
+      morphing: new InterpolationMorphing({
         src: Params.SRC_VERTEX_N >= 3
-          ? Path.polygon({
+          ? PathModels.polygon({
             n: Params.SRC_VERTEX_N,
             radius: Params.SRC_RADIUS,
             resolution: Params.RESOLUTION,
           })
-          : Path.circle({
+          : PathModels.circle({
             radius: Params.SRC_RADIUS,
             resolution: Params.RESOLUTION,
           }),
         dst: Params.DST_VERTEX_N >= 3
-          ? Path.polygon({
+          ? PathModels.polygon({
             n: Params.DST_VERTEX_N,
             radius: Params.DST_RADIUS,
             resolution: Params.RESOLUTION,
           })
-          : Path.circle({
+          : PathModels.circle({
             radius: Params.DST_RADIUS,
             resolution: Params.RESOLUTION,
           })
       })
     });
 
-    widget = new WorldWidget(context, state);
-    widget.color = Params.STROKE_COLOR;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
+      it.color = Params.STROKE_COLOR;
+    });
+
+    DebugManager.attach(context).also(it => {
+      it.widget?.also(it => it.textColor = '#000000')
+    });
   }
 
   context.draw = function () {
@@ -62,6 +69,6 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 }

@@ -1,25 +1,17 @@
-import * as p5 from 'p5';
-import { WorldState } from './model';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
+import { ApplicationModel } from './model';
 
-export class WorldWidget {
+export class ApplicationWidget extends Widget<ApplicationModel> {
   public color: string = '#FFFFFF';
 
-  constructor(
-    public readonly context: p5,
-    public readonly state: WorldState,
-  ) {
-    // no-op
-  }
+  protected doDraw(model: ApplicationModel) {
+    const path = model.path();
 
-  draw() {
-    const path = this.state.path();
-
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.noFill();
       $.stroke(this.color);
 
-      Context.shape($, 'closed', $$ => {
+      this.shape('closed', $$ => {
         path.points.forEach(it => {
           $$.vertex(it.x, it.y);
         });

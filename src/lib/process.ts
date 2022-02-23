@@ -314,6 +314,11 @@ export class DebugManager {
     return this._widget;
   }
 
+  public also(mutate: (manager: DebugManager) => void): DebugManager {
+    mutate(this);
+    return this;
+  }
+
   public attach() {
     if (this._draw) {
       return;
@@ -329,7 +334,9 @@ export class DebugManager {
 
     this._draw = draw;
     this._context.draw = function () {
+      context.push();
       draw();
+      context.pop();
 
       if (context.frameCount % refreshRate == 0) {
         widget.model = DebugMetrics.parse(context);

@@ -1,25 +1,12 @@
 import { Arrays } from '../../lib/stdlib';
 import { Point, PointRange } from '../../lib/graphics2d';
 
-export class Path {
-  constructor(
-    public readonly points: Point[]
-  ) {
-    // no-op
-  }
+export module PathModels {
 
-  static of(points: Point[]): Path {
-    return new Path(points);
-  }
-
-  static empty(): Path {
-    return new Path([]);
-  }
-
-  static circle({radius, resolution}: {
+  export function circle({radius, resolution}: {
     radius: number,
     resolution: number,
-  }): Path {
+  }): PathModel {
     const step = (2 * Math.PI) / resolution;
 
     const points = [] as Point[];
@@ -33,14 +20,14 @@ export class Path {
       points.push(point);
     }
 
-    return Path.of(points);
+    return new PathModel({points});
   }
 
-  static polygon({n, radius, resolution}: {
+  export function polygon({n, radius, resolution}: {
     n: number,
     radius: number,
     resolution: number,
-  }): Path {
+  }): PathModel {
     const division = (2 * Math.PI) / n;
     const step = (2 * Math.PI) / resolution;
 
@@ -61,11 +48,25 @@ export class Path {
       }
     }
 
-    return Path.of(points);
+    return new PathModel({points});
+  }
+}
+
+export class PathModel {
+  private readonly _points: Point[];
+
+  constructor(nargs: {
+    points: Point[],
+  }) {
+    this._points = [...nargs.points];
+  }
+
+  get points(): Point[] {
+    return [...this._points];
   }
 
   get length(): number {
-    return this.points.length;
+    return this._points.length;
   }
 }
 
@@ -94,33 +95,29 @@ export interface Morphing {
 
   backward(): void
 
-  path(): Path
+  path(): PathModel
 }
 
 export class InterpolationMorphing implements Morphing {
+  private readonly _src: PathModel;
+  private readonly _dst: PathModel;
   private readonly _interpolator: Interpolator;
   private _progress: number = 0;
 
-  constructor(
-    private src: Path,
-    private dst: Path,
+  constructor(nargs: {
+    src: PathModel,
+    dst: PathModel,
     interpolator?: Interpolator,
-  ) {
-    this._interpolator = interpolator ?? new AnyInterpolator((fraction: number) => {
+  }) {
+    this._src = nargs.src;
+    this._dst = nargs.dst;
+    this._interpolator = nargs.interpolator ?? new AnyInterpolator((fraction: number) => {
       if (fraction < 0.5) {
         return Math.pow(fraction, 2) * 2;
       } else {
         return 1 - Math.pow((1 - fraction), 2) * 2;
       }
     });
-  }
-
-  static create({src, dst, interpolator}: {
-    src: Path,
-    dst: Path,
-    interpolator?: Interpolator,
-  }): InterpolationMorphing {
-    return new InterpolationMorphing(src, dst, interpolator);
   }
 
   get progress(): number {
@@ -135,42 +132,38 @@ export class InterpolationMorphing implements Morphing {
     this._progress = Math.max(this._progress - delta, 0);
   }
 
-  path(): Path {
+  path(): PathModel {
     const progress = this._interpolator.compute(this._progress);
 
-    const points = Arrays.zip(this.src.points, this.dst.points).map(([src, dst]) => {
+    const points = Arrays.zip(this._src.points, this._dst.points).map(([src, dst]) => {
       const range = new PointRange(src, dst);
       return range.lerp(progress);
     });
 
-    return Path.of(points);
+    return new PathModel({points});
   }
 }
 
 export class RandomSwapMorphing implements Morphing {
+  private readonly _src: PathModel;
+  private readonly _dst: PathModel;
   private _indices: number[] = [];
 
-  constructor(
-    private src: Path,
-    private dst: Path,
-  ) {
-    // no-op
-  }
-
-  static create({src, dst}: {
-    src: Path,
-    dst: Path,
-  }): RandomSwapMorphing {
-    return new RandomSwapMorphing(src, dst);
+  constructor(nargs: {
+    src: PathModel,
+    dst: PathModel,
+  }) {
+    this._src = nargs.src;
+    this._dst = nargs.dst;
   }
 
   get progress(): number {
-    return this._indices.length / this.src.length;
+    return this._indices.length / this._src.length;
   }
 
   forward() {
     const table = this._indices.reduce((acc, i) => acc.set(i, true), new Map<number, boolean>());
-    const candidates = this.src.points.map((_, i) => i).filter(i => !table.has(i));
+    const candidates = this._src.points.map((_, i) => i).filter(i => !table.has(i));
     this._indices.push(candidates.sample());
   }
 
@@ -180,51 +173,47 @@ export class RandomSwapMorphing implements Morphing {
 
   path() {
     const table = this._indices.reduce((acc, i) => acc.set(i, true), new Map<number, boolean>());
-    const points = Arrays.zip(this.src.points, this.dst.points).map(([src, dst], i) => {
+    const points = Arrays.zip(this._src.points, this._dst.points).map(([src, dst], i) => {
       return table.has(i) ? dst : src;
     });
 
-    return Path.of(points)
+    return new PathModel({points})
   }
 }
 
-export class WorldState {
+export class ApplicationModel {
+  private readonly _morphing: Morphing;
+
   private sign: number = 1;
 
-  constructor(
-    public readonly morphing: Morphing,
-  ) {
-    // no-op
+  constructor(nargs: {
+    morphing: Morphing
+  }) {
+    this._morphing = nargs.morphing;
   }
 
-  static create({morphing}: {
-    morphing: Morphing,
-  }): WorldState {
-    return new WorldState(morphing);
-  }
-
-  path(): Path {
-    return this.morphing.path();
+  path(): PathModel {
+    return this._morphing.path();
   }
 
   update() {
     switch (this.sign) {
       case 1:
-        if (this.morphing.progress == 1) {
+        if (this._morphing.progress == 1) {
           this.sign = -1;
         }
         break;
       case -1:
-        if (this.morphing.progress == 0) {
+        if (this._morphing.progress == 0) {
           this.sign = 1;
         }
         break;
     }
 
     if (this.sign > 0) {
-      this.morphing.forward();
+      this._morphing.forward();
     } else {
-      this.morphing.backward();
+      this._morphing.backward();
     }
   }
 }
