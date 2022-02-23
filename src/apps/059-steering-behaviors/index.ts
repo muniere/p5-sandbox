@@ -1,4 +1,5 @@
 import p5, { Font } from 'p5';
+import { DebugManager } from '../../lib/process';
 import { Point } from '../../lib/graphics2d';
 import { Velocity } from '../../lib/physics2d';
 import { ApplicationModel, VehicleModel } from './model';
@@ -71,10 +72,12 @@ export function sketch(context: p5) {
     widget = new ApplicationWidget(context).also(it => {
       it.model = model;
     });
+
+    DebugManager.attach(context);
   }
 
   context.draw = function () {
-    // /canvas
+    // canvas
     context.background(Params.CANVAS_COLOR);
 
     // widget
