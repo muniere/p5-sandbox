@@ -7,7 +7,7 @@ export enum Direction {
   east,
 }
 
-class Compass {
+export class NavigatorModel {
   private static VELOCITIES = new Map<Direction, SpotDelta>([
     [Direction.north, Object.freeze({row: -1})],
     [Direction.south, Object.freeze({row: +1})],
@@ -29,47 +29,40 @@ class Compass {
     [Direction.east, Direction.south],
   ]);
 
-  static INSTANCE = new Compass();
+  static INSTANCE = new NavigatorModel();
 
   private constructor() {
     // no-op
   }
 
-  default(): Compass {
-    return new Compass();
+  default(): NavigatorModel {
+    return new NavigatorModel();
   }
 
   jump(direction: Direction): SpotDelta {
-    return Compass.VELOCITIES.get(direction)!;
+    return NavigatorModel.VELOCITIES.get(direction)!;
   }
 
   left(direction: Direction): Direction {
-    return Compass.LEFTS.get(direction)!;
+    return NavigatorModel.LEFTS.get(direction)!;
   }
 
   right(direction: Direction): Direction {
-    return Compass.RIGHTS.get(direction)!;
+    return NavigatorModel.RIGHTS.get(direction)!;
   }
 }
 
-export class AntState {
+export class AntModel {
   private _spot: Spot;
   private _direction: Direction;
-  private _compass = Compass.INSTANCE;
+  private _compass = NavigatorModel.INSTANCE;
 
-  constructor(
+  constructor(nargs: {
     spot: Spot,
     direction: Direction,
-  ) {
-    this._spot = spot;
-    this._direction = direction;
-  }
-
-  static create({spot, direction}: {
-    spot: Spot,
-    direction: Direction,
-  }): AntState {
-    return new AntState(spot, direction);
+  }) {
+    this._spot = nargs.spot;
+    this._direction = nargs.direction;
   }
 
   get spot(): Spot {
@@ -97,35 +90,29 @@ export class AntState {
   }
 }
 
-export enum CellState {
+export enum CellModel {
   white,
   black,
 }
 
-export class GridState {
-  private _cells: Matrix<CellState>
+export class GridModel {
+  private _cells: Matrix<CellModel>
 
-  constructor(
+  constructor(nargs: {
     size: number,
-  ) {
-    this._cells = Matrix.fill({width: size, height: size}, CellState.white);
-  }
-
-  static create({size}: {
-    size: number
-  }): GridState {
-    return new GridState(size);
+  }) {
+    this._cells = Matrix.fill({width: nargs.size, height: nargs.size}, CellModel.white);
   }
 
   get dimen(): Dimen {
     return this._cells.dimen;
   }
 
-  getOrNull(spot: Spot): CellState | undefined {
+  getOrNull(spot: Spot): CellModel | undefined {
     return this._cells.getOrNull(spot);
   }
 
-  forEach(callback: (cell: CellState, spot: Spot) => void) {
+  forEach(callback: (cell: CellModel, spot: Spot) => void) {
     this._cells.forEach(callback);
   }
 
@@ -136,43 +123,36 @@ export class GridState {
     }
 
     switch (cell) {
-      case CellState.white:
-        this._cells.set(spot, CellState.black);
+      case CellModel.white:
+        this._cells.set(spot, CellModel.black);
         return;
 
-      case CellState.black:
-        this._cells.set(spot, CellState.white);
+      case CellModel.black:
+        this._cells.set(spot, CellModel.white);
         return;
     }
   }
 }
 
-export class WorldState {
-  private readonly _ants: AntState[];
-  private readonly _grid: GridState;
+export class ApplicationModel {
+  private readonly _ants: AntModel[];
+  private readonly _grid: GridModel;
 
   private _step: number = 0;
 
-  constructor(
-    ants: AntState[],
-    grid: GridState,
-  ) {
-    this._ants = ants;
-    this._grid = grid;
+  constructor(nargs: {
+    ants: AntModel[],
+    grid: GridModel,
+  }) {
+    this._ants = nargs.ants;
+    this._grid = nargs.grid;
   }
 
-  static create({ants, grid}: {
-    ants: AntState[],
-    grid: GridState,
-  }): WorldState {
-    return new WorldState(ants, grid);
-  }
-
-  get ants(): AntState[] {
+  get ants(): AntModel[] {
     return this._ants;
   }
 
-  get grid(): GridState {
+  get grid(): GridModel {
     return this._grid;
   }
 
@@ -192,14 +172,14 @@ export class WorldState {
       }
 
       switch (cell) {
-        case CellState.white:
+        case CellModel.white:
           ant.turnRight();
           grid.flip(spot);
           ant.forward();
           ant.cycleIn(dimen)
           return;
 
-        case CellState.black:
+        case CellModel.black:
           ant.turnLeft();
           grid.flip(spot);
           ant.forward();

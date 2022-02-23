@@ -1,6 +1,7 @@
 import p5, { Vector } from 'p5';
+import { BaseWidget, Widget } from '../../lib/process';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { AntState, CellState, Direction, GridState, WorldState } from './model';
+import { AntModel, ApplicationModel, CellModel, Direction, GridModel } from './model';
 
 module Helper {
 
@@ -18,29 +19,14 @@ module Helper {
   }
 }
 
-export class AntWidget {
-  public state: AntState | undefined;
+export class AntWidget extends Widget<AntModel> {
   public frame = Rect.zero();
   public color = '#000000';
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
+  protected doDraw(model: AntModel) {
+    super.doDraw(model);
 
-  also(mutate: (widget: AntWidget) => void): AntWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    const angle = Helper.angle(state.direction);
+    const angle = Helper.angle(model.direction);
     const center = this.frame.center;
 
     const vectors = [
@@ -52,163 +38,120 @@ export class AntWidget {
       return center.plus(it.rotate(angle));
     });
 
-    this.context.push();
+    this.scope($ => {
+      $.noStroke();
+      $.fill(this.color);
 
-    this.context.noStroke();
-    this.context.fill(this.color);
-
-    this.context.beginShape();
-    points.forEach(it => {
-      this.context.vertex(it.x, it.y);
+      this.shape('closed', $$ => {
+        points.forEach(it => {
+          $$.vertex(it.x, it.y);
+        });
+      });
     });
-    this.context.endShape(this.context.CLOSE);
-
-    this.context.pop();
   }
 }
 
-export class GridWidget {
-  public state: GridState | undefined;
+export class GridWidget extends Widget<GridModel> {
   public frame = Rect.zero();
   public fillColor = '#000000';
   public lineColor = '#888888';
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: GridWidget) => void): GridWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
+  protected doDraw(model: GridModel) {
     const unit = Size.of({
-      width: this.frame.width / state.dimen.width,
-      height: this.frame.height / state.dimen.height,
+      width: this.frame.width / model.dimen.width,
+      height: this.frame.height / model.dimen.height,
     });
 
-    this.context.push();
-
     // cell
-    this.context.noStroke();
-    this.context.fill(this.fillColor);
+    this.scope($ => {
+      $.noStroke();
+      $.fill(this.fillColor);
 
-    state.forEach((cell, spot) => {
-      if (cell == CellState.white) {
-        return;
-      }
+      model.forEach((cell, spot) => {
+        if (cell == CellModel.white) {
+          return;
+        }
 
-      const w = unit.width;
-      const h = unit.height;
-      const x = spot.column * w;
-      const y = spot.row * h;
-      this.context.rect(x, y, w, h);
+        const w = unit.width;
+        const h = unit.height;
+        const x = spot.column * w;
+        const y = spot.row * h;
+        $.rect(x, y, w, h);
+      });
     });
 
     // border
-    this.context.noFill();
-    this.context.stroke(this.lineColor);
-    this.context.strokeWeight(0.5);
+    this.scope($ => {
+      $.noFill();
+      $.stroke(this.lineColor);
+      $.strokeWeight(0.5);
 
-    for (let x = 0; x <= this.frame.width; x += unit.width) {
-      this.context.line(x, 0, x, this.frame.height);
-    }
-    for (let y = 0; y <= this.frame.height; y += unit.height) {
-      this.context.line(0, y, this.frame.width, y);
-    }
-
-    this.context.pop();
+      for (let x = 0; x <= this.frame.width; x += unit.width) {
+        $.line(x, 0, x, this.frame.height);
+      }
+      for (let y = 0; y <= this.frame.height; y += unit.height) {
+        $.line(0, y, this.frame.width, y);
+      }
+    });
   }
 }
 
-export class StepWidget {
+export class StepWidget extends BaseWidget {
   public step: number = 0;
   public frame = Rect.zero();
   public color: string = '000000';
   public format = new Intl.NumberFormat();
-  public textSize: number = 18;
+  public textSize: number = 14;
   public textAlign: any;
 
-  constructor(
-    public readonly context: p5
-  ) {
+  constructor(context: p5) {
+    super(context);
     this.textAlign = context.RIGHT;
   }
 
-  also(mutate: (widget: StepWidget) => void): StepWidget {
-    mutate(this);
-    return this;
-  }
-
   draw() {
-    this.context.push();
+    this.scope($ => {
+      $.stroke(this.color);
+      $.textSize(this.textSize);
+      $.textAlign(this.textAlign);
 
-    this.context.stroke(this.color);
-    this.context.textSize(this.textSize);
-    this.context.textAlign(this.textAlign);
-
-    this.context.text(
-      this.text(),
-      this.frame.left, this.frame.top,
-      this.frame.right, this.frame.bottom,
-    );
-
-    this.context.pop();
-  }
-
-  private text(): string {
-    return `${this.format.format(this.step)} steps`;
+      $.text(
+        `${this.format.format(this.step)} steps`,
+        this.frame.left, this.frame.top,
+        this.frame.right, this.frame.bottom,
+      );
+    });
   }
 }
 
-export class WorldWidget {
-  public state: WorldState | undefined;
+export class ApplicationWidget extends Widget<ApplicationModel> {
   public frame = Rect.zero();
 
   public readonly grid: GridWidget;
   public readonly ant: AntWidget;
   public readonly step: StepWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this.grid = new GridWidget(context);
     this.ant = new AntWidget(context);
     this.step = new StepWidget(context);
   }
 
-  also(mutate: (widget: WorldWidget) => void): WorldWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    this.grid.state = state.grid;
+  protected doDraw(model: ApplicationModel) {
+    this.grid.model = model.grid;
     this.grid.frame = this.gridFrame();
     this.grid.draw();
 
-    const grid = state.grid;
+    const grid = model.grid;
 
-    state.ants.forEach(ant => {
-      this.ant.state = ant;
+    model.ants.forEach(ant => {
+      this.ant.model = ant;
       this.ant.frame = this.antFrame({ant, grid});
       this.ant.draw();
     })
 
-    this.step.step = state.step;
+    this.step.step = model.step;
     this.step.frame = this.stepFrame();
     this.step.draw();
   }
@@ -222,7 +165,7 @@ export class WorldWidget {
     })
   }
 
-  private antFrame({ant, grid}: { ant: AntState, grid: GridState }): Rect {
+  private antFrame({ant, grid}: { ant: AntModel, grid: GridModel }): Rect {
     const cellSize = Size.of({
       width: this.frame.width / grid.dimen.width,
       height: this.frame.height / grid.dimen.height,

@@ -1,9 +1,10 @@
 import p5 from 'p5';
+import { DebugManager } from '../../lib/process';
 import { Spot } from '../../lib/dmath';
 import { Arrays, IntegerRange } from '../../lib/stdlib';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { AntState, Direction, GridState, WorldState } from './model';
-import { WorldWidget } from './view';
+import { AntModel, ApplicationModel, Direction, GridModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#FFFFFF',
@@ -17,8 +18,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -35,9 +36,9 @@ export function sketch(context: p5) {
       Direction.east,
     ]
 
-    state = WorldState.create({
+    model = new ApplicationModel({
       ants: Arrays.generate(Params.ANT_COUNT, () => {
-        return AntState.create({
+        return new AntModel({
           spot: Spot.of({
             row: range.sample(),
             column: range.sample(),
@@ -45,13 +46,13 @@ export function sketch(context: p5) {
           direction: directions.sample(),
         })
       }),
-      grid: GridState.create({
+      grid: new GridModel({
         size: Params.GRID_SIZE,
       })
     });
 
-    widget = new WorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
       it.frame = Rect.of({
         origin: Point.zero(),
         size: Size.of(context),
@@ -64,6 +65,10 @@ export function sketch(context: p5) {
         it.color = Params.COLOR_ANT;
       })
     });
+
+    DebugManager.attach(context).also(it => {
+      it.widget?.also(it => it.textColor = '#000000');
+    });
   }
 
   context.draw = function () {
@@ -75,7 +80,7 @@ export function sketch(context: p5) {
 
     // update
     for (let i = 0; i < Params.STEP_SIZE; i++) {
-      state.update();
+      model.update();
     }
   }
 
