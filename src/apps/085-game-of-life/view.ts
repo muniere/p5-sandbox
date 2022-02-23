@@ -1,45 +1,22 @@
-import * as p5 from 'p5';
+import { Widget } from '../../lib/process';
 import { Spot } from '../../lib/dmath';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { CellState, WorldState } from './model';
-import { Context } from '../../lib/process';
+import { ApplicationModel, State } from './model';
 
-export class WorldWidget {
+export class ApplicationWidget extends Widget<ApplicationModel> {
+  public frame = Rect.zero();
   public aliveColor: string = '#000000';
   public deadColor: string = '#FFFFFF';
   public borderColor: string = '#000000';
-  public state?: WorldState;
 
-  constructor(
-    public context: p5,
-    public frame: Rect,
-  ) {
-    // no-op
-  }
-
-  static create({context, origin, size}: {
-    context: p5,
-    origin: Point,
-    size: Size,
-  }): WorldWidget {
-    return new WorldWidget(context, Rect.of({origin, size}));
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
+  protected doDraw(model: ApplicationModel) {
     const cellSize = Size.of({
-      width: this.frame.width / state.grid.width,
-      height: this.frame.height / state.grid.height,
+      width: this.frame.width / model.grid.width,
+      height: this.frame.height / model.grid.height,
     });
 
-    Context.scope(this.context, $ => {
-      this.context.push();
-
-      state.grid.walk((state: CellState, spot: Spot) => {
+    this.scope($ => {
+      model.grid.walk((state: State, spot: Spot) => {
         const origin = Point.of({
           x: this.frame.origin.x + spot.column * cellSize.width,
           y: this.frame.origin.y + spot.row * cellSize.height,
@@ -49,9 +26,9 @@ export class WorldWidget {
 
         const fillColor = (() => {
           switch (state) {
-            case CellState.alive:
+            case State.alive:
               return this.aliveColor;
-            case CellState.dead:
+            case State.dead:
               return this.deadColor;
           }
         })();

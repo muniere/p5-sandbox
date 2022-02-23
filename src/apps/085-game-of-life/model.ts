@@ -1,52 +1,44 @@
-import { Dimen, Matrix, Spot } from '../../lib/dmath';
+import { Dimen, Matrix, Spot, SpotCompat } from '../../lib/dmath';
 
-export enum CellState {
+export enum State {
   alive,
   dead,
 }
 
-export class GridState {
-  constructor(
-    public readonly matrix: Matrix<CellState>,
-  ) {
-    // no-op
-  }
+export class GridModel {
+  private readonly _matrix: Matrix<State>;
 
-  static create({dimen, factory}: {
+  constructor(nargs: {
     dimen: Dimen,
-    factory?: (coord: Spot) => CellState,
-  }): GridState {
-    const matrix = Matrix.generate(dimen, (spot) => {
-      return factory ? factory(spot) : CellState.dead;
+    factory?: (coord: Spot) => State,
+  }) {
+    this._matrix = Matrix.generate(nargs.dimen, (spot) => {
+      return nargs.factory ? nargs.factory(spot) : State.dead;
     });
-
-    return new GridState(matrix);
   }
 
   get width(): number {
-    return this.matrix.width;
+    return this._matrix.width;
   }
 
   get height(): number {
-    return this.matrix.height;
+    return this._matrix.height;
   }
 
-  walk(callback: (state: CellState, spot: Spot) => void) {
-    this.matrix.forEach(callback)
+  walk(callback: (state: State, spot: Spot) => void) {
+    this._matrix.forEach(callback)
   }
 
-  next(): GridState {
-    return GridState.create({
-      dimen: this.matrix.dimen,
+  next(): GridModel {
+    return new GridModel({
+      dimen: this._matrix.dimen,
       factory: (spot: Spot) => this._next(spot),
     });
   }
 
-  private _next({row, column}: {
-    row: number,
-    column: number,
-  }): CellState {
-    const current = this.getOrNull({row, column});
+  private _next(spot: SpotCompat): State {
+    const {row, column} = spot;
+    const current = this.getOrNull(spot);
 
     // noinspection PointlessArithmeticExpressionJS
     const neighbors = [
@@ -58,55 +50,44 @@ export class GridState {
       this.getOrNull({row: row + 1, column: column - 1}),
       this.getOrNull({row: row + 1, column: column + 0}),
       this.getOrNull({row: row + 1, column: column + 1}),
-    ].filter(it => it != undefined) as CellState[];
+    ].compactMap(it => it);
 
-    const density = neighbors.filter(it => it == CellState.alive).length;
+    const density = neighbors.filter(it => it == State.alive).length;
 
     switch (current) {
-      case CellState.alive:
+      case State.alive:
         if (2 <= density && density <= 3) {
-          return CellState.alive;
+          return State.alive;
         } else {
-          return CellState.dead;
+          return State.dead;
         }
-      case CellState.dead:
+      case State.dead:
         if (density == 3) {
-          return CellState.alive;
+          return State.alive;
         } else {
-          return CellState.dead;
+          return State.dead;
         }
       default:
         throw new Error();
     }
   }
 
-  private getOrNull({row, column}: {
-    row: number,
-    column: number,
-  }): CellState | undefined {
-    return this.matrix.getOrNull(Spot.of({row, column}))
+  private getOrNull(spot: SpotCompat): State | undefined {
+    return this._matrix.getOrNull(spot)
   }
 }
 
-export class WorldState {
-  private _grid: GridState;
+export class ApplicationModel {
+  private _grid: GridModel;
 
-  constructor(
-    seed: GridState,
-  ) {
-    this._grid = seed;
-  }
-
-  static create({dimen, factory}: {
+  constructor(nargs: {
     dimen: Dimen,
-    factory?: (coord: Spot) => CellState,
-  }): WorldState {
-    return new WorldState(
-      GridState.create({dimen, factory})
-    );
+    factory?: (coord: Spot) => State,
+  }) {
+    this._grid = new GridModel(nargs);
   }
 
-  get grid(): GridState {
+  get grid(): GridModel {
     return this._grid;
   }
 
