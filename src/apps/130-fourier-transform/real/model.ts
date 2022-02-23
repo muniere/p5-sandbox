@@ -1,23 +1,23 @@
+import { FrameClock } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
-import { ChainState, Clock, PathState } from '../shared/model';
+import { ChainModel, PathModel } from '../shared/model';
 
-export class RealWorldState {
-  constructor(
-    public readonly clock: Clock,
-    public readonly xChain: ChainState,
-    public readonly yChain: ChainState,
-    public readonly path: PathState,
-  ) {
-    // no-op
-  }
+export class ApplicationModel {
+  public readonly clock: FrameClock;
+  public readonly xChain: ChainModel;
+  public readonly yChain: ChainModel;
+  public readonly path: PathModel;
 
-  static create({clock, xChain, yChain, path}: {
-    clock: Clock,
-    xChain: ChainState,
-    yChain: ChainState
-    path: PathState,
-  }): RealWorldState {
-    return new RealWorldState(clock, xChain, yChain, path);
+  constructor(nargs: {
+    clock: FrameClock,
+    xChain: ChainModel,
+    yChain: ChainModel,
+    path: PathModel,
+  }) {
+    this.clock = nargs.clock;
+    this.xChain = nargs.xChain;
+    this.yChain = nargs.yChain;
+    this.path = nargs.path;
   }
 
   update() {

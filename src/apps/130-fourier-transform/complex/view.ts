@@ -2,10 +2,10 @@ import * as p5 from 'p5';
 import { Context } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { ChainWidget, PathWidget } from '../shared/view';
-import { ComplexWorldState } from './model';
+import { ApplicationModel } from './model';
 
 export class ComplexWorldWidget {
-  public state: ComplexWorldState | undefined;
+  public state: ApplicationModel | undefined;
   public origin = Point.zero();
 
   public readonly chain: ChainWidget;

@@ -1,7 +1,7 @@
+import { FrameClock } from '../../../lib/process';
 import { Arrays } from '../../../lib/stdlib';
 import { Complex } from '../../../lib/cmath';
 import { Point } from '../../../lib/graphics2d';
-import { FrameClock } from '../../../lib/process';
 
 export namespace Formula {
 
@@ -19,25 +19,23 @@ export namespace Formula {
   }
 }
 
-export class CircleSeed {
-  constructor(
-    public readonly frequency: number,
-    public readonly amplitude: number,
-    public readonly phase: number,
-  ) {
-    // no-op
-  }
+export class CircleGenome {
+  public readonly frequency: number;
+  public readonly amplitude: number;
+  public readonly phase: number;
 
-  static of({frequency, amplitude, phase}: {
+  constructor(nargs: {
     frequency: number,
     amplitude: number,
     phase: number,
-  }): CircleSeed {
-    return new CircleSeed(frequency, amplitude, phase);
+  }) {
+    this.frequency = nargs.frequency;
+    this.amplitude = nargs.amplitude;
+    this.phase = nargs.phase;
   }
 
-  static from({k, X}: { k: number, X: Complex }): CircleSeed {
-    return CircleSeed.of({
+  static from({k, X}: { k: number, X: Complex }): CircleGenome {
+    return new CircleGenome({
       frequency: k,
       amplitude: X.norm,
       phase: Math.atan2(X.im, X.re),
@@ -45,26 +43,23 @@ export class CircleSeed {
   }
 }
 
-export class CircleState {
+export class CircleModel {
   public color: string = '#FFFFFF';
   public angle: number = 0;
+  public center: Point;
+  public genome: CircleGenome;
 
-  constructor(
-    public center: Point,
-    public seed: CircleSeed,
-  ) {
+  constructor(nargs: {
+    center: Point,
+    genome: CircleGenome,
+  }) {
+    this.center = nargs.center;
+    this.genome = nargs.genome;
     // no-op
   }
 
-  static create({center, genome}: {
-    center: Point,
-    genome: CircleSeed,
-  }): CircleState {
-    return new CircleState(center, genome);
-  }
-
   get radius(): number {
-    return this.seed.amplitude;
+    return this.genome.amplitude;
   }
 
   get epicycleCenter(): Point {
@@ -74,7 +69,7 @@ export class CircleState {
     });
   }
 
-  also(mutate: (circle: CircleState) => void): CircleState {
+  also(mutate: (circle: CircleModel) => void): CircleModel {
     mutate(this);
     return this;
   }
@@ -87,28 +82,30 @@ export class CircleState {
   }
 }
 
-export class ChainState {
-  public constructor(
-    public readonly circles: CircleState[],
-  ) {
-    // no-op
+export class ChainModel {
+  private readonly _circles: CircleModel[];
+
+  public constructor(nargs: {
+    circles: CircleModel[]
+  }) {
+    this._circles = nargs.circles;
   }
 
   static create({center, values, decorate}: {
     center: Point,
     values: Complex[],
-    decorate?: (circle: CircleState, i: number) => void
-  }): ChainState {
+    decorate?: (circle: CircleModel, i: number) => void
+  }): ChainModel {
     const N = Complex.re(values.length);
     const genomes = Formula.fourier(values).map(
-      (X, k) => CircleSeed.from({
+      (X, k) => CircleGenome.from({
         k: k,
         X: X.div(N),
       })
     );
 
     const circles = genomes.map((genome, i) =>
-      CircleState.create({
+      new CircleModel({
         center: center,
         genome: genome,
       }).also(it => {
@@ -118,18 +115,24 @@ export class ChainState {
       })
     );
 
-    return new ChainState(circles.sortedDesc(it => it.seed.amplitude));
+    return new ChainModel({
+      circles: circles.sortedDesc(it => it.genome.amplitude),
+    });
   }
 
-  first(): CircleState {
-    return this.circles.first();
+  get circles(): CircleModel[] {
+    return [...this._circles];
   }
 
-  last(): CircleState {
-    return this.circles.last();
+  first(): CircleModel {
+    return this._circles.first();
   }
 
-  also(mutate: (machine: ChainState) => void): ChainState {
+  last(): CircleModel {
+    return this._circles.last();
+  }
+
+  also(mutate: (machine: ChainModel) => void): ChainModel {
     mutate(this);
     return this;
   }
@@ -137,11 +140,11 @@ export class ChainState {
   update({clock, offset}: { clock: FrameClock, offset: number }) {
     const t = clock.time();
 
-    let center = this.circles[0].center;
+    let center = this._circles[0].center;
 
-    this.circles.forEach((circle) => {
-      const freq = circle.seed.frequency;
-      const phase = circle.seed.phase;
+    this._circles.forEach((circle) => {
+      const freq = circle.genome.frequency;
+      const phase = circle.genome.phase;
       circle.center = center;
       circle.angle = freq * t + phase + offset;
       center = circle.epicycleCenter;
@@ -149,44 +152,44 @@ export class ChainState {
   }
 }
 
-export class PathState {
+export class PathModel {
   public color: string = '#FFFFFF';
   public maxLength: number = -1;
 
-  constructor(
-    public plots: Point[],
-  ) {
-    // no-op
+  private readonly _plots: Point[];
+
+  constructor(nargs: {
+    plots: Point[],
+  }) {
+    this._plots = nargs.plots;
   }
 
-  static create({plots}: {
-    plots: Point[],
-  }): PathState {
-    return new PathState(plots);
+  get plots(): Point[] {
+    return [...this._plots];
   }
 
   get length(): number {
-    return this.plots.length;
+    return this._plots.length;
   }
 
   first(): Point {
-    return this.plots.first();
+    return this._plots.first();
   }
 
   last(): Point {
-    return this.plots.last();
+    return this._plots.last();
   }
 
-  also(mutate: (wave: PathState) => void): PathState {
+  also(mutate: (wave: PathModel) => void): PathModel {
     mutate(this);
     return this;
   }
 
   push(plot: Point) {
-    this.plots.push(plot);
+    this._plots.push(plot);
 
-    if (this.maxLength > 0 && this.plots.length > this.maxLength) {
-      this.plots.shift();
+    if (this.maxLength > 0 && this._plots.length > this.maxLength) {
+      this._plots.shift();
     }
   }
 }

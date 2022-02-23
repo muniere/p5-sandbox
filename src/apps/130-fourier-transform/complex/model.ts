@@ -1,21 +1,20 @@
+import { FrameClock } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
-import { ChainState, Clock, PathState } from '../shared/model';
+import { ChainModel, PathModel } from '../shared/model';
 
-export class ComplexWorldState {
-  constructor(
-    public readonly clock: Clock,
-    public readonly chain: ChainState,
-    public readonly path: PathState,
-  ) {
-    // no-op
-  }
+export class ApplicationModel {
+  public readonly clock: FrameClock;
+  public readonly chain: ChainModel;
+  public readonly path: PathModel;
 
-  static create({clock, chain, path}: {
-    clock: Clock,
-    chain: ChainState,
-    path: PathState,
-  }): ComplexWorldState {
-    return new ComplexWorldState(clock, chain, path);
+  constructor(nargs: {
+    clock: FrameClock,
+    chain: ChainModel,
+    path: PathModel,
+  }) {
+    this.clock = nargs.clock;
+    this.chain = nargs.chain;
+    this.path = nargs.path;
   }
 
   update() {

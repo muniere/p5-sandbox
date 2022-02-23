@@ -1,9 +1,9 @@
 import * as p5 from 'p5';
 import { Context } from '../../../lib/process';
-import { ChainState, CircleState, PathState } from './model';
+import { ChainModel, CircleModel, PathModel } from './model';
 
 export class CircleWidget {
-  public state: CircleState | undefined;
+  public state: CircleModel | undefined;
 
   public trackWeight: number = 0;
   public handWeight: number = 0;
@@ -63,7 +63,7 @@ export class CircleWidget {
 }
 
 export class ChainWidget {
-  public state: ChainState | undefined;
+  public state: ChainModel | undefined;
 
   public trackWeight: number = 0;
   public handWeight: number = 0;
@@ -100,7 +100,7 @@ export class ChainWidget {
 }
 
 export class PathWidget {
-  public state: PathState | undefined;
+  public state: PathModel | undefined;
 
   constructor(
     public readonly context: p5,

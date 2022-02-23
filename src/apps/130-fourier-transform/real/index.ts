@@ -3,8 +3,8 @@ import { FrameClock } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { Complex } from '../../../lib/cmath';
 import * as data from '../shared/data';
-import { ChainState, CircleState, PathState } from '../shared/model';
-import { RealWorldState } from './model';
+import { ChainModel, CircleModel, PathModel } from '../shared/model';
+import { ApplicationModel } from './model';
 import { RealWorldWidget } from './view';
 
 const Params = Object.freeze({
@@ -20,7 +20,7 @@ const Params = Object.freeze({
 // x-y plan edition; with combinations of real numbers
 // noinspection JSUnusedLocalSymbols
 export function sketch(context: p5) {
-  let state: RealWorldState;
+  let state: ApplicationModel;
   let widget: RealWorldWidget;
 
   context.setup = function () {
@@ -39,26 +39,26 @@ export function sketch(context: p5) {
       y: Params.ORIGIN_Y,
     });
 
-    state = RealWorldState.create({
+    state = new ApplicationModel({
       clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / points.length,
       }),
-      xChain: ChainState.create({
+      xChain: ChainModel.create({
         center: origin.plus({x: Params.MARGIN_X}),
         values: points.map(it => Complex.re(it.x)),
-        decorate: (circle: CircleState) => {
+        decorate: (circle: CircleModel) => {
           circle.color = Params.SHAPE_COLOR;
         }
       }),
-      yChain: ChainState.create({
+      yChain: ChainModel.create({
         center: origin.plus({y: Params.MARGIN_Y}),
         values: points.map(it => Complex.re(it.y)),
-        decorate: (circle: CircleState) => {
+        decorate: (circle: CircleModel) => {
           circle.color = Params.SHAPE_COLOR;
         }
       }),
-      path: PathState.create({
+      path: new PathModel({
         plots: [],
       }).also(it => {
         it.color = Params.SHAPE_COLOR;

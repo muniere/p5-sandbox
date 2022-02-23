@@ -2,7 +2,7 @@ import * as p5 from 'p5';
 import { Context } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { ChainWidget, PathWidget } from '../shared/view';
-import { RealWorldState } from './model';
+import { ApplicationModel } from './model';
 
 export class LineWidget {
   public color: string = '#FFFFFF';
@@ -34,7 +34,7 @@ export class LineWidget {
 }
 
 export class RealWorldWidget {
-  public state: RealWorldState | undefined;
+  public state: ApplicationModel | undefined;
   public origin = Point.zero();
 
   public readonly xChain: ChainWidget;

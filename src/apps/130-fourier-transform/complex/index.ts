@@ -1,11 +1,11 @@
 import * as p5 from 'p5';
+import { FrameClock } from '../../../lib/process';
 import { Complex } from '../../../lib/cmath';
 import { Point } from '../../../lib/graphics2d';
 import * as data from '../shared/data';
-import { ChainState, CircleState, PathState } from '../shared/model';
-import { ComplexWorldState } from './model';
+import { ChainModel, CircleModel, PathModel } from '../shared/model';
+import { ApplicationModel } from './model';
 import { ComplexWorldWidget } from './view';
-import { FrameClock } from '../../../lib/process';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -20,7 +20,7 @@ const Params = Object.freeze({
 // complex plane edition; with single complex numbers
 // noinspection JSUnusedLocalSymbols
 export function sketch(context: p5) {
-  let state: ComplexWorldState;
+  let state: ApplicationModel;
   let widget: ComplexWorldWidget;
 
   context.setup = function () {
@@ -39,19 +39,19 @@ export function sketch(context: p5) {
       y: Params.ORIGIN_Y + Params.MARGIN_Y / 2,
     });
 
-    state = ComplexWorldState.create({
+    state = new ApplicationModel({
       clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / values.length,
       }),
-      chain: ChainState.create({
+      chain: ChainModel.create({
         center: origin.plus({x: Params.MARGIN_X}),
         values: values,
-        decorate: (circle: CircleState) => {
+        decorate: (circle: CircleModel) => {
           circle.color = Params.SHAPE_COLOR;
         }
       }),
-      path: PathState.create({
+      path: new PathModel({
         plots: [],
       }).also(it => {
         it.color = Params.SHAPE_COLOR;
