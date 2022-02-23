@@ -435,8 +435,14 @@ export class IntegerRange {
 
 declare global {
   interface Math {
+    sum(...values: number[]): number
+
     average(...values: number[]): number
   }
+}
+
+Math.sum = function (...values: number[]) {
+  return values.reduce((acc, num) => acc + num, 0);
 }
 
 Math.average = function (...values: number[]) {

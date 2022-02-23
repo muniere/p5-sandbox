@@ -1,6 +1,5 @@
-import * as p5 from 'p5';
-import { Element } from 'p5';
-import { Neighbor, Rating, WorldState } from './model';
+import p5, { Element } from 'p5';
+import { ApplicationModel, NeighborModel, RatingModel } from './model';
 
 export class SelectWidget {
   public label?: string;
@@ -41,7 +40,7 @@ export class SelectWidget {
 
 export class NeighborWidget {
   public title: string | undefined = 'Nearest Neighbors';
-  public neighbors: Neighbor[] = [];
+  public neighbors: NeighborModel[] = [];
 
   constructor(
     private readonly context: p5,
@@ -74,7 +73,7 @@ export class NeighborWidget {
 
 export class PredictWidget {
   public title: string | undefined = 'Predictions';
-  public value: Rating | undefined;
+  public value: RatingModel | undefined;
 
   constructor(
     private readonly context: p5,
@@ -122,8 +121,8 @@ export class PredictWidget {
   }
 }
 
-export class WorldWidget {
-  private state: WorldState;
+export class ApplicationWidget {
+  public model: ApplicationModel | undefined;
 
   private neighborWidget: NeighborWidget;
   private neighborElement: Element | undefined;
@@ -132,22 +131,30 @@ export class WorldWidget {
   private predictSection: Element | undefined;
 
   constructor(
-    context: p5,
-    state: WorldState,
+    public readonly context: p5
   ) {
-    this.state = state;
     this.neighborWidget = new NeighborWidget(context);
     this.predictWidget = new PredictWidget(context);
   }
 
-  render() {
-    const answer = this.state.solve();
+  also(mutate: (widget: ApplicationWidget) => void): ApplicationWidget {
+    mutate(this);
+    return this;
+  }
 
-    this.neighborWidget.neighbors = answer.neighbors;
+  render() {
+    const model = this.model;
+    if (!model) {
+      return;
+    }
+
+    const solution = model.solve();
+
+    this.neighborWidget.neighbors = solution.neighbors;
     this.neighborElement?.remove();
     this.neighborElement = this.neighborWidget.render();
 
-    this.predictWidget.value = answer.prediction;
+    this.predictWidget.value = solution.prediction;
     this.predictSection?.remove();
     this.predictSection = this.predictWidget.render();
   }

@@ -1,19 +1,17 @@
-export class Rating {
-  constructor(
-    public readonly IV?: number,
-    public readonly V?: number,
-    public readonly VI?: number,
-    public readonly I?: number,
-    public readonly II?: number,
-    public readonly III?: number,
-    public readonly VII?: number,
-    public readonly Rogue1?: number,
-    public readonly Holiday?: number,
-  ) {
-    // no-op
-  }
+import '../../lib/stdlib';
 
-  static create({IV, V, VI, I, II, III, VII, Rogue1, Holiday}: {
+export class RatingModel {
+  public readonly IV?: number;
+  public readonly V?: number;
+  public readonly VI?: number;
+  public readonly I?: number;
+  public readonly II?: number;
+  public readonly III?: number;
+  public readonly VII?: number;
+  public readonly Rogue1?: number;
+  public readonly Holiday?: number;
+
+  constructor(nargs: {
     IV?: number,
     V?: number,
     VI?: number,
@@ -23,29 +21,33 @@ export class Rating {
     VII?: number,
     Rogue1?: number,
     Holiday?: number,
-  }): Rating {
-    return new Rating(IV, V, VI, I, II, III, VII, Rogue1, Holiday);
+  }) {
+    this.IV = nargs.IV;
+    this.V = nargs.V;
+    this.VI = nargs.VI;
+    this.I = nargs.I;
+    this.II = nargs.II;
+    this.III = nargs.III;
+    this.VII = nargs.VII;
+    this.Rogue1 = nargs.Rogue1;
+    this.Holiday = nargs.Holiday;
   }
 }
 
-export class Evaluation {
-  constructor(
-    public readonly timestamp: string,
-    public readonly name: string,
-    public readonly IV?: number,
-    public readonly V?: number,
-    public readonly VI?: number,
-    public readonly I?: number,
-    public readonly II?: number,
-    public readonly III?: number,
-    public readonly VII?: number,
-    public readonly Rogue1?: number,
-    public readonly Holiday?: number,
-  ) {
-    // no-op
-  }
+export class EvaluationModel {
+  public readonly timestamp: string;
+  public readonly name: string;
+  public readonly IV?: number;
+  public readonly V?: number;
+  public readonly VI?: number;
+  public readonly I?: number;
+  public readonly II?: number;
+  public readonly III?: number;
+  public readonly VII?: number;
+  public readonly Rogue1?: number;
+  public readonly Holiday?: number;
 
-  static create({timestamp, name, IV, V, VI, I, II, III, VII, Rogue1, Holiday}: {
+  constructor(nargs: {
     timestamp: string,
     name: string,
     IV?: number,
@@ -57,8 +59,18 @@ export class Evaluation {
     VII?: number,
     Rogue1?: number,
     Holiday?: number,
-  }): Evaluation {
-    return new Evaluation(timestamp, name, IV, V, VI, I, II, III, VII, Rogue1, Holiday);
+  }) {
+    this.timestamp = nargs.timestamp;
+    this.name = nargs.name;
+    this.IV = nargs.IV;
+    this.V = nargs.V;
+    this.VI = nargs.VI;
+    this.I = nargs.I;
+    this.II = nargs.II;
+    this.III = nargs.III;
+    this.VII = nargs.VII;
+    this.Rogue1 = nargs.Rogue1;
+    this.Holiday = nargs.Holiday;
   }
 
   static decode({timestamp, name, IV, V, VI, I, II, III, VII, Rogue1, Holiday}: {
@@ -73,19 +85,19 @@ export class Evaluation {
     VII?: number,
     Rogue1?: number,
     Holiday?: number,
-  }): Evaluation {
-    return new Evaluation(timestamp, name, IV, V, VI, I, II, III, VII, Rogue1, Holiday);
+  }): EvaluationModel {
+    return new EvaluationModel({timestamp, name, IV, V, VI, I, II, III, VII, Rogue1, Holiday});
   }
 
   get key(): string {
     return this.name;
   }
 
-  static similarity(obj1: Evaluation, obj2: Evaluation): number {
+  static similarity(obj1: EvaluationModel, obj2: EvaluationModel): number {
     return 1 / (this.distance(obj1, obj2) + 1)
   }
 
-  static distance(obj1: Evaluation, obj2: Evaluation): number {
+  static distance(obj1: EvaluationModel, obj2: EvaluationModel): number {
     const diffs = [] as number[];
 
     if (obj1.IV && obj2.IV) {
@@ -122,57 +134,51 @@ export class Evaluation {
   }
 }
 
-export class Neighbor {
-  constructor(
-    public readonly evaluation: Evaluation,
-    public readonly similarity: number,
-  ) {
-    // no-op
-  }
+export class NeighborModel {
+  public readonly evaluation: EvaluationModel;
+  public readonly similarity: number;
 
-  static create({evaluation, similarity}: {
-    evaluation: Evaluation,
+  constructor(nargs: {
+    evaluation: EvaluationModel,
     similarity: number,
-  }): Neighbor {
-    return new Neighbor(evaluation, similarity);
+  }) {
+    this.evaluation = nargs.evaluation;
+    this.similarity = nargs.similarity;
   }
 }
 
-export class Solver {
-  constructor(
-    public readonly evaluations: Evaluation[],
-  ) {
-    // no-op
-  }
+export class SolverModel {
+  private readonly _evaluations: EvaluationModel[];
 
-  static create({evaluations}: {
-    evaluations: Evaluation[],
-  }): Solver {
-    return new Solver(evaluations);
+  constructor(nargs: {
+    evaluations: EvaluationModel[],
+  }) {
+    this._evaluations = nargs.evaluations;
   }
 
   findNearestNeighbors({base, count}: {
-    base: Evaluation,
+    base: EvaluationModel,
     count: number
-  }): Neighbor[] {
-    return this.evaluations
-      .map((it) => it.key == base.key
-        ? Neighbor.create({evaluation: it, similarity: -1})
-        : Neighbor.create({evaluation: it, similarity: Evaluation.similarity(base, it)}),
-      )
+  }): NeighborModel[] {
+    const neighbors = this._evaluations.map((it) => it.key == base.key
+      ? new NeighborModel({evaluation: it, similarity: -1})
+      : new NeighborModel({evaluation: it, similarity: EvaluationModel.similarity(base, it)}),
+    );
+
+    return neighbors
       .filter(it => it.similarity >= 0)
-      .sortedDesc((it) => it.similarity)
+      .sortedDesc(it => it.similarity)
       .slice(0, count);
   }
 }
 
-export class Formula {
+export module Formula {
 
-  static predict(neighbors: Neighbor[]): Rating {
+  export function predict(neighbors: NeighborModel[]): RatingModel {
     const plus = (a: number, b: number) => a + b;
-    const similarity = this.sum(neighbors.map(it => it.similarity));
+    const similarity = Math.sum(...neighbors.map(it => it.similarity));
 
-    return Rating.create({
+    return new RatingModel({
       IV: neighbors.filter(it => it.evaluation.IV).map(it => it.evaluation.IV! * it.similarity).reduce(plus) / similarity,
       V: neighbors.filter(it => it.evaluation.V).map(it => it.evaluation.V! * it.similarity).reduce(plus) / similarity,
       VI: neighbors.filter(it => it.evaluation.VI).map(it => it.evaluation.VI! * it.similarity).reduce(plus) / similarity,
@@ -184,13 +190,9 @@ export class Formula {
       Holiday: neighbors.filter(it => it.evaluation.Holiday).map(it => it.evaluation.Holiday! * it.similarity).reduce(plus) / similarity,
     });
   }
-
-  static sum(values: number[]): number {
-    return values.reduce((acc, num) => acc + num, 0);
-  }
 }
 
-export class Persona {
+export class PersonaModel {
   constructor(
     public IV?: number,
     public V?: number,
@@ -205,12 +207,8 @@ export class Persona {
     // no-op
   }
 
-  static empty(): Persona {
-    return new Persona();
-  }
-
-  evaluation(): Evaluation {
-    return Evaluation.create({
+  evaluation(): EvaluationModel {
+    return new EvaluationModel({
       timestamp: new Date().toISOString(),
       name: 'anonymous',
       IV: this.IV,
@@ -226,52 +224,68 @@ export class Persona {
   }
 }
 
-export class Answer {
-  constructor(
-    public readonly neighbors: Neighbor[],
-    public readonly prediction: Rating,
-  ) {
-    // no-op
+export class SolutionModel {
+  public _neighbors: NeighborModel[];
+  public _prediction: RatingModel;
+
+  constructor(nargs: {
+    neighbors: NeighborModel[],
+    prediction: RatingModel,
+  }) {
+    this._neighbors = nargs.neighbors;
+    this._prediction = nargs.prediction
   }
 
-  static create({neighbors, prediction}: {
-    neighbors: Neighbor[],
-    prediction: Rating,
-  }): Answer {
-    return new Answer(neighbors, prediction)
+  get neighbors(): NeighborModel[] {
+    return [...this._neighbors];
+  }
+
+  get prediction(): RatingModel {
+    return this._prediction;
   }
 }
 
-export class WorldState {
-  public readonly persona = Persona.empty();
-  public limit: number = 5;
+export class ApplicationModel {
+  private readonly _persona = new PersonaModel();
+  private readonly _solver: SolverModel;
+  private _limit: number = 5;
 
-  constructor(
-    public readonly solver: Solver,
-  ) {
-    // no-op
+  constructor(nargs: {
+    solver: SolverModel,
+  }) {
+    this._solver = nargs.solver;
   }
 
-  static create({solver}: {
-    solver: Solver,
-  }): WorldState {
-    return new WorldState(solver);
+  get persona(): PersonaModel {
+    return this._persona;
   }
 
-  solve(): Answer {
-    const evaluation = this.persona.evaluation();
+  get limit(): number {
+    return this._limit;
+  }
 
-    const neighbors = this.solver.findNearestNeighbors({
+  set limit(value: number) {
+    this._limit = value;
+  }
+
+  also(mutate: (model: ApplicationModel) => void): ApplicationModel {
+    mutate(this);
+    return this;
+  }
+
+  solve(): SolutionModel {
+    const evaluation = this._persona.evaluation();
+
+    const neighbors = this._solver.findNearestNeighbors({
       base: evaluation,
-      count: this.limit,
+      count: this._limit,
     });
 
     const prediction = Formula.predict(neighbors);
 
-    return Answer.create({
+    return new SolutionModel({
       neighbors: neighbors,
       prediction: prediction,
     });
   }
 }
-
