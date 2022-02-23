@@ -5,7 +5,7 @@ import { Complex } from '../../../lib/cmath';
 import * as data from '../shared/data';
 import { ChainModel, CircleModel, PathModel } from '../shared/model';
 import { ApplicationModel } from './model';
-import { RealWorldWidget } from './view';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -20,8 +20,8 @@ const Params = Object.freeze({
 // x-y plan edition; with combinations of real numbers
 // noinspection JSUnusedLocalSymbols
 export function sketch(context: p5) {
-  let state: ApplicationModel;
-  let widget: RealWorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -39,7 +39,7 @@ export function sketch(context: p5) {
       y: Params.ORIGIN_Y,
     });
 
-    state = new ApplicationModel({
+    model = new ApplicationModel({
       clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / points.length,
@@ -66,8 +66,8 @@ export function sketch(context: p5) {
       })
     });
 
-    widget = new RealWorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
       it.origin = origin;
       it.xChain.also(it => {
         it.trackWeight = .5;
@@ -98,7 +98,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 
   context.mouseClicked = function () {

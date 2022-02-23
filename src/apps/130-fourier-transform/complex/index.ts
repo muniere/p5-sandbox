@@ -5,7 +5,7 @@ import { Point } from '../../../lib/graphics2d';
 import * as data from '../shared/data';
 import { ChainModel, CircleModel, PathModel } from '../shared/model';
 import { ApplicationModel } from './model';
-import { ComplexWorldWidget } from './view';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
@@ -20,8 +20,8 @@ const Params = Object.freeze({
 // complex plane edition; with single complex numbers
 // noinspection JSUnusedLocalSymbols
 export function sketch(context: p5) {
-  let state: ApplicationModel;
-  let widget: ComplexWorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -39,7 +39,7 @@ export function sketch(context: p5) {
       y: Params.ORIGIN_Y + Params.MARGIN_Y / 2,
     });
 
-    state = new ApplicationModel({
+    model = new ApplicationModel({
       clock: new FrameClock({
         context: context,
         speed: (2 * Math.PI) / values.length,
@@ -59,8 +59,8 @@ export function sketch(context: p5) {
       })
     });
 
-    widget = new ComplexWorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
       it.origin = origin;
       it.chain.also(it => {
         it.trackWeight = .5;
@@ -78,7 +78,7 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
   }
 
   context.mouseClicked = function () {

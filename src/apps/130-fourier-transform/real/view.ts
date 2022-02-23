@@ -1,28 +1,17 @@
 import * as p5 from 'p5';
-import { Context } from '../../../lib/process';
+import { BaseWidget, Widget } from '../../../lib/process';
 import { Point } from '../../../lib/graphics2d';
 import { ChainWidget, PathWidget } from '../shared/view';
 import { ApplicationModel } from './model';
 
-export class LineWidget {
+export class LineWidget extends BaseWidget {
   public color: string = '#FFFFFF';
   public weight: number = 1
   public start = Point.zero();
   public end = Point.zero();
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (line: LineWidget) => void): LineWidget {
-    mutate(this);
-    return this;
-  }
-
   draw() {
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(this.color);
       $.strokeWeight(this.weight);
       $.line(
@@ -33,8 +22,7 @@ export class LineWidget {
   }
 }
 
-export class RealWorldWidget {
-  public state: ApplicationModel | undefined;
+export class ApplicationWidget extends Widget<ApplicationModel> {
   public origin = Point.zero();
 
   public readonly xChain: ChainWidget;
@@ -43,9 +31,8 @@ export class RealWorldWidget {
   public readonly yLine: LineWidget;
   public readonly path: PathWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this.xChain = new ChainWidget(context);
     this.yChain = new ChainWidget(context);
     this.xLine = new LineWidget(context);
@@ -53,26 +40,20 @@ export class RealWorldWidget {
     this.path = new PathWidget(context);
   }
 
-  also(mutate: (widget: RealWorldWidget) => void): RealWorldWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state || !state.path.length) {
+  protected doDraw(model: ApplicationModel) {
+    if (!model.path.length) {
       return;
     }
 
-    this.xChain.state = state.xChain;
-    this.yChain.state = state.yChain;
-    this.path.state = state.path;
-    this.xLine.start = state.xChain.last().epicycleCenter;
-    this.xLine.end = state.path.last();
-    this.yLine.start = state.yChain.last().epicycleCenter;
-    this.yLine.end = state.path.last();
+    this.xChain.model = model.xChain;
+    this.yChain.model = model.yChain;
+    this.path.model = model.path;
+    this.xLine.start = model.xChain.last().epicycleCenter;
+    this.xLine.end = model.path.last();
+    this.yLine.start = model.yChain.last().epicycleCenter;
+    this.yLine.end = model.path.last();
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.translate(this.origin.x, this.origin.y);
       this.xChain.draw();
       this.yChain.draw();
