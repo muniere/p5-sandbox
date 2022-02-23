@@ -1,49 +1,39 @@
 import { Image } from 'p5';
 import { Pixel } from '../../lib/drawing';
 
-export class Relay {
+export class RelayModel {
+  public readonly x: number;
+  public readonly y: number;
+  public readonly rate: number;
 
-  constructor(
-    public x: number,
-    public y: number,
-    public rate: number,
-  ) {
-    // no-op
-  }
-
-  static of({x, y, rate}: {
+  constructor(nargs: {
     x: number,
     y: number,
     rate: number,
-  }): Relay {
-    return new Relay(x, y, rate);
+  }) {
+    this.x = nargs.x;
+    this.y = nargs.y;
+    this.rate = nargs.rate;
   }
 }
 
 // noinspection PointlessArithmeticExpressionJS
-export class ImageMachine {
+export class ImageProcessModel {
   private readonly _image: Image;
   private readonly _scale: number;
 
   private _cursor: number = 0;
   private _speed: number = -1;
 
-  constructor(
+  constructor(nargs: {
     image: Image,
     scale: number,
-  ) {
-    this._image = image;
-    this._scale = scale;
+  }) {
+    this._image = nargs.image;
+    this._scale = nargs.scale;
   }
 
-  static create({image, scale}: {
-    image: Image,
-    scale: number,
-  }): ImageMachine {
-    return new ImageMachine(image, scale);
-  }
-
-  also(mutate: (machine: ImageMachine) => void): ImageMachine {
+  also(mutate: (machine: ImageProcessModel) => void): ImageProcessModel {
     mutate(this);
     return this;
   }
@@ -64,8 +54,8 @@ export class ImageMachine {
     return this._speed;
   }
 
-  setSpeed(speed: number) {
-    this._speed = speed;
+  set speed(value: number) {
+    this._speed = value;
   }
 
   get hasNext(): boolean {
@@ -76,12 +66,12 @@ export class ImageMachine {
     const speed = this._speed > 0 ? this._speed : Infinity;
 
     for (let i = 0; i < speed && this.hasNext; i++) {
-      this.ditherPixel(this._cursor);
+      this.doDither(this._cursor);
       this._cursor += 1;
     }
   }
 
-  ditherPixel(index: number) {
+  private doDither(index: number) {
     const x = Math.floor(index % this.image.width);
     const y = Math.floor(index / this._image.width);
 
@@ -98,10 +88,10 @@ export class ImageMachine {
     this._image.pixels[pixelIndex + 3] = newValues[3];
 
     [
-      Relay.of({x: x + 1, y: y + 0, rate: 7 / 16}),
-      Relay.of({x: x - 1, y: y + 1, rate: 3 / 16}),
-      Relay.of({x: x + 0, y: y + 1, rate: 5 / 16}),
-      Relay.of({x: x + 1, y: y + 1, rate: 1 / 16}),
+      new RelayModel({x: x + 1, y: y + 0, rate: 7 / 16}),
+      new RelayModel({x: x - 1, y: y + 1, rate: 3 / 16}),
+      new RelayModel({x: x + 0, y: y + 1, rate: 5 / 16}),
+      new RelayModel({x: x + 1, y: y + 1, rate: 1 / 16}),
     ].forEach((relay) => {
       if (relay.x < 0 || this._image.width <= relay.x) {
         return;
@@ -124,12 +114,51 @@ export class ImageMachine {
     });
   }
 
-  load() {
+  loadPixels() {
     this._image.loadPixels();
   }
 
-  update() {
+  updatePixels() {
     this._image.updatePixels();
   }
 }
 
+export class ApplicationModel {
+  private _source: ImageProcessModel;
+  private _result: ImageProcessModel;
+
+  constructor(nargs: {
+    source: ImageProcessModel,
+    result: ImageProcessModel,
+  }) {
+    this._source = nargs.source;
+    this._result = nargs.result;
+  }
+
+  get source(): ImageProcessModel {
+    return this._source;
+  }
+
+  get result(): ImageProcessModel {
+    return this._result;
+  }
+
+  get hasNext(): boolean {
+    return this._result.hasNext;
+  }
+
+  also(mutate: (model: ApplicationModel) => void): ApplicationModel {
+    mutate(this);
+    return this;
+  }
+
+  refresh() {
+    this._source.loadPixels();
+    this._result.loadPixels();
+  }
+
+  update() {
+    this._result.dither();
+    this._result.updatePixels();
+  }
+}

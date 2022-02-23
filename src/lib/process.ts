@@ -78,10 +78,18 @@ export class BaseWidget {
 }
 
 export class Widget<Model> extends BaseWidget {
-  public model: Model | undefined;
+  protected _model: Model | undefined;
+
+  public get model(): Model | undefined {
+    return this._model;
+  }
+
+  public set model(model: Model | undefined) {
+    this._model = model;
+  }
 
   draw() {
-    const model = this.model;
+    const model = this._model;
     if (!model) {
       return;
     }

@@ -1,8 +1,8 @@
 // https://www.youtube.com/watch?v=0L2n8Tg2FwI
-import * as p5 from 'p5';
-import { Point } from '../../lib/graphics2d';
-import { ImageMachine } from './model';
-import { ImageWidget } from './view';
+import p5, { Image } from 'p5';
+import { DebugManager } from '../../lib/process';
+import { ApplicationModel, ImageProcessModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   IMAGE_PATH: '/image.jpg',
@@ -11,22 +11,15 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let sourceMachine: ImageMachine;
-  let sourceWidget: ImageWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
-  let resultMachine: ImageMachine;
-  let resultWidget: ImageWidget;
+  let source: Image;
+  let result: Image;
 
   context.preload = function () {
-    sourceMachine = ImageMachine.create({
-      image: context.loadImage(Params.IMAGE_PATH),
-      scale: Params.DITHER_SCALE,
-    });
-
-    resultMachine = ImageMachine.create({
-      image: context.loadImage(Params.IMAGE_PATH),
-      scale: Params.DITHER_SCALE,
-    });
+    source = context.loadImage(Params.IMAGE_PATH);
+    result = context.loadImage(Params.IMAGE_PATH);
   }
 
   context.setup = function () {
@@ -37,40 +30,38 @@ export function sketch(context: p5) {
     );
     context.pixelDensity(1);
 
-    sourceMachine.setSpeed(
-      sourceMachine.image.width * Params.DITHER_SPEED
-    );
-
-    sourceWidget = new ImageWidget(context).also(it => {
-      it.machine = sourceMachine;
-      it.origin = Point.zero();
+    model = new ApplicationModel({
+      source: new ImageProcessModel({
+        image: source,
+        scale: Params.DITHER_SCALE,
+      }).also(it => {
+        it.speed = source.width * Params.DITHER_SPEED;
+      }),
+      result: new ImageProcessModel({
+        image: result,
+        scale: Params.DITHER_SCALE,
+      }).also(it => {
+        it.speed = result.width * Params.DITHER_SPEED;
+      }),
     });
 
-    resultMachine.setSpeed(
-      resultMachine.image.width * Params.DITHER_SPEED
-    );
-
-    resultWidget = new ImageWidget(context).also(it => {
-      it.machine = resultMachine;
-      it.origin = sourceWidget.origin.with({
-        x: sourceMachine.image.width,
-      });
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
     });
+
+    DebugManager.attach(context);
   };
 
   context.draw = function () {
-    sourceMachine.load();
-    sourceWidget.draw();
+    model.refresh();
 
-    resultMachine.load();
-    resultWidget.draw();
+    widget.draw();
 
-    if (!resultMachine.hasNext) {
+    if (!model.hasNext) {
       context.noLoop();
       return;
     }
 
-    resultMachine.dither();
-    resultMachine.update();
+    model.update();
   }
 }
