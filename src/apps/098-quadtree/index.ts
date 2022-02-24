@@ -1,9 +1,10 @@
 import p5 from 'p5';
+import { DebugManager } from '../../lib/process';
 import { Arrays } from '../../lib/stdlib';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 import { Force } from '../../lib/physics2d';
-import { BallState, WorldState } from './model';
-import { WorldWidget } from './view';
+import { ApplicationModel, VehicleModel } from './model';
+import { ApplicationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#FFFFFF',
@@ -13,8 +14,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -25,7 +26,7 @@ export function sketch(context: p5) {
 
     const size = Math.min(context.width, context.height);
 
-    state = WorldState.create({
+    model = new ApplicationModel({
       boundary: Rect.of({
         origin: Point.zero(),
         size: Size.square(size),
@@ -33,8 +34,8 @@ export function sketch(context: p5) {
       capacity: Params.DIVISION_CAPACITY,
     });
 
-    widget = new WorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
       it.fillColor = undefined;
       it.strokeColor = '#888888';
     });
@@ -50,7 +51,7 @@ export function sketch(context: p5) {
         y: Math.random(),
       });
 
-      const material = new BallState({
+      const vehicle = new VehicleModel({
         radius: Params.MATERIAL_RADIUS,
         center: center
       }).also(it => {
@@ -59,7 +60,11 @@ export function sketch(context: p5) {
         it.apply(force);
       });
 
-      state.push(material);
+      model.push(vehicle);
+    });
+
+    DebugManager.attach(context).also(it => {
+      it.widget?.also(it => it.textColor = '#222222');
     });
   }
 
@@ -71,7 +76,6 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
-    console.log(context.frameRate());
+    model.update();
   }
 }

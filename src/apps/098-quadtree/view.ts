@@ -1,62 +1,43 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
-import { BallState, BallTag, DivisionState, TreeState, WorldState } from './model';
+import { Widget } from '../../lib/process';
+import { ApplicationModel, DivisionModel, TreeModel, VehicleModel, VehicleTag } from './model';
 
-export class MaterialWidget {
-  public state: BallState | undefined;
+export class VehicleWidget extends Widget<VehicleModel> {
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
-      switch (state.tag) {
-        case BallTag.normal:
-          state.fillColor ? $.fill(state.fillColor) : $.noFill();
-          state.strokeColor ? $.stroke(state.strokeColor) : $.noStroke();
+  protected doDraw(model: VehicleModel) {
+    this.scope($ => {
+      switch (model.tag) {
+        case VehicleTag.normal:
+          model.fillColor ? $.fill(model.fillColor) : $.noFill();
+          model.strokeColor ? $.stroke(model.strokeColor) : $.noStroke();
           break;
 
-        case BallTag.focused:
+        case VehicleTag.focused:
           $.fill('#ff1111');
           $.noStroke();
           break;
       }
 
-      $.circle(state.center.x, state.center.y, state.radius * 2);
+      $.circle(model.center.x, model.center.y, model.radius * 2);
     });
   }
 }
 
-export class DivisionWidget {
-  public state: DivisionState | undefined;
+export class DivisionWidget extends Widget<DivisionModel> {
   public fillColor: string | undefined;
   public strokeColor: string | undefined;
 
-  private _material: MaterialWidget;
+  private _material: VehicleWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    this._material = new MaterialWidget(context);
+  constructor(context: p5) {
+    super(context);
+    this._material = new VehicleWidget(context);
   }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
+  protected doDraw(model: DivisionModel) {
     if (this.strokeColor || this.fillColor) {
-      Context.scope(this.context, $ => {
-        const boundary = state.boundary;
+      this.scope($ => {
+        const boundary = model.boundary;
 
         this.strokeColor ? $.stroke(this.strokeColor) : $.noStroke();
         this.fillColor ? $.fill(this.fillColor) : $.noFill();
@@ -64,21 +45,18 @@ export class DivisionWidget {
       });
     }
 
-    state.materials.forEach(it => {
-      this._material.state = it;
+    model.materials.forEach(it => {
+      this._material.model = it;
       this._material.draw();
     })
   }
 }
 
-export class TreeWidget {
-  public state: TreeState | undefined;
-
+export class TreeWidget extends Widget<TreeModel> {
   private _division: DivisionWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._division = new DivisionWidget(context);
   }
 
@@ -90,32 +68,20 @@ export class TreeWidget {
     this._division.strokeColor = value;
   }
 
-  also(mutate: (widget: TreeWidget) => void): TreeWidget {
-    mutate(this);
-    return this;
-  }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    state.walkWidely(it => {
-      this._division.state = it;
+  protected doDraw(model: TreeModel) {
+    model.walkWidely(it => {
+      this._division.model = it;
       this._division.draw();
     });
   }
 }
 
-export class WorldWidget {
-  public state: WorldState | undefined;
-
+export class ApplicationWidget extends Widget<ApplicationModel> {
   private _tree: TreeWidget;
 
-  constructor(
-    public readonly context: p5,
-  ) {
+  constructor(context: p5) {
+    super(context);
     this._tree = new TreeWidget(context);
   }
 
@@ -127,20 +93,9 @@ export class WorldWidget {
     this._tree.strokeColor = value;
   }
 
-  also(mutate: (widget: WorldWidget) => void): WorldWidget {
-    mutate(this);
-    return this;
-  }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    this._tree.also(it => {
-      it.state = state.tree;
-      it.draw();
-    });
+  protected doDraw(model: ApplicationModel) {
+    this._tree.model = model.tree;
+    this._tree.draw();
   }
 }

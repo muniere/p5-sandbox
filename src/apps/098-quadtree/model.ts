@@ -1,13 +1,13 @@
 import { Point, Rect, Size } from '../../lib/graphics2d';
 import { CircularMaterial } from '../../lib/physics2d';
 
-export enum BallTag {
+export enum VehicleTag {
   normal,
   focused,
 }
 
-export class BallState extends CircularMaterial {
-  public tag = BallTag.normal;
+export class VehicleModel extends CircularMaterial {
+  public tag = VehicleTag.normal;
 
   get zone(): Rect {
     return Rect.of({
@@ -20,27 +20,20 @@ export class BallState extends CircularMaterial {
   }
 }
 
-export class DivisionState {
+export class DivisionModel {
   private readonly _boundary: Rect;
   private readonly _capacity: number;
-  private _materials: BallState[];
-  private _children: DivisionState[];
+  private _materials: VehicleModel[];
+  private _children: DivisionModel[];
 
-  constructor(
+  constructor(nargs: {
     boundary: Rect,
     capacity: number,
-  ) {
-    this._boundary = boundary;
-    this._capacity = capacity;
+  }) {
+    this._boundary = nargs.boundary;
+    this._capacity = nargs.capacity;
     this._materials = [];
     this._children = [];
-  }
-
-  static of({boundary, capacity}: {
-    boundary: Rect,
-    capacity: number,
-  }): DivisionState {
-    return new DivisionState(boundary, capacity);
   }
 
   get boundary(): Rect {
@@ -51,15 +44,15 @@ export class DivisionState {
     return this._capacity;
   }
 
-  get children(): DivisionState[] {
+  get children(): DivisionModel[] {
     return [...this._children];
   }
 
-  get materials(): BallState[] {
+  get materials(): VehicleModel[] {
     return [...this._materials];
   }
 
-  push(material: BallState): boolean {
+  push(material: VehicleModel): boolean {
     if (!this._boundary.includes(material.center)) {
       return false;
     }
@@ -113,7 +106,7 @@ export class DivisionState {
     ];
 
     this._children = origins.map(origin => {
-      return DivisionState.of({
+      return new DivisionModel({
         boundary: Rect.of({
           origin: origin,
           size: this._boundary.size.times(0.5),
@@ -124,20 +117,22 @@ export class DivisionState {
   }
 }
 
-export class TreeState {
-  private readonly _root: DivisionState;
+export class TreeModel {
+  private readonly _root: DivisionModel;
 
-  constructor(
-    root: DivisionState,
-  ) {
-    this._root = root;
+  constructor(nargs: {
+    root: DivisionModel,
+  }) {
+    this._root = nargs.root;
   }
 
   static create({boundary, capacity}: {
     boundary: Rect
     capacity: number,
-  }): TreeState {
-    return new TreeState(DivisionState.of({boundary, capacity}));
+  }): TreeModel {
+    return new TreeModel({
+      root: new DivisionModel({boundary, capacity})
+    });
   }
 
   get boundary(): Rect {
@@ -148,13 +143,13 @@ export class TreeState {
     return this._root.capacity;
   }
 
-  push(material: BallState) {
+  push(material: VehicleModel) {
     this._root.push(material);
   }
 
-  collectDeeply({query}: { query?: Rect }): BallState[] {
+  collectDeeply({query}: { query?: Rect }): VehicleModel[] {
     const stack = [this._root];
-    const divisions = [] as DivisionState[];
+    const divisions = [] as DivisionModel[];
 
     while (stack.length > 0) {
       const division = stack.pop()!;
@@ -178,9 +173,9 @@ export class TreeState {
     );
   }
 
-  collectWidely({query}: { query?: Rect }): BallState[] {
+  collectWidely({query}: { query?: Rect }): VehicleModel[] {
     const queue = [this._root];
-    const divisions = [] as DivisionState[];
+    const divisions = [] as DivisionModel[];
 
     while (queue.length > 0) {
       const division = queue.shift()!;
@@ -204,7 +199,7 @@ export class TreeState {
     );
   }
 
-  walkDeeply(callback: (division: DivisionState) => void) {
+  walkDeeply(callback: (division: DivisionModel) => void) {
     const stack = [this._root];
 
     while (stack.length > 0) {
@@ -216,7 +211,7 @@ export class TreeState {
     }
   }
 
-  walkWidely(callback: (division: DivisionState) => void) {
+  walkWidely(callback: (division: DivisionModel) => void) {
     const queue = [this._root];
 
     while (queue.length > 0) {
@@ -233,34 +228,27 @@ export class TreeState {
   }
 }
 
-export class WorldState {
-  private readonly _materials: BallState[];
-  private readonly _tree: TreeState;
+export class ApplicationModel {
+  private readonly _materials: VehicleModel[];
+  private readonly _tree: TreeModel;
 
-  constructor(
+  constructor(nargs: {
     boundary: Rect,
     capacity: number,
-  ) {
-    this._tree = TreeState.create({boundary, capacity});
+  }) {
+    this._tree = TreeModel.create(nargs);
     this._materials = [];
   }
 
-  static create({boundary, capacity}: {
-    boundary: Rect,
-    capacity: number,
-  }): WorldState {
-    return new WorldState(boundary, capacity);
-  }
-
-  get tree(): TreeState {
+  get tree(): TreeModel {
     return this._tree;
   }
 
-  push(material: BallState) {
+  push(material: VehicleModel) {
     this._materials.push(material);
   }
 
-  walk(callback: (division: DivisionState) => void) {
+  walk(callback: (division: DivisionModel) => void) {
     this._tree.walkWidely(callback);
   }
 
@@ -283,10 +271,10 @@ export class WorldState {
         .filter(it => it.intersects(material));
 
       if (collisions.length == 0) {
-        material.tag = BallTag.normal;
+        material.tag = VehicleTag.normal;
       } else {
-        material.tag = BallTag.focused;
-        collisions.forEach(it => it.tag = BallTag.focused);
+        material.tag = VehicleTag.focused;
+        collisions.forEach(it => it.tag = VehicleTag.focused);
       }
     });
   }
