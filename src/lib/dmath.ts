@@ -62,6 +62,10 @@ export class Spot {
     this._row += (row ?? 0);
     this._column += (column ?? 0);
   }
+
+  copy(): Spot {
+    return new Spot(this._row, this._column);
+  }
 }
 
 export type DimenCompat = {
