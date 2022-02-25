@@ -1,36 +1,30 @@
 import * as p5 from 'p5';
-import { Context } from '../../lib/process';
-import { Spot } from '../../lib/dmath';
+import { Widget } from '../../lib/process';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { BoardState, CellState, DrawResult, FixedResult, GameState, Player } from './model';
+import {
+  BoardModel,
+  DrawResultModel,
+  FixedResultModel,
+  GameModel,
+  GameResultModel,
+  PieceModel,
+  PlayerModel
+} from './model';
 
-export class CellWidget {
+export class PieceWidget extends Widget<PieceModel> {
   public frame = Rect.zero();
-  public state = CellState.empty;
 
-  constructor(
-    public readonly context: p5,
-    public readonly spot: Spot,
-  ) {
-    //
-  }
-
-  also(mutate: (widget: CellWidget) => void): CellWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
+  protected doDraw(model: PieceModel) {
     const diameter = Math.min(this.frame.width, this.frame.height) * 0.4;
     const center = this.frame.center;
 
-    Context.scope(this.context, $ => {
-      switch (this.state) {
-        case CellState.circle:
+    this.scope($ => {
+      switch (model) {
+        case PieceModel.circle:
           $.circle(center.x, center.y, diameter);
           break;
 
-        case CellState.cross:
+        case PieceModel.cross:
           $.line(
             center.x - diameter / 2,
             center.y - diameter / 2,
@@ -45,198 +39,119 @@ export class CellWidget {
           )
           break;
 
-        case CellState.empty:
+        case PieceModel.none:
           break;
       }
     });
   }
 }
 
-export class BoardWidget {
+export class BoardWidget extends Widget<BoardModel> {
   public frame = Rect.zero();
-  private _state: BoardState | undefined;
-  private _children: CellWidget[] = [];
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
+  private readonly _piece: PieceWidget;
+
+  constructor(context: p5) {
+    super(context);
+    this._piece = new PieceWidget(context);
   }
 
-  get state(): BoardState | undefined {
-    return this._state;
-  }
-
-  set state(value: BoardState | undefined) {
-    this._state = value;
-
-    if (value) {
-      this._children = value.flatMap((_, spot) => {
-        return new CellWidget(this.context, spot);
-      });
-    } else {
-      this._children = [];
-    }
-  }
-
-  getSpot(point: Point): Spot | undefined {
-    const state = this._state;
-    if (!state) {
-      return undefined;
-    }
-
-    const itemSize = Size.of({
-      width: this.frame.width / state.dimen.width,
-      height: this.frame.height / state.dimen.height,
-    });
-
-    const column = Math.floor(point.x / itemSize.width);
-    if (column < 0 || state.dimen.width <= column) {
-      return undefined;
-    }
-
-    const row = Math.floor(point.y / itemSize.height);
-    if (row < 0 || state.dimen.height <= row) {
-      return undefined;
-    }
-
-    return Spot.of({column, row});
-  }
-
-  draw() {
-    const state = this._state;
-    if (!state) {
-      return;
-    }
-
-    for (let i = 1; i < state.dimen.width; i++) {
-      const x = Math.floor(this.frame.width / state.dimen.width) * i;
+  protected doDraw(model: BoardModel) {
+    for (let i = 1; i < model.dimen.width; i++) {
+      const x = Math.floor(this.frame.width / model.dimen.width) * i;
       this.context.line(x, this.frame.top, x, this.frame.bottom);
     }
 
-    for (let i = 1; i < state.dimen.height; i++) {
-      const y = Math.floor(this.frame.height / state.dimen.height) * i;
+    for (let i = 1; i < model.dimen.height; i++) {
+      const y = Math.floor(this.frame.height / model.dimen.height) * i;
       this.context.line(this.frame.left, y, this.frame.right, y);
     }
 
     const itemSize = Size.of({
-      width: this.frame.width / state.dimen.width,
-      height: this.frame.height / state.dimen.height,
+      width: this.frame.width / model.dimen.width,
+      height: this.frame.height / model.dimen.height,
     });
 
-    this._children.forEach((widget) => {
-      widget.frame = Rect.of({
-        origin: Point.of({
-          x: this.frame.origin.x + itemSize.width * widget.spot.column,
-          y: this.frame.origin.y + itemSize.height * widget.spot.row,
-        }),
+    model.forEach((piece, spot) => {
+      const origin = Point.of({
+        x: this.frame.origin.x + itemSize.width * spot.column,
+        y: this.frame.origin.y + itemSize.height * spot.row,
+      });
+
+      this._piece.frame = Rect.of({
+        origin: origin,
         size: itemSize,
       });
 
-      widget.state = state.get(widget.spot) ?? CellState.empty;
-
-      widget.draw();
+      this._piece.model = piece;
+      this._piece.draw();
     });
   }
 }
 
-export class SurfaceWidget {
+export class ResultWidget extends Widget<GameResultModel> {
   public frame = Rect.zero();
-  public text: string | undefined;
   public textColor: string = '#000000';
   public fillColor: string = '#FFFFFF80';
 
-  constructor(
-    public context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: SurfaceWidget) => void): SurfaceWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    Context.scope(this.context, $ => {
+  protected doDraw(model: GameResultModel) {
+    this.scope($ => {
       $.fill(this.fillColor)
       $.noStroke();
       $.rect(this.frame.left, this.frame.top, this.frame.width, this.frame.height);
     });
 
-    const text = this.text;
-    if (!text) {
-      return;
-    }
-
     const center = this.frame.center;
+    const label = ResultWidget.label(model);
 
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.textSize(32);
       $.textAlign(this.context.CENTER, this.context.CENTER);
-      $.text(text, center.x, center.y);
+      $.text(label, center.x, center.y);
     });
   }
-}
 
-export class GameWidget {
-  private _state: GameState | undefined;
-  public readonly board: BoardWidget;
-  public readonly surface: SurfaceWidget;
-
-  constructor(
-    private context: p5,
-  ) {
-    this.board = new BoardWidget(context);
-    this.surface = new SurfaceWidget(context);
-  }
-
-  get state(): GameState | undefined {
-    return this._state;
-  }
-
-  set state(value: GameState | undefined) {
-    this._state = value;
-    this.board.state = value?.board
-  }
-
-  also(mutate: (manager: GameWidget) => void): GameWidget {
-    mutate(this);
-    return this;
-  }
-
-  getSpot(point: Point): Spot | undefined {
-    return this.board.getSpot(point);
-  }
-
-  draw() {
-    this.board.draw();
-
-    const text = this.label();
-    if (!text) {
-      return;
-    }
-
-    this.surface.text = text
-    this.surface.draw();
-  }
-
-  private label(): string | undefined {
-    const state = this._state;
-    if (!state) {
-      return undefined;
-    }
-    if (state.result instanceof FixedResult) {
-      switch (state.result.winner) {
-        case Player.human:
+  private static label(result: GameResultModel): string {
+    if (result instanceof FixedResultModel) {
+      switch (result.winner) {
+        case PlayerModel.human:
           return 'You WON !!';
-        case Player.robot:
+        case PlayerModel.robot:
           return 'CPU Won !!';
       }
     }
-    if (state.result instanceof DrawResult) {
+    if (result instanceof DrawResultModel) {
       return 'DRAW !!';
     }
-    return undefined;
+    return '';
   }
 }
+
+export class GameWidget extends Widget<GameModel> {
+  private readonly _board: BoardWidget;
+  private readonly _surface: ResultWidget;
+
+  constructor(context: p5) {
+    super(context);
+    this._board = new BoardWidget(context);
+    this._surface = new ResultWidget(context);
+  }
+
+  get frame(): Rect {
+    return this._board.frame;
+  }
+
+  set frame(frame: Rect) {
+    this._board.frame = frame;
+    this._surface.frame = frame;
+  }
+
+  protected doDraw(model: GameModel) {
+    this._board.model = model.board;
+    this._board.draw();
+
+    this._surface.model = model.result;
+    this._surface.draw();
+  }
+}
+

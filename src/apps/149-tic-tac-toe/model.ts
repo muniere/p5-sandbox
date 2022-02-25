@@ -1,96 +1,90 @@
 import { Arrays } from '../../lib/stdlib';
 import { Dimen, Matrix, Spot } from '../../lib/dmath';
 
-export enum Player {
-  human,
+export enum PlayerModel {
+  human = 1,
   robot,
 }
 
-export abstract class Result {
+export abstract class GameResultModel {
 
-  static fixed({winner, looser}: {
-    winner: Player,
-    looser: Player,
-  }): Result {
-    return FixedResult.create({winner, looser});
+  static fixed(nargs: {
+    winner: PlayerModel,
+    looser: PlayerModel,
+  }): GameResultModel {
+    return new FixedResultModel(nargs);
   }
 
-  static draw(): Result {
-    return DrawResult.create();
-  }
-}
-
-export class DrawResult extends Result {
-
-  static create(): DrawResult {
-    return new DrawResult();
+  static draw(): GameResultModel {
+    return DrawResultModel.create();
   }
 }
 
-export class FixedResult extends Result {
+export class DrawResultModel extends GameResultModel {
 
-  constructor(
-    public winner: Player,
-    public looser: Player,
-  ) {
+  static create(): DrawResultModel {
+    return new DrawResultModel();
+  }
+}
+
+export class FixedResultModel extends GameResultModel {
+  public readonly winner: PlayerModel;
+  public readonly looser: PlayerModel;
+
+  constructor(nargs: {
+    winner: PlayerModel,
+    looser: PlayerModel,
+  }) {
     super();
-    // no-op
-  }
-
-  static create({winner, looser}: {
-    winner: Player,
-    looser: Player,
-  }): FixedResult {
-    return new FixedResult(winner, looser);
+    this.winner = nargs.winner;
+    this.looser = nargs.looser;
   }
 }
 
-export enum CellState {
-  circle,
+export enum PieceModel {
+  circle = 1,
   cross,
-  empty,
+  none,
 }
 
-export class BoardState {
-  private cells: Matrix<CellState>;
+export class BoardModel {
+  private readonly _pieces: Matrix<PieceModel>;
 
-  constructor(
-    scale: number = 3,
-  ) {
-    this.cells = Matrix.fill(Dimen.square(scale), CellState.empty);
-  }
-
-  static create({scale}: {
-    scale: number
-  }): BoardState {
-    return new BoardState(scale);
+  constructor(nargs: {
+    scale?: number,
+  }) {
+    this._pieces = Matrix.fill(Dimen.square(nargs.scale ?? 3), PieceModel.none);
   }
 
   get dimen(): Dimen {
-    return this.cells.dimen;
+    return this._pieces.dimen;
   }
 
-  get(spot: Spot): CellState | undefined {
-    return this.cells.get(spot);
+  get(spot: Spot): PieceModel | undefined {
+    return this._pieces.get(spot);
   }
 
-  set(spot: Spot, value: CellState) {
-    this.cells.set(spot, value);
+  set(spot: Spot, value: PieceModel) {
+    this._pieces.set(spot, value);
   }
 
-  map<T>(transform: (state: CellState, spot: Spot) => T): Matrix<T> {
-    return this.cells.map(transform);
+  forEach(callback: (piece: PieceModel, spot: Spot) => void) {
+    this._pieces.forEach(callback);
   }
 
-  flatMap<T>(transform: (state: CellState, spot: Spot) => T): Array<T> {
-    return this.cells.map(transform).flatten();
+  map<T>(transform: (piece: PieceModel, spot: Spot) => T): Matrix<T> {
+    return this._pieces.map(transform);
+  }
+
+  flatMap<T>(transform: (piece: PieceModel, spot: Spot) => T): Array<T> {
+    return this._pieces.map(transform).flatten();
   }
 
   availableSpots(): Array<Spot> {
     const result = [] as Spot[];
 
-    this.cells.forEach((value, spot) => {
-      if (value == CellState.empty) {
+    this._pieces.forEach((value, spot) => {
+      if (value == PieceModel.none) {
         result.push(spot);
       }
     })
@@ -99,15 +93,15 @@ export class BoardState {
   }
 
   lineScanners(): LineScanner[] {
-    const horizons = Arrays.generate(this.cells.dimen.height, (row) => {
-      return LineScanner.of(this.cells.filter((_, spot) => spot.row == row));
+    const horizons = Arrays.generate(this._pieces.dimen.height, (row) => {
+      return new LineScanner(this._pieces.filter((_, spot) => spot.row == row));
     });
-    const verticals = Arrays.generate(this.cells.dimen.width, (column) => {
-      return LineScanner.of(this.cells.filter((_, spot) => spot.column == column));
+    const verticals = Arrays.generate(this._pieces.dimen.width, (column) => {
+      return new LineScanner(this._pieces.filter((_, spot) => spot.column == column));
     });
     const diagonals = [
-      LineScanner.of(this.cells.filter((_, spot) => spot.row == spot.column)),
-      LineScanner.of(this.cells.filter((_, spot) => spot.row + spot.column == this.cells.dimen.width - 1))
+      new LineScanner(this._pieces.filter((_, spot) => spot.row == spot.column)),
+      new LineScanner(this._pieces.filter((_, spot) => spot.row + spot.column == this._pieces.dimen.width - 1)),
     ];
 
     return [...horizons, ...verticals, ...diagonals];
@@ -115,51 +109,46 @@ export class BoardState {
 }
 
 export class LineScanner {
-  constructor(
-    public readonly states: CellState[],
-  ) {
-    // no-op
+  private readonly _pieces: PieceModel[];
+
+  constructor(pieces: PieceModel[]) {
+    this._pieces = pieces;
   }
 
-  static of(cells: CellState[]): LineScanner {
-    return new LineScanner(cells);
+  get pieces(): PieceModel[] {
+    return [...this._pieces];
   }
 
   test(): boolean {
-    const state = this.states[0];
-    if (state == CellState.empty) {
+    const state = this._pieces[0];
+    if (state == PieceModel.none) {
       return false;
     }
-    return this.states.every(it => it == state);
+    return this._pieces.every(it => it == state);
   }
 }
 
-export class GameState {
-  constructor(
-    private _board: BoardState,
-    private _player: Player = Player.human,
-    private _result?: Result,
-  ) {
-    // no-op
+export class GameModel {
+  private readonly _board: BoardModel;
+
+  private _player: PlayerModel;
+  private _result?: GameResultModel;
+
+  constructor() {
+    this._board = new BoardModel({scale: 3});
+    this._player = PlayerModel.human;
+    this._result = undefined;
   }
 
-  static create(option?: {
-    scale?: number,
-    player?: Player,
-  }): GameState {
-    const board = BoardState.create({scale: option?.scale ?? 3});
-    return new GameState(board, option?.player ?? Player.human);
-  }
-
-  get board(): BoardState {
+  get board(): BoardModel {
     return this._board;
   }
 
-  get player(): Player {
+  get player(): PlayerModel {
     return this._player;
   }
 
-  get result(): Result | undefined {
+  get result(): GameResultModel | undefined {
     return this._result;
   }
 
@@ -172,8 +161,8 @@ export class GameState {
   }
 
   mark(spot: Spot): boolean {
-    const cell = this._board.get(spot);
-    if (cell == CellState.circle || cell == CellState.cross) {
+    const piece = this._board.get(spot);
+    if (piece == PieceModel.circle || piece == PieceModel.cross) {
       return false;
     }
 
@@ -184,13 +173,13 @@ export class GameState {
 
   private doMark(spot: Spot) {
     switch (this._player) {
-      case Player.human:
-        this._board.set(spot, CellState.circle);
-        this._player = Player.robot;
+      case PlayerModel.human:
+        this._board.set(spot, PieceModel.circle);
+        this._player = PlayerModel.robot;
         break;
-      case Player.robot:
-        this._board.set(spot, CellState.cross);
-        this._player = Player.human;
+      case PlayerModel.robot:
+        this._board.set(spot, PieceModel.cross);
+        this._player = PlayerModel.human;
         break;
     }
   }
@@ -199,84 +188,76 @@ export class GameState {
     const scanner = this._board.lineScanners().find(it => it.test());
     if (!scanner) {
       if (this._board.availableSpots().length == 0) {
-        this._result = Result.draw();
+        this._result = GameResultModel.draw();
       } else {
         // not fixed yet
       }
       return;
     }
 
-    switch (scanner.states[0]) {
-      case CellState.circle:
-        this._result = Result.fixed({
-          winner: Player.human,
-          looser: Player.robot,
+    switch (scanner.pieces[0]) {
+      case PieceModel.circle:
+        this._result = GameResultModel.fixed({
+          winner: PlayerModel.human,
+          looser: PlayerModel.robot,
         });
         break;
-      case CellState.cross:
-        this._result = Result.fixed({
-          winner: Player.robot,
-          looser: Player.human,
+      case PieceModel.cross:
+        this._result = GameResultModel.fixed({
+          winner: PlayerModel.robot,
+          looser: PlayerModel.human,
         });
         break;
-      case CellState.empty:
+      case PieceModel.none:
         break;
     }
   }
 }
 
 export class HumanAgent {
-  constructor(
-    private game: GameState
-  ) {
-    // no-op
-  }
+  private _game: GameModel
 
-  static create({game}: {
-    game: GameState,
-  }): HumanAgent {
-    return new HumanAgent(game);
+  constructor(nargs: {
+    game: GameModel
+  }) {
+    this._game = nargs.game;
   }
 
   mark(spot: Spot): boolean {
-    if (this.game.result) {
+    if (this._game.result) {
       return false;
     }
-    if (this.game.player != Player.human) {
+    if (this._game.player != PlayerModel.human) {
       return false;
     }
 
-    return this.game.mark(spot);
+    return this._game.mark(spot);
   }
 }
 
 export class RobotAgent {
-  constructor(
-    private game: GameState
-  ) {
-    // no-op
-  }
+  private _game: GameModel
 
-  static create({game}: {
-    game: GameState,
-  }): RobotAgent {
-    return new RobotAgent(game);
+  constructor(nargs: {
+    game: GameModel
+  }) {
+    this._game = nargs.game;
   }
 
   mark(): boolean {
-    if (this.game.result) {
+    if (this._game.result) {
       return false;
     }
-    if (this.game.player != Player.robot) {
+    if (this._game.player != PlayerModel.robot) {
       return false;
     }
 
-    const spots = this.game.availableSpots();
+    const spots = this._game.availableSpots();
     if (spots.length == 0) {
       return false;
     }
 
     const nextSpot = spots.sample();
-    return this.game.mark(nextSpot);
+    return this._game.mark(nextSpot);
   }
 }

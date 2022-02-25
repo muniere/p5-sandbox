@@ -1,8 +1,9 @@
 // https://www.youtube.com/watch?v=GTWrWM1UsnA
 import * as p5 from 'p5';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { GameState, HumanAgent, RobotAgent } from './model';
+import { GameModel } from './model';
 import { GameWidget } from './view';
+import { DefaultLooper, GameMaster } from './control';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#FFFFFF',
@@ -10,34 +11,32 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: GameState;
+  let model: GameModel;
   let widget: GameWidget;
-  let human: HumanAgent;
-  let robot: RobotAgent;
+  let master: GameMaster;
 
   context.setup = function () {
-    const canvasSize = Math.min(context.windowWidth, context.windowHeight);
-    context.createCanvas(canvasSize, canvasSize);
-    context.noLoop();
-
+    const size = Math.min(context.windowWidth, context.windowHeight);
     const frame = Rect.of({
       origin: Point.zero(),
-      size: Size.of({
-        width: canvasSize,
-        height: canvasSize,
-      }),
+      size: Size.square(size),
     });
 
-    state = GameState.create();
+    context.createCanvas(size, size);
+    context.noLoop();
+
+    model = new GameModel();
 
     widget = new GameWidget(context).also(it => {
-      it.state = state;
-      it.board.frame = frame;
-      it.surface.frame = frame;
+      it.frame = frame;
+      it.model = model;
     });
 
-    human = HumanAgent.create({game: state});
-    robot = RobotAgent.create({game: state});
+    master = new GameMaster(model).also(it => {
+      it.frame = frame;
+      it.looper = new DefaultLooper(context);
+      it.thinkingTime = Params.THINKING_TIME;
+    });
   }
 
   context.draw = function () {
@@ -54,25 +53,6 @@ export function sketch(context: p5) {
       y: context.mouseY,
     });
 
-    const spot = widget.getSpot(point);
-    if (!spot) {
-      return false;
-    }
-
-    const success = human.mark(spot);
-    if (!success) {
-      return;
-    }
-
-    context.redraw();
-
-    if (!state.hasNext) {
-      return;
-    }
-
-    setTimeout(() => {
-      robot.mark();
-      context.redraw();
-    }, Params.THINKING_TIME);
+    master.consumeMouseClick(point);
   }
 }
