@@ -276,3 +276,16 @@ export class Rect {
     return this.origin.equals(other.origin) && this.size.equals(other.size);
   }
 }
+
+export class Line {
+  public readonly start: Point;
+  public readonly stop: Point;
+
+  constructor(nargs: {
+    start: Point,
+    stop: Point,
+  }) {
+    this.start = nargs.start;
+    this.stop = nargs.stop;
+  }
+}

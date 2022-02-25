@@ -1,100 +1,66 @@
 import p5 from 'p5';
-import { Context } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { NumberRange, NumberRangeMap } from '../../lib/stdlib';
-import { BallState, BezierCurve, WorldState } from './model';
+import { ApplicationModel, PathModel, VehicleModel } from './model';
 
 export enum PathMode {
   discrete,
   continuous,
 }
 
-export class BallWidget {
-  public state: BallState | undefined;
+export class VehicleWidget extends Widget<VehicleModel> {
   public color: string = '#FFFFF';
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: BallWidget) => void): BallWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
-    Context.scope(this.context, $ => {
+  protected doDraw(model: VehicleModel) {
+    this.scope($ => {
       $.fill(this.color);
       $.noStroke();
 
-      $.circle(state.center.x, state.center.y, state.radius);
+      $.circle(model.center.x, model.center.y, model.radius);
     });
   }
 }
 
-export class BezierWidget {
-  public state: BezierCurve | undefined;
+export class PathWidget extends Widget<PathModel> {
   public color: string = '#FFFFF';
   public mode: PathMode = PathMode.discrete;
 
-  constructor(
-    public readonly context: p5,
-  ) {
-    // no-op
-  }
-
-  also(mutate: (widget: BezierWidget) => void): BezierWidget {
-    mutate(this);
-    return this;
-  }
-
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
-
+  protected doDraw(model: PathModel) {
     // intermediate
-    const points = Context.scope(this.context, $ => {
-      this.context.colorMode(this.context.HSB, 360, 100, 100, 100);
+    this.scope($ => {
+      this.context.colorMode($.HSB, 360, 100, 100, 100);
       this.context.noFill();
 
       const hueMap = NumberRangeMap.of({
-        domain: new NumberRange(state.start.x, state.stop.x),
+        domain: new NumberRange(model.points.first().x, model.points.last().x),
         target: new NumberRange(0, 360),
       });
 
-      return state.compute({
-        onCompute: (p1, p2) => {
-          const hue = hueMap.apply((p1.x + p2.x) / 2);
-          const color = this.context.color(hue, 100, 100);
-          $.stroke(color);
-          $.line(p1.x, p1.y, p2.x, p2.y);
-        }
+      model.auxiliaries.forEach(it => {
+        const p1 = it.start;
+        const p2 = it.stop;
+        const hue = hueMap.apply((p1.x + p2.x) / 2);
+        const color = this.context.color(hue, 100, 100);
+        $.stroke(color);
+        $.line(p1.x, p1.y, p2.x, p2.y);
       });
     });
 
     // result
-    Context.scope(this.context, $ => {
+    this.scope($ => {
       $.stroke(this.color);
       $.noFill();
 
       switch (this.mode) {
         case PathMode.discrete:
-          points.forEach(it => {
+          model.points.forEach(it => {
             $.point(it.x, it.y);
           });
           break;
 
         case PathMode.continuous:
-          Context.shape($, 'open', $$ => {
-            points.forEach(it => {
+          this.shape('open', $$ => {
+            model.points.forEach(it => {
               $$.vertex(it.x, it.y);
             });
           });
@@ -104,22 +70,14 @@ export class BezierWidget {
   }
 }
 
-export class WorldWidget {
-  public state: WorldState | undefined;
+export class ApplicationWidget extends Widget<ApplicationModel> {
+  private _point: VehicleWidget;
+  private _bezier: PathWidget;
 
-  private _ball: BallWidget;
-  private _bezier: BezierWidget;
-
-  constructor(
-    public readonly context: p5,
-  ) {
-    this._ball = new BallWidget(this.context);
-    this._bezier = new BezierWidget(this.context);
-  }
-
-  also(mutate: (widget: WorldWidget) => void): WorldWidget {
-    mutate(this);
-    return this;
+  constructor(context: p5) {
+    super(context);
+    this._point = new VehicleWidget(context);
+    this._bezier = new PathWidget(context);
   }
 
   get mode(): PathMode {
@@ -130,18 +88,13 @@ export class WorldWidget {
     this._bezier.mode = value;
   }
 
-  draw() {
-    const state = this.state;
-    if (!state) {
-      return;
-    }
+  protected doDraw(model: ApplicationModel) {
+    this._bezier.model = model.bezier;
+    this._bezier.draw();
 
-    Context.scope(this.context, $ => {
-      this._bezier.also(it => it.state = state.bezier).draw();
-
-      state.balls.forEach(ball => {
-        this._ball.also(it => it.state = ball).draw();
-      });
+    model.vehicles.forEach(point => {
+      this._point.model = point;
+      this._point.draw();
     });
   }
 }

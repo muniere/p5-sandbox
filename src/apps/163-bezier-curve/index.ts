@@ -3,13 +3,13 @@ import p5, { Vector } from 'p5';
 import { Arrays, NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 import { Velocity } from '../../lib/physics2d';
-import { BallState, BezierCurve, WorldState } from './model';
-import { PathMode, WorldWidget } from './view';
+import { ApplicationModel, CalculationModel, VehicleModel } from './model';
+import { ApplicationWidget, PathMode } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
-  BEZIER_MARGIN: 10,
-  BEZIER_RESOLUTION: 50,
+  PATH_MARGIN: 10,
+  PATH_RESOLUTION: 50,
   CONTROL_COUNT: 2,
   CONTROL_RADIUS: 5,
   CONTROL_SPEED_MAX: 10,
@@ -17,8 +17,8 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: WorldState;
-  let widget: WorldWidget;
+  let model: ApplicationModel;
+  let widget: ApplicationWidget;
 
   context.setup = function () {
     context.createCanvas(
@@ -29,10 +29,10 @@ export function sketch(context: p5) {
 
     const speedRange = new NumberRange(Params.CONTROL_SPEED_MIN, Params.CONTROL_SPEED_MAX);
 
-    state = WorldState.create({
+    model = new ApplicationModel({
       bounds: Size.of(context),
-      balls: Arrays.generate(Params.CONTROL_COUNT, () => {
-        return new BallState({
+      vehicles: Arrays.generate(Params.CONTROL_COUNT, () => {
+        return new VehicleModel({
           radius: Params.CONTROL_RADIUS,
           center: Point.of({
             x: Math.random() * context.width,
@@ -41,22 +41,22 @@ export function sketch(context: p5) {
           velocity: Velocity.of(Vector.random2D()).withMagnitude(speedRange.sample()),
         })
       }),
-      bezier: BezierCurve.create({
+      calculator: new CalculationModel({
         start: Point.of({
-          x: Params.BEZIER_MARGIN,
+          x: Params.PATH_MARGIN,
           y: context.height / 2,
         }),
         stop: Point.of({
-          x: context.width - Params.BEZIER_MARGIN,
+          x: context.width - Params.PATH_MARGIN,
           y: context.height / 2,
         }),
         controls: [],
-        resolution: Params.BEZIER_RESOLUTION,
-      })
+        resolution: Params.PATH_RESOLUTION,
+      }),
     });
 
-    widget = new WorldWidget(context).also(it => {
-      it.state = state;
+    widget = new ApplicationWidget(context).also(it => {
+      it.model = model;
       it.mode = PathMode.continuous;
     });
   }
@@ -69,6 +69,14 @@ export function sketch(context: p5) {
     widget.draw();
 
     // update
-    state.update();
+    model.update();
+  }
+
+  context.mouseClicked = function () {
+    if (context.isLooping()) {
+      context.noLoop();
+    } else {
+      context.loop();
+    }
   }
 }

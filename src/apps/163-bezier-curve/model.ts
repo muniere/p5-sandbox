@@ -1,18 +1,81 @@
-import { Point, PointRange, Size } from '../../lib/graphics2d';
+import { Line, Point, PointRange, Size } from '../../lib/graphics2d';
 import { CircularMaterial } from '../../lib/physics2d';
 
-export class BallState extends CircularMaterial {
+export class VehicleModel extends CircularMaterial {
   // no-op
 }
 
-export type BezierCallback = (p1: Point, p2: Point) => void;
+export class PathModel {
+  private readonly _points: Point[];
+  private readonly _auxiliaries: Line[];
 
-module BezierHelper {
+  constructor(nargs: {
+    points: Point[],
+    lines: Line[],
+  }) {
+    this._points = nargs.points;
+    this._auxiliaries = nargs.lines;
+  }
 
-  export function reduce({points, amount, onCompute}: {
+  get points(): Point[] {
+    return [...this._points];
+  }
+
+  get auxiliaries(): Line[] {
+    return [...this._auxiliaries];
+  }
+}
+
+export class CalculationModel {
+  public start: Point;
+  public stop: Point;
+  public controls: Point[];
+  public resolution: number;
+
+  constructor(nargs: {
+    start: Point,
+    stop: Point,
+    controls: Point[],
+    resolution: number,
+  }) {
+    if (nargs.resolution < 0) {
+      throw new Error();
+    }
+    this.start = nargs.start;
+    this.stop = nargs.stop;
+    this.controls = nargs.controls;
+    this.resolution = nargs.resolution;
+  }
+
+  run(): PathModel {
+    const points = [this.start, ...this.controls, this.stop];
+    const step = 1.0 / (this.resolution + 1);
+
+    const result = [this.start.copy()];
+    const lines = [] as Line[];
+
+    for (let amount = step; amount < 1.0; amount += step) {
+      const point = CalculationModel.reduce({
+        points: points,
+        amount: amount,
+        onCompute: (it) => lines.push(it)
+      });
+
+      result.push(point);
+    }
+
+    result.push(this.stop.copy());
+
+    return new PathModel({
+      points: result,
+      lines: lines,
+    });
+  }
+
+  private static reduce({points, amount, onCompute}: {
     points: Point[],
     amount: number,
-    onCompute?: BezierCallback,
+    onCompute?: (line: Line) => void,
   }): Point {
     let result = [...points];
 
@@ -27,7 +90,7 @@ module BezierHelper {
         buffer.push(lerp);
 
         if (onCompute) {
-          onCompute(start, stop);
+          onCompute(new Line({start, stop}));
         }
       }
 
@@ -38,86 +101,37 @@ module BezierHelper {
   }
 }
 
-export class BezierCurve {
-
-  constructor(
-    public start: Point,
-    public stop: Point,
-    public controls: Point[],
-    public resolution: number,
-  ) {
-    if (resolution < 0) {
-      throw new Error();
-    }
-  }
-
-  static create({start, stop, controls, resolution}: {
-    start: Point,
-    stop: Point,
-    controls: Point[],
-    resolution: number,
-  }): BezierCurve {
-    return new BezierCurve(start, stop, controls, resolution);
-  }
-
-  compute(option?: { onCompute?: BezierCallback }): Point[] {
-    const points = [this.start, ...this.controls, this.stop];
-    const step = 1.0 / (this.resolution + 1);
-
-    const result = [this.start.copy()];
-
-    for (let amount = step; amount < 1.0; amount += step) {
-      const point = BezierHelper.reduce({
-        points: points,
-        amount: amount,
-        onCompute: option?.onCompute,
-      });
-
-      result.push(point);
-    }
-
-    return result.concat(this.stop.copy());
-  }
-}
-
-
-export class WorldState {
+export class ApplicationModel {
   private readonly _bounds: Size;
-  private readonly _balls: BallState[];
-  private readonly _bezier: BezierCurve;
+  private readonly _vehicles: VehicleModel[];
+  private readonly _calculator: CalculationModel;
+  private _bezier: PathModel | undefined;
 
-  constructor(
+  constructor(nargs: {
     bounds: Size,
-    balls: BallState[],
-    bezier: BezierCurve,
-  ) {
-    this._bounds = bounds;
-    this._balls = balls;
-    this._bezier = bezier;
+    vehicles: VehicleModel[],
+    calculator: CalculationModel,
+  }) {
+    this._bounds = nargs.bounds;
+    this._vehicles = nargs.vehicles;
+    this._calculator = nargs.calculator;
   }
 
-  static create({bounds, balls, bezier}: {
-    bounds: Size,
-    balls: BallState[],
-    bezier: BezierCurve,
-  }): WorldState {
-    return new WorldState(bounds, balls, bezier);
+  public get vehicles(): VehicleModel[] {
+    return [...this._vehicles];
   }
 
-  public get balls(): BallState[] {
-    return [...this._balls];
-  }
-
-  public get bezier(): BezierCurve {
+  public get bezier(): PathModel | undefined {
     return this._bezier;
   }
 
   update() {
-    this._balls.forEach(it => {
+    this._vehicles.forEach(it => {
       it.update();
       it.coerceIn(this._bounds);
     });
 
-    this._bezier.controls = this._balls.map(it => it.center);
+    this._calculator.controls = this._vehicles.map(it => it.center);
+    this._bezier = this._calculator.run();
   }
 }
