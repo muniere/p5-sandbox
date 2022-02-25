@@ -1,86 +1,98 @@
 import { Point, Size } from '../../lib/graphics2d';
 
-export type Orientation = 'horizontal' | 'vertical';
+export enum Orientation {
+  horizontal,
+  vertical,
+}
 
-export class SegmentState {
+export class SegmentModel {
+  public readonly orientation: Orientation;
+  public readonly origin: Point;
+  public readonly length: number;
+  public readonly weight: number;
+  public readonly color: string;
   public on: boolean = false;
 
-  constructor(
-    public orientation: Orientation,
-    public origin: Point,
-    public length: number,
-    public weight: number,
-    public color: string,
-  ) {
-    // no-op
-  }
-
-  static horizontal({origin, length, weight, color}: {
+  constructor(nargs: {
+    orientation: Orientation,
     origin: Point,
     length: number,
     weight: number,
     color: string,
-  }): SegmentState {
-    return new SegmentState('horizontal', origin, length, weight, color);
-  }
-
-  static vertical({origin, length, weight, color}: {
-    origin: Point,
-    length: number,
-    weight: number,
-    color: string,
-  }): SegmentState {
-    return new SegmentState('vertical', origin, length, weight, color);
+  }) {
+    this.orientation = nargs.orientation;
+    this.origin = nargs.origin;
+    this.length = nargs.length;
+    this.weight = nargs.weight;
+    this.color = nargs.color;
   }
 }
 
-export class DisplayState {
-  public readonly segments: SegmentState[];
+export class DisplayModel {
+  public readonly origin: Point;
+  public readonly size: Size;
+  public readonly weight: number;
+  public readonly color: string;
+  private readonly _segments: SegmentModel[];
 
-  public constructor(
-    public origin: Point,
-    public size: Size,
-    public weight: number,
-    public color: string,
-  ) {
-    this.segments = [
-      SegmentState.horizontal({
+  public constructor(nargs: {
+    origin: Point,
+    size: Size,
+    weight: number,
+    color: string,
+  }) {
+    const {origin, size, weight, color} = nargs;
+
+    this.origin = origin;
+    this.size = size;
+    this.weight = weight;
+    this.color = color;
+
+    this._segments = [
+      new SegmentModel({
+        orientation: Orientation.horizontal,
         origin: Point.of({x: weight / 2, y: 0}),
         length: size.width - weight,
         weight: weight,
         color: color,
       }),
-      SegmentState.vertical({
+      new SegmentModel({
+        orientation: Orientation.vertical,
         origin: Point.of({x: size.width - weight, y: weight / 2}),
         length: (size.height - weight) / 2,
         weight: weight,
         color: color,
       }),
-      SegmentState.vertical({
+      new SegmentModel({
+        orientation: Orientation.vertical,
         origin: Point.of({x: size.width - weight, y: size.height / 2}),
         length: (size.height - weight) / 2,
         weight: weight,
         color: color,
       }),
-      SegmentState.horizontal({
+      new SegmentModel({
+        orientation: Orientation.horizontal,
         origin: Point.of({x: weight / 2, y: size.height - weight}),
         length: size.width - weight,
         weight: weight,
         color: color,
       }),
-      SegmentState.vertical({
+      new SegmentModel({
+        orientation: Orientation.vertical,
         origin: Point.of({x: 0, y: size.height / 2}),
         length: (size.height - weight) / 2,
         weight: weight,
         color: color,
       }),
-      SegmentState.vertical({
+      new SegmentModel({
+        orientation: Orientation.vertical,
         origin: Point.of({x: 0, y: weight / 2}),
         length: (size.height - weight) / 2,
         weight: weight,
         color: color,
       }),
-      SegmentState.horizontal({
+      new SegmentModel({
+        orientation: Orientation.horizontal,
         origin: Point.of({x: weight / 2, y: (size.height - weight) / 2}),
         length: size.width - weight,
         weight: weight,
@@ -89,24 +101,19 @@ export class DisplayState {
     ];
   }
 
-  static create({origin, size, weight, color}: {
-    origin: Point,
-    size: Size,
-    weight: number,
-    color: string,
-  }): DisplayState {
-    return new DisplayState(origin, size, weight, color);
+  get segments(): SegmentModel[] {
+    return [...this._segments];
   }
 
   update(pattern: number) {
     for (let i = 1; i <= 7; i++) {
       const bit = pattern >> (7 - i) & 0x01;
-      this.segments[i - 1].on = !!bit;
+      this._segments[i - 1].on = !!bit;
     }
   }
 }
 
-export namespace Patterns {
+export module Patterns {
   const TABLE = new Map<string, number>([
     ['0', 0x7E],
     ['1', 0x30],

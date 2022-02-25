@@ -1,46 +1,36 @@
 import * as p5 from 'p5';
-import { Context } from '../../lib/process';
-import { DisplayState, SegmentState } from './model';
+import { Widget } from '../../lib/process';
+import { DisplayModel, Orientation, SegmentModel } from './model';
 
-export class SegmentWidget {
-  constructor(
-    public readonly context: p5,
-    public readonly state: SegmentState,
-  ) {
-    // no-op
-  }
+export class SegmentWidget extends Widget<SegmentModel> {
 
-  draw() {
-    switch (this.state.orientation) {
-      case 'horizontal':
-        this.drawHorizontal();
+  protected doDraw(model: SegmentModel) {
+    switch (model.orientation) {
+      case Orientation.horizontal:
+        this.drawHorizontal(model);
         return;
-      case 'vertical':
-        this.drawVertical();
+      case Orientation.vertical:
+        this.drawVertical(model);
         return;
     }
   }
 
-  private drawHorizontal() {
-    const cap = this.state.weight / 2;
+  private drawHorizontal(model: SegmentModel) {
+    const cap = model.weight / 2;
 
-    const left = this.state.origin.x;
-    const right = left + this.state.length;
+    const left = model.origin.x;
+    const right = left + model.length;
 
-    const top = this.state.origin.y;
-    const middle = top + this.state.weight / 2;
-    const bottom = top + this.state.weight;
+    const top = model.origin.y;
+    const middle = top + model.weight / 2;
+    const bottom = top + model.weight;
 
-    Context.scope(this.context, $ => {
-      if (this.state.on) {
-        $.fill(this.state.color);
-      } else {
-        $.noFill();
-      }
+    this.scope($ => {
+      model.on ? $.fill(model.color) : $.noFill();
 
-      $.stroke(this.state.color);
+      $.stroke(model.color);
 
-      Context.shape($, 'closed', $$ => {
+      this.shape('closed', $$ => {
         $$.vertex(left, middle);
         $$.vertex(left + cap, top);
         $$.vertex(right - cap, top);
@@ -51,26 +41,22 @@ export class SegmentWidget {
     });
   }
 
-  private drawVertical() {
-    const cap = this.state.weight / 2;
+  private drawVertical(model: SegmentModel) {
+    const cap = model.weight / 2;
 
-    const left = this.state.origin.x;
-    const center = left + this.state.weight / 2;
-    const right = left + this.state.weight;
+    const left = model.origin.x;
+    const center = left + model.weight / 2;
+    const right = left + model.weight;
 
-    const top = this.state.origin.y;
-    const bottom = top + this.state.length;
+    const top = model.origin.y;
+    const bottom = top + model.length;
 
-    Context.scope(this.context, $ => {
-      if (this.state.on) {
-        $.fill(this.state.color);
-      } else {
-        $.noFill();
-      }
+    this.scope($ => {
+      model.on ? $.fill(model.color) : $.noFill();
 
-      $.stroke(this.state.color);
+      $.stroke(model.color);
 
-      Context.shape($, 'closed', $$ => {
+      this.shape('closed', $$ => {
         $$.beginShape();
         $$.vertex(center, top);
         $$.vertex(right, top + cap);
@@ -84,25 +70,22 @@ export class SegmentWidget {
   }
 }
 
-export class DisplayWidget {
-  private readonly children: SegmentWidget[];
+export class DisplayWidget extends Widget<DisplayModel> {
+  private readonly _segment: SegmentWidget;
 
-  constructor(
-    public readonly context: p5,
-    public readonly state: DisplayState,
-  ) {
-    this.children = state.segments.map(
-      it => new SegmentWidget(context, it)
-    );
+  constructor(context: p5) {
+    super(context);
+    this._segment = new SegmentWidget(context);
   }
 
-  draw() {
-    Context.scope(this.context, $ => {
-      $.translate(
-        this.state.origin.x,
-        this.state.origin.y,
-      );
-      this.children.forEach(it => it.draw());
+  protected doDraw(model: DisplayModel) {
+    this.scope($ => {
+      $.translate(model.origin.x, model.origin.y);
+
+      model.segments.forEach(it => {
+        this._segment.model = it;
+        this._segment.draw();
+      })
     });
   }
 }

@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=MlRlgbrAVOs
 import * as p5 from 'p5';
 import { Point, Size } from '../../lib/graphics2d';
-import { DisplayState, Patterns } from './model';
+import { DisplayModel, Patterns } from './model';
 import { DisplayWidget } from './view';
 
 const Params = Object.freeze({
@@ -12,7 +12,7 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let state: DisplayState;
+  let model: DisplayModel;
   let widget: DisplayWidget;
 
   context.setup = function () {
@@ -22,7 +22,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    state = DisplayState.create({
+    model = new DisplayModel({
       origin: Point.of({
         x: Params.DISPLAY_ORIGIN,
         y: Params.DISPLAY_ORIGIN,
@@ -35,7 +35,9 @@ export function sketch(context: p5) {
       color: Params.SEGMENT_COLOR,
     });
 
-    widget = new DisplayWidget(context, state);
+    widget = new DisplayWidget(context).also(it => {
+      it.model = model;
+    });
   }
 
   context.draw = function () {
@@ -52,7 +54,7 @@ export function sketch(context: p5) {
       return;
     }
 
-    state.update(pattern);
+    model.update(pattern);
     context.redraw();
   }
 }
