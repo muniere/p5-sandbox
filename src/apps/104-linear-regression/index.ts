@@ -21,7 +21,7 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    model = ApplicationModel.create({
+    model = new ApplicationModel({
       learningRate: Params.LEARNING_RATE,
     });
 

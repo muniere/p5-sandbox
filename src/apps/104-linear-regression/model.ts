@@ -12,24 +12,16 @@ export class RegressionModel {
   private _slopeValue: number;
   private _offsetValue: number;
 
-  constructor(
+  constructor(nargs: {
     slope: number,
     offset: number,
     optimizer: Optimizer,
-  ) {
-    this._slopeValue = slope;
-    this._slopeVariable = tf.variable(tf.scalar(slope));
-    this._offsetValue = offset;
-    this._offsetVariable = tf.variable(tf.scalar(offset));
-    this._optimizer = optimizer;
-  }
-
-  static create({slope, offset, optimizer}: {
-    slope: number,
-    offset: number,
-    optimizer: Optimizer,
-  }): RegressionModel {
-    return new RegressionModel(slope, offset, optimizer);
+  }) {
+    this._slopeValue = nargs.slope;
+    this._slopeVariable = tf.variable(tf.scalar(nargs.slope));
+    this._offsetValue = nargs.offset;
+    this._offsetVariable = tf.variable(tf.scalar(nargs.offset));
+    this._optimizer = nargs.optimizer;
   }
 
   map(x: number): Point {
@@ -71,21 +63,15 @@ export class ApplicationModel {
   private readonly _regression: RegressionModel;
   private readonly _dataPoints: Point[];
 
-  constructor(
+  constructor(nargs: {
     learningRate: number,
-  ) {
-    this._regression = RegressionModel.create({
+  }) {
+    this._regression = new RegressionModel({
       slope: 0,
       offset: 0,
-      optimizer: tf.train.sgd(learningRate)
+      optimizer: tf.train.sgd(nargs.learningRate)
     });
     this._dataPoints = [];
-  }
-
-  static create({learningRate}: {
-    learningRate: number,
-  }): ApplicationModel {
-    return new ApplicationModel(learningRate);
   }
 
   get points(): Point[] {
