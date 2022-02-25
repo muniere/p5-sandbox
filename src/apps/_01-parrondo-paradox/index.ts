@@ -1,12 +1,12 @@
 // https://www.youtube.com/watch?v=b3g4sn5ZSnM
 import * as p5 from 'p5';
 import { Point, Rect, Size } from '../../lib/graphics2d';
-import { GameType, ProgressState, SimulationState, WalletState } from './model';
-import { ProgressWidget, SimulationWidget } from './view';
+import { RuleModels, RuleType, SimulationModel, StatisticModel } from './model';
+import { SimulationWidget } from './view';
 
 const Params = Object.freeze({
   CANVAS_COLOR: '#222222',
-  GAME_TYPE: GameType.C,
+  GAME_TYPE: RuleType.C,
   ORIGIN_X: 50,
   ORIGIN_Y: 50,
   LABEL_COLOR: '#FFFFFF',
@@ -18,23 +18,19 @@ const Params = Object.freeze({
 });
 
 export function sketch(context: p5) {
-  let simulationState: SimulationState;
-  let simulationWidget: SimulationWidget;
-  let progressState: ProgressState;
-  let progressWidget: ProgressWidget;
+  let model: SimulationModel;
+  let widget: SimulationWidget;
 
   context.setup = function () {
     context.createCanvas(context.windowWidth, context.windowHeight);
 
-    simulationState = SimulationState.create({
-      wallet: WalletState.create({amount: 0}),
-      type: Params.GAME_TYPE,
+    model = new SimulationModel({
+      statistic: new StatisticModel({value: 0}),
+      rule: RuleModels.choose(Params.GAME_TYPE),
     });
 
-    simulationState.reset();
-
-    simulationWidget = new SimulationWidget(context).also(it => {
-      it.state = simulationState;
+    widget = new SimulationWidget(context).also(it => {
+      it.model = model;
       it.frame = Rect.of({
         origin: Point.of({
           x: Params.ORIGIN_X,
@@ -46,6 +42,11 @@ export function sketch(context: p5) {
         }),
       });
 
+      it.padding = Size.of({
+        width: Params.LABEL_MARGIN,
+        height: Params.LABEL_MARGIN,
+      });
+
       it.scaleX = Params.CHART_SCALE_X;
       it.scaleY = Params.CHART_SCALE_Y;
       it.axisColor = Params.AXIS_COLOR;
@@ -53,25 +54,7 @@ export function sketch(context: p5) {
       it.strokeColor = Params.CHART_COLOR;
     });
 
-    simulationState.maxLength = simulationWidget.map(it => it.frame.width / it.scaleX);
-
-    progressState = ProgressState.create({
-      type: simulationState.type,
-    });
-
-    progressWidget = new ProgressWidget(context).also(it => {
-      it.state = progressState;
-      it.frame = Rect.of({
-        origin: Point.of({
-          x: Params.ORIGIN_X + Params.LABEL_MARGIN,
-          y: Params.ORIGIN_Y + Params.LABEL_MARGIN,
-        }),
-        size: Size.of({
-          width: context.width - Params.LABEL_MARGIN * 2,
-          height: context.height - Params.LABEL_MARGIN * 2,
-        }),
-      });
-    });
+    model.maxLength = widget.frame.width / widget.scaleX;
   }
 
   context.draw = function () {
@@ -79,12 +62,10 @@ export function sketch(context: p5) {
     context.background(Params.CANVAS_COLOR);
 
     // widget
-    simulationWidget.draw();
-    progressWidget.draw();
+    widget.draw();
 
     // update
-    simulationState.next();
-    progressState.update(simulationState.wallet)
+    model.next();
   }
 
   context.mouseClicked = function () {

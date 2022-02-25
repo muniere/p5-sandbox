@@ -1,185 +1,158 @@
-export enum GameType {
+export class StatisticModel {
+  private _value: number;
+  private _count: number;
+
+  constructor(nargs: {
+    value: number
+  }) {
+    this._value = nargs.value;
+    this._count = 0;
+  }
+
+  get value(): number {
+    return this._value;
+  }
+
+  set value(value: number) {
+    this._value = value;
+    this._count += 1;
+  }
+
+  get count(): number {
+    return this._count;
+  }
+}
+
+export enum RuleType {
   A,
   B,
   C,
 }
 
-export class WalletState {
-  constructor(
-    public amount: number,
-  ) {
-    // no-op
-  }
+export namespace RuleModels {
 
-  static create({amount}: {
-    amount: number,
-  }): WalletState {
-    return new WalletState(amount);
-  }
-}
-
-export interface Game {
-  type: GameType;
-
-  perform(wallet: WalletState): void
-}
-
-class GameA implements Game {
-  private threshold = 0.52;
-
-  get type(): GameType {
-    return GameType.A;
-  }
-
-  perform(wallet: WalletState) {
-    const subject = Math.random();
-    const threshold = this.threshold;
-
-    if (subject > threshold) {
-      wallet.amount += 1;
-    } else {
-      wallet.amount -= 1;
+  export function choose(type: RuleType): RuleModel {
+    switch (type) {
+      case RuleType.A:
+        return new RuleModelA();
+      case RuleType.B:
+        return new RuleModelB();
+      case RuleType.C:
+        return new RuleModelC();
     }
   }
 }
 
-class GameB implements Game {
+export abstract class RuleModel {
+  abstract readonly type: RuleType;
+
+  abstract apply(wallet: StatisticModel): void
+}
+
+class RuleModelA extends RuleModel {
+  private threshold = 0.52;
+
+  get type(): RuleType {
+    return RuleType.A;
+  }
+
+  apply(state: StatisticModel) {
+    const subject = Math.random();
+    const threshold = this.threshold;
+
+    if (subject > threshold) {
+      state.value += 1;
+    } else {
+      state.value -= 1;
+    }
+  }
+}
+
+class RuleModelB extends RuleModel {
   private thresholds = new Map<number, number>([
     [0, 0.99],
     [1, 0.15],
     [2, 0.15],
   ]);
 
-  get type(): GameType {
-    return GameType.B;
+  get type(): RuleType {
+    return RuleType.B;
   }
 
-  perform(wallet: WalletState) {
+  apply(state: StatisticModel) {
     const subject = Math.random();
-    const rawValue = wallet.amount % 3;
+    const rawValue = state.value % 3;
     const remaining = rawValue >= 0 ? rawValue : rawValue + 3;
     const threshold = this.thresholds.get(remaining) ?? 0;
 
     if (subject > threshold) {
-      wallet.amount += 1;
+      state.value += 1;
     } else {
-      wallet.amount -= 1;
+      state.value -= 1;
     }
   }
 }
 
-class GameC implements Game {
+class RuleModelC extends RuleModel {
   private threshold = 0.50;
-  private gameA = new GameA();
-  private gameB = new GameB();
+  private gameA = new RuleModelA();
+  private gameB = new RuleModelB();
 
-  get type(): GameType {
-    return GameType.C;
+  get type(): RuleType {
+    return RuleType.C;
   }
 
-  perform(wallet: WalletState) {
+  apply(wallet: StatisticModel) {
     const subject = Math.random();
     const threshold = this.threshold;
 
     if (subject > threshold) {
-      this.gameA.perform(wallet);
+      this.gameA.apply(wallet);
     } else {
-      this.gameB.perform(wallet);
+      this.gameB.apply(wallet);
     }
   }
 }
 
-export class SimulationState {
+export class SimulationModel {
   public maxLength: number = -1;
 
-  private _history: number[] = [];
+  private readonly _rule: RuleModel;
+  private readonly _statistic: StatisticModel;
+  private _history: number[];
 
-  constructor(
-    public readonly wallet: WalletState,
-    public readonly game: Game,
-  ) {
-    // no-op
+  constructor(nargs: {
+    rule: RuleModel,
+    statistic: StatisticModel,
+  }) {
+    this._rule = nargs.rule;
+    this._statistic = nargs.statistic;
+    this._history = [nargs.statistic.value];
   }
 
-  static create({wallet, type}: {
-    wallet: WalletState,
-    type: GameType,
-  }): SimulationState {
-    const game = (() => {
-      switch (type) {
-        case GameType.A:
-          return new GameA();
-        case GameType.B:
-          return new GameB();
-        case GameType.C:
-          return new GameC();
-      }
-    })();
-
-    return new SimulationState(wallet, game);
+  get type(): RuleType {
+    return this._rule.type;
   }
 
-  get type(): GameType {
-    return this.game.type;
+  get statistic(): StatisticModel {
+    return this._statistic;
   }
 
   get history(): number[] {
     return [...this._history];
   }
 
-  get value(): number {
-    return this.wallet.amount;
-  }
-
-  also(mutate: (state: SimulationState) => void): SimulationState {
+  also(mutate: (state: SimulationModel) => void): SimulationModel {
     mutate(this);
     return this;
   }
 
-  reset() {
-    this._history = [this.wallet.amount];
-  }
-
   next() {
-    this.game.perform(this.wallet);
-    this._history.push(this.wallet.amount);
+    this._rule.apply(this._statistic);
+    this._history.push(this._statistic.value);
 
     if (this.maxLength > 0 && this._history.length > this.maxLength) {
       this._history.shift();
     }
-  }
-}
-
-export class ProgressState {
-  private _count: number = 0;
-  private _amount: number = 0;
-
-  constructor(
-    public readonly type: GameType,
-  ) {
-    // no-op
-  }
-
-  static create({type}: {
-    type: GameType,
-  }): ProgressState {
-    return new ProgressState(type);
-  }
-
-  get count(): number {
-    return this._count;
-  }
-
-  get amount(): number {
-    return this._amount;
-  }
-
-  update(wallet: WalletState) {
-    this._count += 1;
-    this._amount = wallet.amount;
-  }
-
-  reset() {
-    this._count = 0;
   }
 }
