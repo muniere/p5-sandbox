@@ -201,7 +201,7 @@ export class VehicleModel {
       currentVelocity.vector,
     );
 
-    const force = Force.of(deltaVector).limit(VehicleRule.MAX_FORCE);
+    const force = new Force(deltaVector).limit(VehicleRule.MAX_FORCE);
 
     this.applyForce(force);
   }
@@ -244,7 +244,7 @@ export class VehicleModel {
       currentVelocity.vector,
     );
 
-    const force = Force.of(deltaVector).limit(VehicleRule.MAX_FORCE);
+    const force = new Force(deltaVector).limit(VehicleRule.MAX_FORCE);
 
     this.applyForce(force);
     return true;
@@ -253,11 +253,10 @@ export class VehicleModel {
   steerRandomly() {
     const range = new NumberRange(-1.0, 1.0);
 
-    const force = Force
-      .of({
-        x: range.sample(),
-        y: range.sample(),
-      })
+    const x = range.sample();
+    const y = range.sample();
+
+    const force = new Force({x, y})
       .normalize()
       .withMagnitude(VehicleRule.MAX_FORCE)
 

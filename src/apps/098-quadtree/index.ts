@@ -46,7 +46,7 @@ export function sketch(context: p5) {
         y: Math.random() * size,
       });
 
-      const force = Force.of({
+      const force = new Force({
         x: Math.random(),
         y: Math.random(),
       });

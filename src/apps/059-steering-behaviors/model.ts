@@ -31,7 +31,7 @@ export class VehicleModel extends CircularMaterial {
     desired.setMag(magnitude);
 
     const steer = desired.sub(this.velocity.vector).limit(this.maxForce).mult(this.mass);
-    const force = Force.of(steer.mult(this.attractionForceFactor));
+    const force = new Force(steer.mult(this.attractionForceFactor));
 
     this.apply(force);
   }
@@ -51,7 +51,7 @@ export class VehicleModel extends CircularMaterial {
     desired.setMag(this.maxSpeed);
 
     const steer = desired.sub(this.velocity.vector).limit(this.maxForce).mult(this.mass);
-    const force = Force.of(steer.mult(this.repulsionForceFactor));
+    const force = new Force(steer.mult(this.repulsionForceFactor));
 
     this.apply(force);
   }

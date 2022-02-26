@@ -44,7 +44,7 @@ export class FireworkModel {
 
   apply(gravity: Acceleration) {
     this.particles.forEach(it => {
-      const force = Force.of({
+      const force = new Force({
         x: gravity.x * it.mass,
         y: gravity.y * it.mass,
       });
