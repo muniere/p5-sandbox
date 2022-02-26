@@ -32,7 +32,7 @@ export function sketch(context: p5) {
 
     const values = data.path
       .filter((it, i) => i % 10 == 0)
-      .map((it) => Complex.of(it.x, it.y));
+      .map((it) => new Complex({re: it.x, im: it.y}));
 
     const origin = new Point({
       x: Params.ORIGIN_X,
