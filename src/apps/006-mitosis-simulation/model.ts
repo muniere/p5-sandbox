@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Vectors } from '../../lib/process';
 import { Numeric } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 
@@ -19,7 +20,7 @@ export class CellModel {
     growth: number,
     limit: number,
   }) {
-    this._velocity = new Vector();
+    this._velocity = Vectors.zero();
     this._center = nargs.center;
     this._radius = nargs.radius;
     this._growth = nargs.growth;

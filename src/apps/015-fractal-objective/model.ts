@@ -1,5 +1,5 @@
-import { Vector } from 'p5';
 import { Point } from '../../lib/graphics2d';
+import { Vectors } from '../../lib/process';
 
 export class BranchModel {
   private readonly _begin: Point;
@@ -43,10 +43,10 @@ export class BranchModel {
       throw new Error('branch can call only once')
     }
 
-    const vec = new Vector().set(
-      this._end.x - this._begin.x,
-      this._end.y - this._begin.y,
-    );
+    const vec = Vectors.create({
+      x: this._end.x - this._begin.x,
+      y: this._end.y - this._begin.y,
+    });
 
     const dir1 = vec.copy().mult(scale).rotate(-Math.abs(angle));
     const child1 = new BranchModel({

@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Vectors } from '../../lib/process';
 import { NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 
@@ -15,7 +16,7 @@ export class SnakeModel {
   }) {
     this._head = Point.zero();
     this._tail = [];
-    this._velocity = new Vector().set(1, 0);
+    this._velocity = Vectors.create({x: 1, y: 0});
     this._scale = nargs.scale;
     // no-op
   }

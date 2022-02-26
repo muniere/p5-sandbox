@@ -13,7 +13,7 @@ export class VehicleModel extends CircularMaterial {
   public maxForce: number = 0;
 
   attract() {
-    const desired = Vectors.of({
+    const desired = Vectors.create({
       x: this.anchor.x - this.center.x,
       y: this.anchor.y - this.center.y,
     });
@@ -37,7 +37,7 @@ export class VehicleModel extends CircularMaterial {
   }
 
   repulse(point: Point) {
-    const desired = Vectors.of({
+    const desired = Vectors.create({
       x: point.x - this.center.x,
       y: point.y - this.center.y,
     }).mult(-1);

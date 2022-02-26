@@ -101,9 +101,13 @@ export class Widget<Model> extends BaseWidget {
   }
 }
 
-export namespace Vectors {
+export module Vectors {
 
-  export function of(nargs: {
+  export function zero(): Vector {
+    return new Vector();
+  }
+
+  export function create(nargs: {
     x?: number,
     y?: number,
     z?: number,

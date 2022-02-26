@@ -1,5 +1,5 @@
-import p5, { Vector } from 'p5';
-import { BaseWidget, Widget } from '../../lib/process';
+import p5 from 'p5';
+import { BaseWidget, Vectors, Widget } from '../../lib/process';
 import { Point, Rect, Size } from '../../lib/graphics2d';
 import { AntModel, ApplicationModel, CellModel, Direction, GridModel } from './model';
 
@@ -30,9 +30,9 @@ export class AntWidget extends Widget<AntModel> {
     const center = this.frame.center;
 
     const vectors = [
-      new Vector().set(0, -this.frame.height / 2),
-      new Vector().set(-this.frame.width / 4, this.frame.height / 2),
-      new Vector().set(+this.frame.width / 4, this.frame.height / 2),
+      Vectors.create({x: 0, y: -this.frame.height / 2}),
+      Vectors.create({x: -this.frame.width / 4, y: this.frame.height / 2}),
+      Vectors.create({x: +this.frame.width / 4, y: this.frame.height / 2}),
     ];
     const points = vectors.map(it => {
       return center.plus(it.rotate(angle));
