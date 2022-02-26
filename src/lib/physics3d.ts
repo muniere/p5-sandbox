@@ -1,4 +1,5 @@
 import { Vector } from 'p5';
+import { Vectors } from './process';
 
 export type ForceCompat = {
   x: number,
@@ -9,21 +10,13 @@ export type ForceCompat = {
 export class Force {
   private _vector: Vector;
 
-  public constructor(
-    x: number,
-    y: number,
-    z: number,
-  ) {
-    this._vector = new Vector().set(x, y, z);
+  public constructor(nargs: ForceCompat) {
+    this._vector = Vectors.create(nargs);
   }
 
   public static zero(): Force {
-    return new Force(0, 0, 0);
+    return new Force({x: 0, y: 0, z: 0});
   }
-
-  public static of({x, y, z}: ForceCompat): Force {
-    return new Force(x, y, z);
-  };
 
   public get x(): number {
     return this._vector.x;
@@ -42,11 +35,11 @@ export class Force {
   }
 
   public acceleration({mass}: { mass: number }): Acceleration {
-    return Acceleration.of(this.vector.div(mass));
+    return Acceleration.of(this._vector.copy().div(mass));
   }
 
   public plus(delta: Force): Force {
-    return Force.of(this.vector.add(delta.vector));
+    return new Force(this._vector.copy().add(delta.vector));
   }
 
   public plusAssign(delta: Force) {
@@ -54,7 +47,7 @@ export class Force {
   }
 
   public minus(delta: Force): Force {
-    return Force.of(this.vector.sub(delta.vector));
+    return new Force(this._vector.copy().sub(delta.vector));
   }
 
   public minusAssign(delta: Force) {
@@ -62,23 +55,23 @@ export class Force {
   }
 
   public times(value: number): Force {
-    return Force.of(this.vector.mult(value));
+    return new Force(this._vector.copy().mult(value));
   }
 
   public timesAssign(value: number): void {
-    this.vector.mult(value);
+    this._vector.mult(value);
   }
 
-  public with(delta: Force): Force {
-    return Force.of(delta.vector);
+  public with(value: Force): Force {
+    return new Force(value.vector);
   }
 
-  public assign(delta: Force) {
-    this._vector = delta.vector;
+  public assign(value: Force) {
+    this._vector = value.vector;
   }
 
   public rotate(angle: number): Force {
-    return Force.of(this.vector.rotate(angle))
+    return new Force(this._vector.copy().rotate(angle))
   }
 
   public rotateAssign(angle: number): void {
@@ -86,7 +79,7 @@ export class Force {
   }
 
   public limit(magnitude: number): Force {
-    return Force.of(this.vector.limit(magnitude));
+    return new Force(this._vector.copy().limit(magnitude));
   }
 
   public limitAssign(magnitude: number): void {
@@ -94,7 +87,7 @@ export class Force {
   }
 
   public normalize(): Force {
-    return Force.of(this.vector.normalize());
+    return new Force(this._vector.copy().normalize());
   }
 
   public normalizeAssign(): void {
@@ -106,7 +99,7 @@ export class Force {
   }
 
   public withMagnitude(magnitude: number): Force {
-    return Force.of(this.vector.setMag(magnitude))
+    return new Force(this._vector.copy().setMag(magnitude))
   }
 
   public setMagnitude(magnitude: number): void {
@@ -118,7 +111,11 @@ export class Force {
   }
 
   public copy(): Force {
-    return new Force(this.x, this.y, this.z);
+    return new Force({
+      x: this._vector.x,
+      y: this._vector.y,
+      z: this._vector.z,
+    });
   }
 
   public equals(other: Force): boolean {
