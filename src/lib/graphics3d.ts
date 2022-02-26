@@ -119,24 +119,30 @@ export type SizeMaybe = {
 }
 
 export class Size {
-  public constructor(
-    private _width: number,
-    private _height: number,
-    private _depth: number,
-  ) {
-    // no-op
+  private _width: number;
+  private _height: number;
+  private _depth: number;
+
+  public constructor(nargs: SizeCompat) {
+    this._width = nargs.width;
+    this._height = nargs.height;
+    this._depth = nargs.depth;
   }
 
   public static zero(): Size {
-    return new Size(0, 0, 0);
+    return new Size({
+      width: 0,
+      height: 0,
+      depth: 0,
+    });
   }
 
   public static cube(size: number): Size {
-    return new Size(size, size, size);
-  }
-
-  public static of(params: SizeCompat): Size {
-    return new Size(params.width, params.height, params.depth);
+    return new Size({
+      width: size,
+      height: size,
+      depth: size,
+    });
   }
 
   public get width(): number {
@@ -152,11 +158,11 @@ export class Size {
   }
 
   public plus(delta: SizeDelta): Size {
-    return new Size(
-      this.width + (delta.width ?? 0),
-      this.height + (delta.height ?? 0),
-      this.depth + (delta.depth ?? 0),
-    );
+    return new Size({
+      width: this._width + (delta.width ?? 0),
+      height: this._height + (delta.height ?? 0),
+      depth: this._depth + (delta.depth ?? 0),
+    });
   }
 
   public plusAssign(delta: SizeDelta): void {
@@ -166,11 +172,11 @@ export class Size {
   }
 
   public minus(delta: SizeDelta): Size {
-    return new Size(
-      this.width - (delta.width ?? 0),
-      this.height - (delta.height ?? 0),
-      this.depth - (delta.depth ?? 0),
-    );
+    return new Size({
+      width: this._width - (delta.width ?? 0),
+      height: this._height - (delta.height ?? 0),
+      depth: this._depth - (delta.depth ?? 0),
+    });
   }
 
   public minusAssign(delta: SizeDelta): void {
@@ -180,11 +186,11 @@ export class Size {
   }
 
   public times(value: number): Size {
-    return new Size(
-      this.width * value,
-      this.height * value,
-      this.depth * value,
-    );
+    return new Size({
+      width: this._width * value,
+      height: this._height * value,
+      depth: this._depth * value,
+    });
   }
 
   public timesAssign(value: number): void {
@@ -193,12 +199,30 @@ export class Size {
     this._depth *= value;
   }
 
+  public with(delta: SizeMaybe): Size {
+    return new Size({
+      width: delta.width ?? this._width,
+      height: delta.height ?? this._height,
+      depth: delta.depth ?? this._depth,
+    });
+  }
+
+  public assign(delta: SizeMaybe): void {
+    this._width = delta.width ?? this._width;
+    this._height = delta.height ?? this._height;
+    this._depth = delta.depth ?? this._depth;
+  }
+
   public copy(): Size {
-    return new Size(this.width, this.height, this.depth);
+    return new Size({
+      width: this._width,
+      height: this._height,
+      depth: this._depth,
+    });
   }
 
   public equals(other: SizeCompat): boolean {
-    return this.width == other.width && this.height == other.height && this.depth == other.depth;
+    return this._width == other.width && this._height == other.height && this._depth == other.depth;
   }
 }
 
