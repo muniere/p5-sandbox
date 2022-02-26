@@ -213,15 +213,12 @@ export type RectMaybe = {
 }
 
 export class Rect {
-  public constructor(
-    private _origin: Point,
-    private _size: Size,
-  ) {
-    // no-op
-  }
+  private _origin: Point;
+  private _size: Size;
 
-  public static of({origin, size}: RectCompat): Rect {
-    return new Rect(origin, size);
+  public constructor(nargs: RectCompat) {
+    this._origin = nargs.origin;
+    this._size = nargs.size;
   }
 
   public get origin(): Point {
@@ -257,10 +254,10 @@ export class Rect {
   }
 
   public with(delta: RectMaybe): Rect {
-    return new Rect(
-      delta.origin ?? this.origin,
-      delta.size ?? this.size,
-    );
+    return new Rect({
+      origin: delta.origin ?? this._origin.copy(),
+      size: delta.size ?? this._size.copy(),
+    });
   }
 
   public assign(delta: RectMaybe): void {
@@ -269,11 +266,14 @@ export class Rect {
   }
 
   public copy(): Rect {
-    return new Rect(this.origin.copy(), this.size.copy());
+    return new Rect({
+      origin: this._origin.copy(),
+      size: this._size.copy(),
+    });
   }
 
   public equals(other: RectCompat): boolean {
-    return this.origin.equals(other.origin) && this.size.equals(other.size);
+    return this._origin.equals(other.origin) && this._size.equals(other.size);
   }
 }
 
