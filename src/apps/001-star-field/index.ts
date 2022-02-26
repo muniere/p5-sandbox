@@ -68,12 +68,12 @@ export function sketch(context: p5) {
   context.mouseMoved = function () {
     const canvasOrigin = Point2D.zero();
 
-    const canvasCenter = Point2D.of({
+    const canvasCenter = new Point2D({
       x: context.width / 2,
       y: context.height / 2,
     });
 
-    const mousePoint = Point2D.of({
+    const mousePoint = new Point2D({
       x: context.mouseX,
       y: context.mouseY,
     });

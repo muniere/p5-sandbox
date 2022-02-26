@@ -73,7 +73,7 @@ export class BoardWidget extends Widget<BoardModel> {
     });
 
     model.forEach((piece, spot) => {
-      const origin = Point.of({
+      const origin = new Point({
         x: this.frame.origin.x + itemSize.width * spot.column,
         y: this.frame.origin.y + itemSize.height * spot.row,
       });

@@ -161,7 +161,7 @@ export class PixelCrowdModel {
     for (let x = 0; x < image.width; x++) {
       for (let y = 0; y < image.height; y++) {
         if (predicate(image.get(x, y))) {
-          points.push(Point.of({x, y}));
+          points.push(new Point({x, y}));
         }
       }
     }

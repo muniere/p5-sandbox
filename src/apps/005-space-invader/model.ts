@@ -189,7 +189,7 @@ export class GameBuilder {
     });
 
     const ship = new ShipModel({
-      center: Point.of({
+      center: new Point({
         x: this.bounds.width / 2,
         y: this.bounds.height - this.shipRadius,
       }),
@@ -208,7 +208,7 @@ export class GameBuilder {
         const x = this.enemyOrigin.x + this.enemyRadius + (this.enemyRadius * 2 + this.enemyMargin.width) * column;
 
         const enemy = new EnemyModel({
-          center: Point.of({x, y}),
+          center: new Point({x, y}),
           radius: this.enemyRadius,
           speed: this.enemySpeed,
         }).also(it => {

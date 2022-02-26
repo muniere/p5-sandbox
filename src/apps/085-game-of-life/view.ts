@@ -29,7 +29,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
           return;
         }
 
-        const origin = Point.of({
+        const origin = new Point({
           x: this.frame.origin.x + spot.column * cellSize.width,
           y: this.frame.origin.y + spot.row * cellSize.height,
         });

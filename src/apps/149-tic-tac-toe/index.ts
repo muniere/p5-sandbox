@@ -48,11 +48,11 @@ export function sketch(context: p5) {
   }
 
   context.mousePressed = function () {
-    const point = Point.of({
-      x: context.mouseX,
-      y: context.mouseY,
-    });
-
-    master.consumeMouseClick(point);
+    master.consumeMouseClick(
+      new Point({
+        x: context.mouseX,
+        y: context.mouseY,
+      })
+    );
   }
 }

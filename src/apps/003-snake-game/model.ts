@@ -65,7 +65,7 @@ export class SnakeModel {
     // compute
     const delta = Vector.mult(this._velocity, this._scale);
 
-    const next = Point.of({
+    const next = new Point({
       x: this._head.x + delta.x,
       y: this._head.y + delta.y,
     });
@@ -187,7 +187,7 @@ export class GameModel {
 
     if (this._snake.eat(this._food)) {
       this._food = this._food.spawn({
-        point: Point.of({
+        point: new Point({
           x: this._xrange.sample(),
           y: this._yrange.sample(),
         })

@@ -39,7 +39,7 @@ export function sketch(context: p5) {
       }),
       food: new FoodModel({
         scale: Params.GAME_SCALE,
-        point: Point.of({
+        point: new Point({
           x: xrange.sample(),
           y: yrange.sample(),
         }),

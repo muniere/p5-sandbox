@@ -41,7 +41,7 @@ export function sketch(context: p5) {
     });
 
     Arrays.sequence(Params.MATERIAL_COUNT).forEach(() => {
-      const center = Point.of({
+      const center = new Point({
         x: Math.random() * size,
         y: Math.random() * size,
       });

@@ -23,7 +23,7 @@ export function sketch(context: p5) {
     );
 
     model = new DisplayModel({
-      origin: Point.of({
+      origin: new Point({
         x: Params.DISPLAY_ORIGIN,
         y: Params.DISPLAY_ORIGIN,
       }),

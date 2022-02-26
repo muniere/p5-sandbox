@@ -25,7 +25,7 @@ export function sketch(context: p5) {
 
     solver = LexicographicSolver.create({
       points: Arrays.generate(Params.POINT_COUNT, () => {
-        return Point.of({
+        return new Point({
           x: Math.random() * context.width,
           y: Math.random() * context.height,
         });
@@ -36,7 +36,7 @@ export function sketch(context: p5) {
 
     progressWidget = new ProgressWidget(context).also(it => {
       it.frame = new Rect({
-        origin: Point.of({
+        origin: new Point({
           x: Params.LABEL_MARGIN,
           y: Params.LABEL_MARGIN,
         }),

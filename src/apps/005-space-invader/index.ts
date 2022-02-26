@@ -14,7 +14,7 @@ const Params = Object.freeze({
 
   // enemy
   ENEMY_COLOR: '#FF22FF',
-  ENEMY_ORIGIN: Point.of({x: 50, y: 0}),
+  ENEMY_ORIGIN: new Point({x: 50, y: 0}),
   ENEMY_COLUMNS: 12,
   ENEMY_ROWS: 3,
   ENEMY_SPACE: 30,
@@ -48,7 +48,7 @@ export function sketch(context: p5) {
       it.shipSpeed = Params.SHIP_SPEED;
 
       it.enemyColor = Params.ENEMY_COLOR;
-      it.enemyOrigin = Point.of({x: Params.ENEMY_ORIGIN.x, y: Params.ENEMY_ORIGIN.y});
+      it.enemyOrigin = new Point({x: Params.ENEMY_ORIGIN.x, y: Params.ENEMY_ORIGIN.y});
       it.enemyMargin = new Size({width: Params.ENEMY_SPACE, height: Params.ENEMY_SPACE});
       it.enemyGrid = new Size({width: Params.ENEMY_COLUMNS, height: Params.ENEMY_ROWS});
       it.enemyRadius = Params.ENEMY_RADIUS;

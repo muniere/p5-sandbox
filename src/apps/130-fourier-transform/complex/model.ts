@@ -23,7 +23,7 @@ export class ApplicationModel {
       offset: 0,
     });
 
-    const nextPoint = Point.of({
+    const nextPoint = new Point({
       x: this.chain.last().epicycleCenter.x,
       y: this.chain.last().epicycleCenter.y,
     });

@@ -26,7 +26,7 @@ export class RegressionModel {
 
   map(x: number): Point {
     const y = x * this._slopeValue + this._offsetValue;
-    return Point.of({x, y});
+    return new Point({x, y});
   }
 
   predict(xs: number[]): Tensor1D {

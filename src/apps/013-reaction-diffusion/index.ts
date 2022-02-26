@@ -32,7 +32,7 @@ export function sketch(context: p5) {
         dimen: Dimen.of(context),
         factory: new DefaultGridFactory({
           drop: new Rect({
-            origin: Point.of({
+            origin: new Point({
               x: Math.floor(context.width / 2) - Params.SEED_RADIUS,
               y: Math.floor(context.height / 2) - Params.SEED_RADIUS,
             }),

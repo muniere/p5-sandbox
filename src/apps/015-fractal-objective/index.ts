@@ -26,11 +26,11 @@ export function sketch(context: p5) {
 
     model = new TreeModel({
       root: new BranchModel({
-        begin: Point.of({
+        begin: new Point({
           x: context.width / 2,
           y: context.height,
         }),
-        end: Point.of({
+        end: new Point({
           x: context.width / 2,
           y: context.height - Params.STEM_LENGTH,
         }),

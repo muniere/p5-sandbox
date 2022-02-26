@@ -16,33 +16,29 @@ export type PointMaybe = {
 }
 
 export class Point {
-  public constructor(
-    private _x: number,
-    private _y: number,
-  ) {
-    // no-op
+  private _x: number;
+  private _y: number;
+
+  public constructor(nargs: PointCompat) {
+    this._x = nargs.x;
+    this._y = nargs.y;
   }
 
   public static zero(): Point {
-    return new Point(0, 0);
-  }
-
-  public static of({x, y}: PointCompat): Point {
-    return new Point(x, y);
-  };
-
-  public static rect({x, y}: PointCompat): Point {
-    return new Point(x, y);
+    return new Point({
+      x: 0,
+      y: 0,
+    });
   }
 
   public static polar({radius, angle}: {
     radius: number,
     angle: number,
   }): Point {
-    return new Point(
-      radius * Math.cos(angle),
-      radius * Math.sin(angle),
-    );
+    return new Point({
+      x: radius * Math.cos(angle),
+      y: radius * Math.sin(angle),
+    });
   }
 
   static dist(a: Point, b: Point): number {
@@ -58,7 +54,10 @@ export class Point {
   }
 
   public plus(delta: PointDelta): Point {
-    return new Point(this.x + (delta.x ?? 0), this.y + (delta.y ?? 0));
+    return new Point({
+      x: this._x + (delta.x ?? 0),
+      y: this._y + (delta.y ?? 0),
+    });
   }
 
   public plusAssign(delta: PointDelta) {
@@ -67,7 +66,10 @@ export class Point {
   }
 
   public minus(delta: PointDelta): Point {
-    return new Point(this.x - (delta.x ?? 0), this.y - (delta.y ?? 0));
+    return new Point({
+      x: this._x - (delta.x ?? 0),
+      y: this._y - (delta.y ?? 0),
+    });
   }
 
   public minusAssign(delta: PointDelta) {
@@ -76,7 +78,10 @@ export class Point {
   }
 
   public with(delta: PointMaybe): Point {
-    return new Point(delta.x ?? this.x, delta.y ?? this.y);
+    return new Point({
+      x: delta.x ?? this._x,
+      y: delta.y ?? this._y,
+    });
   }
 
   public assign(delta: PointMaybe) {
@@ -85,11 +90,14 @@ export class Point {
   }
 
   public copy(): Point {
-    return new Point(this.x, this.y);
+    return new Point({
+      x: this._x,
+      y: this._y,
+    });
   }
 
   public equals(other: Point): boolean {
-    return this.x == other.x && this.y == other.y;
+    return this._x == other.x && this._y == other.y;
   }
 }
 
@@ -109,7 +117,7 @@ export class PointRange {
   }
 
   public lerp(amount: number): Point {
-    return Point.of({
+    return new Point({
       x: Numeric.range(this.start.x, this.stop.x).lerp(amount),
       y: Numeric.range(this.start.y, this.stop.y).lerp(amount),
     });
@@ -285,7 +293,7 @@ export class Rect {
   }
 
   public get center(): Point {
-    return Point.of({
+    return new Point({
       x: this.origin.x + this.size.width / 2,
       y: this.origin.y + this.size.height / 2
     });

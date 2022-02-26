@@ -24,7 +24,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
   set model(model: ApplicationModel) {
     super.model = model;
     this._source.origin = Point.zero();
-    this._result.origin = Point.of({
+    this._result.origin = new Point({
       x: model.result.image.width,
       y: 0,
     });

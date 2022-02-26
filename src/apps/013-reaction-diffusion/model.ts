@@ -21,7 +21,7 @@ export class DefaultGridFactory implements GridFactory {
   }
 
   create(spot: Spot): CellModel {
-    const point = Point.of({
+    const point = new Point({
       x: spot.column,
       y: spot.row,
     });

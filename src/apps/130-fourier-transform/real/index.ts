@@ -32,9 +32,9 @@ export function sketch(context: p5) {
 
     const points = data.path
       .filter((it, i) => i % 10 == 0)
-      .map((it) => Point.of(it));
+      .map((it) => new Point(it));
 
-    const origin = Point.of({
+    const origin = new Point({
       x: Params.ORIGIN_X,
       y: Params.ORIGIN_Y,
     });

@@ -171,7 +171,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
       height: this.frame.height / grid.dimen.height,
     });
 
-    const cellOrigin = Point.of({
+    const cellOrigin = new Point({
       x: cellSize.width * ant.spot.column,
       y: cellSize.width * ant.spot.row,
     });
@@ -191,7 +191,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
 
   private stepFrame(): Rect {
     return new Rect({
-      origin: Point.of({
+      origin: new Point({
         x: 0,
         y: Math.min(this.frame.width, this.frame.height),
       }),

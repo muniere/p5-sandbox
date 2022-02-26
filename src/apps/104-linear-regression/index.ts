@@ -45,7 +45,7 @@ export function sketch(context: p5) {
 
   context.mouseClicked = function () {
     model.push(
-      Point.of({
+      new Point({
         x: context.mouseX / context.width,
         y: context.mouseY / context.height,
       })

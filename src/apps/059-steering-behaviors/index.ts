@@ -35,12 +35,12 @@ export function sketch(context: p5) {
       context.P2D,
     );
 
-    const points = font.textToPoints(Params.TEXT_WORD, 0, 0, Params.FONT_SIZE).map(it => Point.of(it));
+    const points = font.textToPoints(Params.TEXT_WORD, 0, 0, Params.FONT_SIZE).map(it => new Point(it));
 
     const xs = points.sortedAsc(it => it.x).map(it => it.x);
     const ys = points.sortedAsc(it => it.y).map(it => it.y);
 
-    const offset = Point.of({
+    const offset = new Point({
       x: (xs.last() - xs.first()) / 2 - context.width / 4,
       y: (ys.last() - ys.first()) / 2 + context.height / 2,
     });
@@ -49,7 +49,7 @@ export function sketch(context: p5) {
       vehicles: points.map(it => it.plus(offset)).map(anchor => {
         return new VehicleModel({
           radius: Params.VEHICLE_RADIUS,
-          center: Point.of({
+          center: new Point({
             x: context.width / 2,
             y: context.height / 2,
           }),
@@ -85,7 +85,7 @@ export function sketch(context: p5) {
 
     // update
     model.update({
-      repulsion: Point.of({
+      repulsion: new Point({
         x: context.mouseX,
         y: context.mouseY,
       }),

@@ -21,7 +21,7 @@ export class SimulationWidget extends Widget<SimulationModel> {
   private valueFormat = Intl.NumberFormat([]);
 
   draw() {
-    const base = Point.of({
+    const base = new Point({
       x: this.frame.origin.x,
       y: this.frame.origin.y + this.frame.size.height / 2,
     });
@@ -48,7 +48,7 @@ export class SimulationWidget extends Widget<SimulationModel> {
     }
 
     const points = model.history.map(
-      (value, i) => Point.of({
+      (value, i) => new Point({
         x: base.x + i * this.scaleX,
         y: base.y - value * this.scaleY,
       })

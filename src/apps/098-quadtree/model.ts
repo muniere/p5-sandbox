@@ -11,7 +11,7 @@ export class VehicleModel extends CircularMaterial {
 
   get zone(): Rect {
     return new Rect({
-      origin: Point.of({
+      origin: new Point({
         x: this.left - this.radius,
         y: this.top - this.radius,
       }),
@@ -87,19 +87,19 @@ export class DivisionModel {
 
   private subdivide() {
     const origins = [
-      Point.of({
+      new Point({
         x: this._boundary.origin.x,
         y: this._boundary.origin.y,
       }),
-      Point.of({
+      new Point({
         x: this._boundary.center.x,
         y: this._boundary.origin.y,
       }),
-      Point.of({
+      new Point({
         x: this._boundary.origin.x,
         y: this._boundary.center.y,
       }),
-      Point.of({
+      new Point({
         x: this._boundary.center.x,
         y: this._boundary.center.y,
       }),

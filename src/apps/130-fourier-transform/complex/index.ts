@@ -34,7 +34,7 @@ export function sketch(context: p5) {
       .filter((it, i) => i % 10 == 0)
       .map((it) => Complex.of(it.x, it.y));
 
-    const origin = Point.of({
+    const origin = new Point({
       x: Params.ORIGIN_X,
       y: Params.ORIGIN_Y + Params.MARGIN_Y / 2,
     });

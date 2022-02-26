@@ -28,7 +28,7 @@ export function sketch(context: p5) {
       bounds: new Size(context),
       cells: Arrays.generate(Params.CELL_COUNT, () => {
         return new CellModel({
-          center: Point.of({
+          center: new Point({
             x: context.width * Math.random(),
             y: context.height * Math.random()
           }),
@@ -58,7 +58,7 @@ export function sketch(context: p5) {
   }
 
   context.mouseClicked = function () {
-    const point = Point.of({
+    const point = new Point({
       x: context.mouseX,
       y: context.mouseY,
     });

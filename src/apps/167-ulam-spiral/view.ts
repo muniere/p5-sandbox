@@ -85,12 +85,12 @@ export class ConnectionWidget extends Widget<ConnectionModel> {
   public boxSize: Size = Size.zero();
 
   protected doDraw(model: ConnectionModel) {
-    const start = Point.of({
+    const start = new Point({
       x: model.start.column * this.boxSize.width + this.boxSize.width / 2,
       y: model.start.row * this.boxSize.height + this.boxSize.height / 2,
     });
 
-    const stop = Point.of({
+    const stop = new Point({
       x: model.stop.column * this.boxSize.width + this.boxSize.width / 2,
       y: model.stop.row * this.boxSize.height + this.boxSize.height / 2,
     });

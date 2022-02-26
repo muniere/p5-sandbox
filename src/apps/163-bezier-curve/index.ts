@@ -34,7 +34,7 @@ export function sketch(context: p5) {
       vehicles: Arrays.generate(Params.CONTROL_COUNT, () => {
         return new VehicleModel({
           radius: Params.CONTROL_RADIUS,
-          center: Point.of({
+          center: new Point({
             x: Math.random() * context.width,
             y: Math.random() * context.height,
           }),
@@ -42,11 +42,11 @@ export function sketch(context: p5) {
         })
       }),
       calculator: new CalculationModel({
-        start: Point.of({
+        start: new Point({
           x: Params.PATH_MARGIN,
           y: context.height / 2,
         }),
-        stop: Point.of({
+        stop: new Point({
           x: context.width - Params.PATH_MARGIN,
           y: context.height / 2,
         }),

@@ -132,7 +132,7 @@ export class RandomIgnitionModel implements IgnitionModel {
     return new FireSeedModel({
       core: new CircularMaterial({
         radius: this.radiusRange.sample(),
-        center: Point.of({
+        center: new Point({
           x: bounds.width * Math.random(),
           y: bounds.height,
         }),

@@ -17,7 +17,7 @@ export class CircleModel {
   }
 
   get epicycleCenter(): Point {
-    return Point.of({
+    return new Point({
       x: this.center.x + this.radius * Math.cos(this.angle),
       y: this.center.y + this.radius * Math.sin(this.angle),
     });

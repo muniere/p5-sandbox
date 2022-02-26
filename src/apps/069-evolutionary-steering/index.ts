@@ -45,7 +45,7 @@ export function sketch(context: p5) {
     const medicines = Arrays.generate(Params.MEDICINE_COUNT, () => {
       return new ItemModel({
         radius: Params.ITEM_RADIUS,
-        center: Point.of({
+        center: new Point({
           x: context.width * Math.random(),
           y: context.height * Math.random(),
         }),
@@ -56,7 +56,7 @@ export function sketch(context: p5) {
     const poisons = Arrays.generate(Params.POISON_COUNT, () => {
       return new ItemModel({
         radius: Params.ITEM_RADIUS,
-        center: Point.of({
+        center: new Point({
           x: context.width * Math.random(),
           y: context.height * Math.random(),
         }),
@@ -67,7 +67,7 @@ export function sketch(context: p5) {
     const vehicles = Arrays.generate(Params.VEHICLE_COUNT, () => {
       return new VehicleModel({
         radius: Params.VEHICLE_RADIUS,
-        center: Point.of({
+        center: new Point({
           x: context.width * Math.random(),
           y: context.height * Math.random(),
         }),
@@ -97,7 +97,7 @@ export function sketch(context: p5) {
         const medicines = Arrays.generate(Params.FEED_MEDICINE_COUNT, () => {
           return new ItemModel({
             radius: Params.ITEM_RADIUS,
-            center: Point.of({
+            center: new Point({
               x: context.width * Math.random(),
               y: context.height * Math.random(),
             }),
@@ -108,7 +108,7 @@ export function sketch(context: p5) {
         const poisons = Arrays.generate(Params.FEED_POISON_COUNT, () => {
           return new ItemModel({
             radius: Params.ITEM_RADIUS,
-            center: Point.of({
+            center: new Point({
               x: context.width * Math.random(),
               y: context.height * Math.random(),
             }),

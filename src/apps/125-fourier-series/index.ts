@@ -48,7 +48,7 @@ export function sketch(context: p5) {
     widget = new ApplicationWidget(context).also(it => {
       it.model = model;
 
-      it.origin = Point.of({
+      it.origin = new Point({
         x: Params.ORIGIN_X + Params.SERIES_RADIUS,
         y: Params.ORIGIN_Y + Params.SERIES_RADIUS,
       });
