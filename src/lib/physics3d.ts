@@ -226,22 +226,13 @@ export type VelocityCompat = {
 export class Velocity {
   private _vector: Vector;
 
-  public constructor(
-    x: number,
-    y: number,
-    z: number,
-  ) {
-    this._vector = new Vector().set(x, y, z);
-    // no-op
+  public constructor(nargs: VelocityCompat) {
+    this._vector = Vectors.create(nargs);
   }
 
   public static zero(): Velocity {
-    return new Velocity(0, 0, 0);
+    return new Velocity({x: 0, y: 0, z: 0});
   }
-
-  public static of({x, y, z}: VelocityCompat): Velocity {
-    return new Velocity(x, y, z);
-  };
 
   public get x(): number {
     return this._vector.x;
@@ -260,7 +251,7 @@ export class Velocity {
   }
 
   public plus(delta: Acceleration): Velocity {
-    return Velocity.of(this.vector.add(delta.vector));
+    return new Velocity(this._vector.copy().add(delta.vector));
   }
 
   public plusAssign(delta: Acceleration) {
@@ -268,7 +259,7 @@ export class Velocity {
   }
 
   public minus(delta: Acceleration): Velocity {
-    return Velocity.of(this.vector.sub(delta.vector));
+    return new Velocity(this._vector.copy().sub(delta.vector));
   }
 
   public minusAssign(delta: Acceleration) {
@@ -276,7 +267,7 @@ export class Velocity {
   }
 
   public rotate(angle: number): Velocity {
-    return Velocity.of(this.vector.rotate(angle))
+    return new Velocity(this._vector.copy().rotate(angle))
   }
 
   public rotateAssign(angle: number): void {
@@ -284,7 +275,7 @@ export class Velocity {
   }
 
   public limit(magnitude: number): Velocity {
-    return Velocity.of(this.vector.limit(magnitude));
+    return new Velocity(this._vector.copy().limit(magnitude));
   }
 
   public limitAssign(magnitude: number): void {
@@ -292,7 +283,7 @@ export class Velocity {
   }
 
   public normalize(): Velocity {
-    return Velocity.of(this.vector.normalize());
+    return new Velocity(this._vector.copy().normalize());
   }
 
   public normalizeAssign(): void {
@@ -304,7 +295,7 @@ export class Velocity {
   }
 
   public withMagnitude(magnitude: number): Velocity {
-    return Velocity.of(this.vector.setMag(magnitude))
+    return new Velocity(this._vector.copy().setMag(magnitude))
   }
 
   public setMagnitude(magnitude: number): void {
@@ -316,7 +307,11 @@ export class Velocity {
   }
 
   public copy(): Velocity {
-    return new Velocity(this.x, this.y, this.z);
+    return new Velocity({
+      x: this._vector.x,
+      y: this._vector.y,
+      z: this._vector.z,
+    });
   }
 
   public equals(other: Velocity): boolean {
