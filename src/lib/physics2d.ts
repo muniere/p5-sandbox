@@ -31,7 +31,7 @@ export class Force {
   }
 
   public acceleration({mass}: { mass: number }): Acceleration {
-    return Acceleration.of(this.vector.div(mass));
+    return new Acceleration(this._vector.copy().div(mass));
   }
 
   public plus(delta: Force): Force {
@@ -126,20 +126,13 @@ export type AccelerationCompat = {
 export class Acceleration {
   private _vector: Vector;
 
-  public constructor(
-    x: number,
-    y: number,
-  ) {
-    this._vector = new Vector().set(x, y);
+  public constructor(nargs: AccelerationCompat) {
+    this._vector = Vectors.create(nargs);
   }
 
   public static zero(): Acceleration {
-    return new Acceleration(0, 0);
+    return new Acceleration({x: 0, y: 0});
   }
-
-  public static of({x, y}: AccelerationCompat): Acceleration {
-    return new Acceleration(x, y);
-  };
 
   public get x(): number {
     return this._vector.x;
@@ -154,7 +147,7 @@ export class Acceleration {
   }
 
   public plus(delta: Acceleration): Acceleration {
-    return Acceleration.of(this.vector.add(delta.vector));
+    return new Acceleration(this._vector.copy().add(delta.vector));
   }
 
   public plusAssign(delta: Acceleration) {
@@ -162,7 +155,7 @@ export class Acceleration {
   }
 
   public minus(delta: Acceleration): Acceleration {
-    return Acceleration.of(this.vector.sub(delta.vector));
+    return new Acceleration(this._vector.copy().sub(delta.vector));
   }
 
   public minusAssign(delta: Acceleration) {
@@ -170,7 +163,7 @@ export class Acceleration {
   }
 
   public with(other: Acceleration): Acceleration {
-    return Acceleration.of(other.vector);
+    return new Acceleration(other.vector);
   }
 
   public assign(other: Acceleration) {
@@ -178,7 +171,7 @@ export class Acceleration {
   }
 
   public rotate(angle: number): Acceleration {
-    return Acceleration.of(this.vector.rotate(angle))
+    return new Acceleration(this._vector.copy().rotate(angle))
   }
 
   public rotateAssign(angle: number): void {
@@ -186,7 +179,7 @@ export class Acceleration {
   }
 
   public limit(magnitude: number): Acceleration {
-    return Acceleration.of(this.vector.limit(magnitude));
+    return new Acceleration(this._vector.copy().limit(magnitude));
   }
 
   public limitAssign(magnitude: number): void {
@@ -194,7 +187,7 @@ export class Acceleration {
   }
 
   public normalize(): Acceleration {
-    return Acceleration.of(this.vector.normalize());
+    return new Acceleration(this._vector.copy().normalize());
   }
 
   public normalizeAssign(): void {
@@ -206,7 +199,7 @@ export class Acceleration {
   }
 
   public withMagnitude(magnitude: number): Acceleration {
-    return Acceleration.of(this.vector.setMag(magnitude))
+    return new Acceleration(this._vector.copy().setMag(magnitude))
   }
 
   public setMagnitude(magnitude: number): void {
@@ -218,7 +211,10 @@ export class Acceleration {
   }
 
   public copy(): Acceleration {
-    return new Acceleration(this.x, this.y);
+    return new Acceleration({
+      x: this._vector.x,
+      y: this._vector.y,
+    });
   }
 
   public equals(other: Acceleration): boolean {
@@ -434,12 +430,12 @@ export class RectangularMaterial extends Material {
   public coerceIn(bounds: Size) {
     if (this.left <= 0 || bounds.width <= this.right) {
       this._velocity.plusAssign(
-        Acceleration.of({x: -this._velocity.x * 2, y: 0})
+        new Acceleration({x: -this._velocity.x * 2, y: 0})
       );
     }
     if (this.top <= 0 || bounds.height <= this.bottom) {
       this._velocity.plusAssign(
-        Acceleration.of({x: 0, y: -this._velocity.y * 2})
+        new Acceleration({x: 0, y: -this._velocity.y * 2})
       )
     }
   }
@@ -536,12 +532,12 @@ export class CircularMaterial extends Material {
   public coerceIn(bounds: Size) {
     if (this.left <= 0 || bounds.width <= this.right) {
       this._velocity.plusAssign(
-        Acceleration.of({x: -this._velocity.x * 2, y: 0})
+        new Acceleration({x: -this._velocity.x * 2, y: 0})
       );
     }
     if (this.top <= 0 || bounds.height <= this.bottom) {
       this._velocity.plusAssign(
-        Acceleration.of({x: 0, y: -this._velocity.y * 2})
+        new Acceleration({x: 0, y: -this._velocity.y * 2})
       )
     }
   }

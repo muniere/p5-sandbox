@@ -31,7 +31,7 @@ export function sketch(context: p5) {
 
     model = new ApplicationModel({
       bounds: new Size(context),
-      gravity: Acceleration.of({
+      gravity: new Acceleration({
         x: 0,
         y: Params.GRAVITY_VALUE,
       }),
