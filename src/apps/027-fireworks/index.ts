@@ -1,5 +1,5 @@
 import p5 from 'p5';
-import { Arrays, Numeric } from '../../lib/stdlib';
+import { Arrays, NumberRange } from '../../lib/stdlib';
 import { Size } from '../../lib/graphics2d';
 import { Acceleration } from '../../lib/physics2d';
 import { ApplicationModel, FireworkModel, RandomExplosionModel, RandomIgnitionModel } from './model';
@@ -9,12 +9,12 @@ const Params = Object.freeze({
   CANVAS_COLOR: '#22222255',
   PARTICLE_COLOR: '#FFFFFF',
   FIREWORKS_COUNT: 20,
-  FIREWORKS_RADIUS_RANGE: Numeric.range(4, 8),
-  FIREWORKS_SPEED_RANGE: Numeric.range(-6, -14),
-  FIREWORKS_LIFESPAN_RANGE: Numeric.range(200, 500),
+  FIREWORKS_RADIUS_RANGE: new NumberRange(4, 8),
+  FIREWORKS_SPEED_RANGE: new NumberRange(-6, -14),
+  FIREWORKS_LIFESPAN_RANGE: new NumberRange(200, 500),
   EXPLOSION_SCALE: 1 / 3,
   EXPLOSION_COUNT: 50,
-  EXPLOSION_SPEED_RANGE: Numeric.range(-2, 2),
+  EXPLOSION_SPEED_RANGE: new NumberRange(-2, 2),
   GRAVITY_VALUE: 0.1,
 });
 

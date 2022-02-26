@@ -1,6 +1,6 @@
 import p5 from 'p5';
 import { Widget } from '../../lib/process';
-import { Numeric } from '../../lib/stdlib';
+import { NumberRange } from '../../lib/stdlib';
 import { ApplicationModel } from './model';
 
 export class ApplicationWidget extends Widget<ApplicationModel> {
@@ -9,7 +9,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
   }
 
   protected doDraw(model: ApplicationModel) {
-    const valueRange = Numeric.range(0, 255);
+    const valueRange = new NumberRange(0, 255);
 
     this.scope($ => {
       $.loadPixels();

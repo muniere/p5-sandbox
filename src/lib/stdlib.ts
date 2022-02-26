@@ -337,10 +337,6 @@ export namespace Numeric {
     return new NumberRange(start, stop);
   }
 
-  export function rangeOf({start, stop}: { start: number, stop: number }): NumberRange {
-    return new NumberRange(start, stop);
-  }
-
   export function map({value, domain, target}: {
     value: number,
     domain: NumberRange,
@@ -356,13 +352,6 @@ export class NumberRange {
     public readonly stop: number,
   ) {
     // no-op
-  }
-
-  public static of({start, stop}: {
-    start: number,
-    stop: number,
-  }): NumberRange {
-    return new NumberRange(start, stop);
   }
 
   public get length(): number {
@@ -412,13 +401,6 @@ export class IntegerRange {
     public readonly stop: number,
   ) {
     // no-op
-  }
-
-  public static of({start, stop}: {
-    start: number,
-    stop: number,
-  }): NumberRange {
-    return new NumberRange(start, stop);
   }
 
   public get length(): number {

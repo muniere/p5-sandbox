@@ -1,4 +1,4 @@
-import { Numeric } from '../../lib/stdlib';
+import { NumberRange } from '../../lib/stdlib';
 
 export class PlanetModel {
   public color: string = '#FFFFFF';
@@ -82,10 +82,7 @@ export class SolarSystemModel {
   }
 
   static assemble(): SolarSystemModel {
-    const angles = Numeric.rangeOf({
-      start: 0,
-      stop: Math.PI * 2,
-    });
+    const angles = new NumberRange(0, Math.PI * 2);
 
     const sun = new PlanetModel({
       name: 'sun',

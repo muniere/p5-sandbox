@@ -1,4 +1,4 @@
-import { Numeric } from './stdlib';
+import { NumberRange } from './stdlib';
 
 export type PointCompat = {
   x: number,
@@ -115,8 +115,8 @@ export class PointRange {
 
   public lerp(amount: number): Point {
     return new Point({
-      x: Numeric.range(this.start.x, this.stop.x).lerp(amount),
-      y: Numeric.range(this.start.y, this.stop.y).lerp(amount),
+      x: new NumberRange(this.start.x, this.stop.x).lerp(amount),
+      y: new NumberRange(this.start.y, this.stop.y).lerp(amount),
     });
   }
 

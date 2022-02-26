@@ -1,6 +1,6 @@
 import { Vector } from 'p5';
 import { Vectors } from '../../lib/process';
-import { Numeric } from '../../lib/stdlib';
+import { NumberRange } from '../../lib/stdlib';
 import { Point, Size } from '../../lib/graphics2d';
 
 export class CellModel {
@@ -75,14 +75,9 @@ export class CellModel {
   }
 
   constraint(bounds: Size) {
-    const xs = Numeric.rangeOf({
-      start: this.radius,
-      stop: bounds.width - this.radius,
-    });
-    const ys = Numeric.rangeOf({
-      start: this.radius,
-      stop: bounds.height - this.radius,
-    });
+    const xs = new NumberRange(this.radius, bounds.width - this.radius);
+    const ys = new NumberRange(this.radius, bounds.height - this.radius);
+
     this._center = this._center.with({
       x: xs.coerce(this._center.x),
       y: ys.coerce(this._center.y),

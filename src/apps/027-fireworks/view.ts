@@ -1,6 +1,6 @@
 import p5 from 'p5';
 import { Widget } from '../../lib/process';
-import { Numeric } from '../../lib/stdlib';
+import { NumberRange } from '../../lib/stdlib';
 import { CircularMaterial, Material, RectangularMaterial } from '../../lib/physics2d';
 import { ApplicationModel, FireworkModel } from './model';
 
@@ -8,7 +8,7 @@ export class ParticleWidget extends Widget<Material> {
   public alpha: number = -1;
 
   protected doDraw(model: Material) {
-    const alphaRange = Numeric.range(0, 255);
+    const alphaRange = new NumberRange(0, 255);
 
     const alphaSuffix = this.alpha >= 0
       ? Math.floor(alphaRange.coerce(this.alpha)).toString(16).padStart(2, '0')
