@@ -17,13 +17,13 @@ export function sketch(context: p5) {
 
     machine = new Machine({
       grammar: Grammar.assemble([
-        Rule.of("S", ["x"]),
-        Rule.of("S", ["y"]),
-        Rule.of("S", ["z"]),
-        Rule.of("S", ["S", "+", "S"]),
-        Rule.of("S", ["S", "-", "S"]),
-        Rule.of("S", ["S", "/", "S"]),
-        Rule.of("S", ["(", "S", ")"]),
+        new Rule({token: "S", phrase: ["x"]}),
+        new Rule({token: "S", phrase: ["y"]}),
+        new Rule({token: "S", phrase: ["z"]}),
+        new Rule({token: "S", phrase: ["S", "+", "S"]}),
+        new Rule({token: "S", phrase: ["S", "-", "S"]}),
+        new Rule({token: "S", phrase: ["S", "/", "S"]}),
+        new Rule({token: "S", phrase: ["(", "S", ")"]}),
       ]),
       seed: "S"
     })

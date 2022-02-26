@@ -15,15 +15,15 @@ export class Phrase {
 }
 
 export class Rule {
-  constructor(
-    public readonly token: Token,
-    public readonly phrase: Phrase,
-  ) {
-    // no-op
-  }
+  public readonly token: Token;
+  public readonly phrase: Phrase;
 
-  static of(token: string, phrase: string[]): Rule {
-    return new Rule(new Token(token), new Phrase(phrase));
+  constructor(nargs: {
+    token: string,
+    phrase: string[],
+  }) {
+    this.token = new Token(nargs.token);
+    this.phrase = new Phrase(nargs.phrase);
   }
 }
 
