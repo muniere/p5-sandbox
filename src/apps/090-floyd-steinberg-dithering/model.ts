@@ -77,7 +77,7 @@ export class ImageProcessModel {
 
     const pixelIndex = index * 4;
     const oldValues = this._image.pixels.slice(pixelIndex, pixelIndex + 4);
-    const oldPixel = Pixel.of(oldValues);
+    const oldPixel = new Pixel(oldValues);
     const newPixel = oldPixel.quantize(this._scale - 1);
     const error = oldPixel.minus(newPixel);
 
@@ -102,7 +102,7 @@ export class ImageProcessModel {
 
       const pixelIndex = (this._image.width * relay.y + relay.x) * 4;
       const oldValues = this._image.pixels.slice(pixelIndex, pixelIndex + 4);
-      const base = Pixel.of(oldValues);
+      const base = new Pixel(oldValues);
       const delta = error.multiply(relay.rate);
       const result = base.plus(delta);
 

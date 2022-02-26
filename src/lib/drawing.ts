@@ -18,16 +18,13 @@ export namespace Colors {
 }
 
 export class Pixel {
-  constructor(
-    private _values: number[]
-  ) {
-    if (_values.length != 4) {
+  private readonly _values: number[]
+
+  constructor(values: number[]) {
+    if (values.length != 4) {
       throw new Error('invalid values format');
     }
-  }
-
-  static of(values: number[]): Pixel {
-    return new Pixel(values);
+    this._values = values;
   }
 
   quantize(factor: number): Pixel {
