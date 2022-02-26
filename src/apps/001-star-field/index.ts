@@ -31,7 +31,7 @@ export function sketch(context: p5) {
         stars: Arrays.generate(Params.STAR_COUNT, () => {
           return new StarModel({
             radius: Params.STAR_RADIUS,
-            center: Point3D.of({
+            center: new Point3D({
               x: Math.floor(context.width * (Math.random() - 0.5)),
               y: Math.floor(context.height * (Math.random() - 0.5)),
               z: Math.random() * context.width,

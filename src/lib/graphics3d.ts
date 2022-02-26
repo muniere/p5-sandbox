@@ -17,24 +17,30 @@ export type PointMaybe = {
 }
 
 export class Point {
-  public constructor(
-    private _x: number,
-    private _y: number,
-    private _z: number,
-  ) {
-    // no-op
+  private _x: number;
+  private _y: number;
+  private _z: number;
+
+  public constructor(nargs: PointCompat) {
+    this._x = nargs.x;
+    this._y = nargs.y;
+    this._z = nargs.z;
   }
 
   public static zero(): Point {
-    return new Point(0, 0, 0);
+    return new Point({
+      x: 0,
+      y: 0,
+      z: 0,
+    });
   }
 
-  public static of({x, y, z}: PointCompat): Point {
-    return new Point(x, y, z);
-  };
-
   public static dist(a: Point, b: Point): number {
-    return Math.sqrt(Math.pow(a.x - b.x, 2.0) + Math.pow(a.y - b.y, 2.0) + Math.pow(a.z - b.z, 2.0));
+    return Math.sqrt(
+      Math.pow(a.x - b.x, 2.0) +
+      Math.pow(a.y - b.y, 2.0) +
+      Math.pow(a.z - b.z, 2.0)
+    );
   }
 
   public get x(): number {
@@ -50,11 +56,11 @@ export class Point {
   }
 
   public plus(delta: PointDelta): Point {
-    return new Point(
-      this.x + (delta.x ?? 0),
-      this.y + (delta.y ?? 0),
-      this.z + (delta.z ?? 0),
-    );
+    return new Point({
+      x: this._x + (delta.x ?? 0),
+      y: this._y + (delta.y ?? 0),
+      z: this._z + (delta.z ?? 0),
+    });
   }
 
   public plusAssign(delta: PointDelta) {
@@ -64,11 +70,11 @@ export class Point {
   }
 
   public minus(delta: PointDelta): Point {
-    return new Point(
-      this.x - (delta.x ?? 0),
-      this.y - (delta.y ?? 0),
-      this.z - (delta.z ?? 0),
-    );
+    return new Point({
+      x: this._x - (delta.x ?? 0),
+      y: this._y - (delta.y ?? 0),
+      z: this._z - (delta.z ?? 0),
+    });
   }
 
   public minusAssign(delta: PointDelta) {
@@ -78,25 +84,29 @@ export class Point {
   }
 
   public with(params: PointMaybe): Point {
-    return new Point(
-      params.x ?? this.x,
-      params.y ?? this.y,
-      params.z ?? this.z,
-    );
+    return new Point({
+      x: params.x ?? this._x,
+      y: params.y ?? this._y,
+      z: params.z ?? this._z,
+    });
   }
 
   public assign(params: PointMaybe) {
-    this._x = (params.x ?? this.x);
-    this._y = (params.y ?? this.y);
-    this._z = (params.z ?? this.z);
+    this._x = (params.x ?? this._x);
+    this._y = (params.y ?? this._y);
+    this._z = (params.z ?? this._z);
   }
 
   public copy(): Point {
-    return new Point(this.x, this.y, this.z);
+    return new Point({
+      x: this._x,
+      y: this._y,
+      z: this._z,
+    });
   }
 
   public equals(other: PointCompat): boolean {
-    return this.x == other.x && this.y == other.y && this.z == other.z;
+    return this._x == other.x && this._y == other.y && this._z == other.z;
   }
 }
 
