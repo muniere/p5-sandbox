@@ -46,7 +46,7 @@ export function sketch(context: p5) {
     pathWidget = new PathWidget(context);
 
     progressWidget = new ProgressWidget(context).also(it => {
-      it.frame = Rect.of({
+      it.frame = new Rect({
         origin: Point.of({
           x: Params.LABEL_MARGIN,
           y: Params.LABEL_MARGIN,

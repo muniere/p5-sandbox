@@ -17,7 +17,7 @@ export function sketch(context: p5) {
 
   context.setup = function () {
     const size = Math.min(context.windowWidth, context.windowHeight);
-    const frame = Rect.of({
+    const frame = new Rect({
       origin: Point.zero(),
       size: Size.square(size),
     });

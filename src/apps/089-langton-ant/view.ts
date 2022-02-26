@@ -157,7 +157,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
   }
 
   private gridFrame(): Rect {
-    return Rect.of({
+    return new Rect({
       origin: this.frame.origin.copy(),
       size: Size.square(
         Math.min(this.frame.width, this.frame.height)
@@ -183,14 +183,14 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
       y: (cellSize.height - antSize.height) / 2,
     });
 
-    return Rect.of({
+    return new Rect({
       origin: antOrigin,
       size: antSize,
     });
   }
 
   private stepFrame(): Rect {
-    return Rect.of({
+    return new Rect({
       origin: Point.of({
         x: 0,
         y: Math.min(this.frame.width, this.frame.height),

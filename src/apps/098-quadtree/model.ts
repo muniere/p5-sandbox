@@ -10,7 +10,7 @@ export class VehicleModel extends CircularMaterial {
   public tag = VehicleTag.normal;
 
   get zone(): Rect {
-    return Rect.of({
+    return new Rect({
       origin: Point.of({
         x: this.left - this.radius,
         y: this.top - this.radius,
@@ -107,7 +107,7 @@ export class DivisionModel {
 
     this._children = origins.map(origin => {
       return new DivisionModel({
-        boundary: Rect.of({
+        boundary: new Rect({
           origin: origin,
           size: this._boundary.size.times(0.5),
         }),

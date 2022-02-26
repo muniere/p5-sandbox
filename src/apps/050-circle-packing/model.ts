@@ -244,7 +244,7 @@ export class ApplicationModel {
     });
 
     const circleCrowd = new CircleCrowdModel({
-      frame: Rect.of({
+      frame: new Rect({
         origin: Point.zero(),
         size: bounds,
       }),

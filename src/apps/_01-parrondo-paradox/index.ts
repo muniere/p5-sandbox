@@ -31,7 +31,7 @@ export function sketch(context: p5) {
 
     widget = new SimulationWidget(context).also(it => {
       it.model = model;
-      it.frame = Rect.of({
+      it.frame = new Rect({
         origin: Point.of({
           x: Params.ORIGIN_X,
           y: Params.ORIGIN_Y,

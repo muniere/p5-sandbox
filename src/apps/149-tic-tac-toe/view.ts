@@ -78,7 +78,7 @@ export class BoardWidget extends Widget<BoardModel> {
         y: this.frame.origin.y + itemSize.height * spot.row,
       });
 
-      this._piece.frame = Rect.of({
+      this._piece.frame = new Rect({
         origin: origin,
         size: itemSize,
       });

@@ -31,7 +31,7 @@ export function sketch(context: p5) {
       grid: new GridModel({
         dimen: Dimen.of(context),
         factory: new DefaultGridFactory({
-          drop: Rect.of({
+          drop: new Rect({
             origin: Point.of({
               x: Math.floor(context.width / 2) - Params.SEED_RADIUS,
               y: Math.floor(context.height / 2) - Params.SEED_RADIUS,

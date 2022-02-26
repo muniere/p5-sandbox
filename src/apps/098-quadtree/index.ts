@@ -27,7 +27,7 @@ export function sketch(context: p5) {
     const size = Math.min(context.width, context.height);
 
     model = new ApplicationModel({
-      boundary: Rect.of({
+      boundary: new Rect({
         origin: Point.zero(),
         size: Size.square(size),
       }),

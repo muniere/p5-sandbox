@@ -53,7 +53,7 @@ export function sketch(context: p5) {
 
     widget = new ApplicationWidget(context).also(it => {
       it.model = model;
-      it.frame = Rect.of({
+      it.frame = new Rect({
         origin: Point.zero(),
         size: Size.of(context),
       });
