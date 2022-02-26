@@ -36,11 +36,7 @@ export class DropModel {
       target: Numeric.range(0, 0.1),
     });
 
-    const accel = Acceleration.of({
-      x: 0,
-      y: gravity,
-      z: 0,
-    });
+    const accel = new Acceleration({x: 0, y: gravity, z: 0});
 
     this._point.plusAssign({
       y: this._velocity.y,

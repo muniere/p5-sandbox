@@ -35,7 +35,7 @@ export class StarModel {
 
   set speed(speed: number) {
     if (speed > 0 && this._velocity.magnitude() == 0) {
-      const accel = Acceleration3D.of({x: 0, y: 0, z: 1});
+      const accel = new Acceleration3D({x: 0, y: 0, z: 1});
       this._velocity.plusAssign(accel);
       this._velocity.normalize();
     }
