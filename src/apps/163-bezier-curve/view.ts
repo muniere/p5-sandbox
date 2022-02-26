@@ -31,7 +31,7 @@ export class PathWidget extends Widget<PathModel> {
       this.context.colorMode($.HSB, 360, 100, 100, 100);
       this.context.noFill();
 
-      const hueMap = NumberRangeMap.of({
+      const hueMap = new NumberRangeMap({
         domain: new NumberRange(model.points.first().x, model.points.last().x),
         target: new NumberRange(0, 360),
       });

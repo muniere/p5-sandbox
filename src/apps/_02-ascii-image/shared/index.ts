@@ -8,7 +8,7 @@ export class Density {
     blanks: number = 1,
   ) {
     this._characters = 'Ñ@#W$98766543210?!abc;:+=-,._' + ' '.repeat(blanks);
-    this._rangeMap = NumberRangeMap.of({
+    this._rangeMap = new NumberRangeMap({
       domain: new NumberRange(0, 255),
       target: new NumberRange(this._characters.length, 0),
     });

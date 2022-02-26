@@ -346,7 +346,7 @@ export namespace Numeric {
     domain: NumberRange,
     target: NumberRange,
   }): number {
-    return NumberRangeMap.of({domain, target}).apply(value);
+    return new NumberRangeMap({domain, target}).apply(value);
   }
 }
 
@@ -389,18 +389,15 @@ export class NumberRange {
 }
 
 export class NumberRangeMap {
-  public constructor(
-    public readonly domain: NumberRange,
-    public readonly target: NumberRange,
-  ) {
-    // no-op
-  }
+  public readonly domain: NumberRange;
+  public readonly target: NumberRange;
 
-  public static of({domain, target}: {
+  public constructor(nargs: {
     domain: NumberRange,
     target: NumberRange,
-  }): NumberRangeMap {
-    return new NumberRangeMap(domain, target);
+  }) {
+    this.domain = nargs.domain;
+    this.target = nargs.target;
   }
 
   public apply(n: number): number {
