@@ -38,7 +38,7 @@ export function sketch(context: p5) {
             x: Math.random() * context.width,
             y: Math.random() * context.height,
           }),
-          velocity: Velocity.of(Vector.random2D()).withMagnitude(speedRange.sample()),
+          velocity: new Velocity(Vector.random2D()).withMagnitude(speedRange.sample()),
         })
       }),
       calculator: new CalculationModel({

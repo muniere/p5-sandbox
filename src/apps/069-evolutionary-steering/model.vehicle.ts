@@ -188,13 +188,10 @@ export class VehicleModel {
 
   steerTo(item: ItemModel): void {
     const currentVelocity = this._velocity;
+    const x = item.center.x - this._center.x;
+    const y = item.center.y - this._center.y;
 
-    const desiredVelocity = Velocity
-      .of({
-        x: item.center.x - this._center.x,
-        y: item.center.y - this._center.y,
-      })
-      .withMagnitude(VehicleRule.MAX_SPEED);
+    const desiredVelocity = new Velocity({x, y}).withMagnitude(VehicleRule.MAX_SPEED);
 
     const deltaVector = Vector.sub(
       desiredVelocity.vector,
@@ -227,7 +224,7 @@ export class VehicleModel {
         y = -currentVelocity.y;
       }
 
-      return Velocity.of({
+      return new Velocity({
         x: x ?? currentVelocity.x,
         y: y ?? currentVelocity.y,
       });

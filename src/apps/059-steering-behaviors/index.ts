@@ -53,7 +53,7 @@ export function sketch(context: p5) {
             x: context.width / 2,
             y: context.height / 2,
           }),
-          velocity: Velocity.of({
+          velocity: new Velocity({
             x: Math.random(),
             y: Math.random(),
           }),

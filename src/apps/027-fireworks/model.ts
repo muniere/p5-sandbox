@@ -136,7 +136,7 @@ export class RandomIgnitionModel implements IgnitionModel {
           x: bounds.width * Math.random(),
           y: bounds.height,
         }),
-        velocity: Velocity.of({
+        velocity: new Velocity({
           x: 0,
           y: this.speedRange.sample(),
         }),
@@ -171,7 +171,7 @@ export class RandomExplosionModel implements ExplosionModel {
       return new CircularMaterial({
         radius: core.radius * this.scale,
         center: core.center.copy(),
-        velocity: Velocity.of({
+        velocity: new Velocity({
           x: this.range.sample(),
           y: this.range.sample(),
         }),
