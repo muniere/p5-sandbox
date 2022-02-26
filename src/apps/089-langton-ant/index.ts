@@ -55,7 +55,7 @@ export function sketch(context: p5) {
       it.model = model;
       it.frame = new Rect({
         origin: Point.zero(),
-        size: Size.of(context),
+        size: new Size(context),
       });
       it.grid.also(it => {
         it.fillColor = Params.COLOR_BLACK;

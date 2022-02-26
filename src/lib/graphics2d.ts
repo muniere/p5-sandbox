@@ -136,23 +136,26 @@ export type SizeMaybe = {
 }
 
 export class Size {
-  public constructor(
-    private _width: number,
-    private _height: number,
-  ) {
-    // no-op
+  private _width: number;
+  private _height: number;
+
+  public constructor(nargs: SizeCompat) {
+    this._width = nargs.width;
+    this._height = nargs.height;
   }
 
   public static zero(): Size {
-    return new Size(0, 0);
+    return new Size({
+      width: 0,
+      height: 0,
+    });
   }
 
   public static square(size: number): Size {
-    return new Size(size, size);
-  }
-
-  public static of({width, height}: SizeCompat): Size {
-    return new Size(width, height);
+    return new Size({
+      width: size,
+      height: size,
+    });
   }
 
   public get width(): number {
@@ -164,10 +167,10 @@ export class Size {
   }
 
   public plus(delta: SizeDelta): Size {
-    return new Size(
-      this.width + (delta.width ?? 0),
-      this.height + (delta.height ?? 0),
-    );
+    return new Size({
+      width: this._width + (delta.width ?? 0),
+      height: this._height + (delta.height ?? 0),
+    });
   }
 
   public plusAssign(delta: SizeDelta): void {
@@ -176,10 +179,10 @@ export class Size {
   }
 
   public minus(other: SizeDelta): Size {
-    return new Size(
-      this.width - (other.width ?? 0),
-      this.height - (other.height ?? 0),
-    );
+    return new Size({
+      width: this._width - (other.width ?? 0),
+      height: this._height - (other.height ?? 0),
+    });
   }
 
   public minusAssign(delta: SizeDelta): void {
@@ -188,7 +191,10 @@ export class Size {
   }
 
   public times(value: number): Size {
-    return new Size(this.width * value, this.height * value);
+    return new Size({
+      width: this._width * value,
+      height: this._height * value,
+    });
   }
 
   public timesAssign(value: number): void {
@@ -196,12 +202,27 @@ export class Size {
     this._height *= value;
   }
 
+  public with(delta: SizeMaybe): Size {
+    return new Size({
+      width: delta.width ?? this._width,
+      height: delta.height ?? this._height,
+    });
+  }
+
+  public assign(delta: SizeMaybe): void {
+    this._width = delta.width ?? this._width;
+    this._height = delta.height ?? this._height;
+  }
+
   public copy(): Size {
-    return new Size(this.width, this.height);
+    return new Size({
+      width: this._width,
+      height: this._height,
+    });
   }
 
   public equals(other: SizeCompat): boolean {
-    return this.width == other.width && this.height == other.height;
+    return this._width == other.width && this._height == other.height;
   }
 }
 

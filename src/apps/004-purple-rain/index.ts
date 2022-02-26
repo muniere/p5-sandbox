@@ -24,7 +24,7 @@ export function sketch(context: p5) {
     );
 
     model = new ApplicationModel({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       drops: Arrays.generate(Params.DROP_COUNT, () => {
         const origin = new Point3D({
           x: context.width * Math.random(),

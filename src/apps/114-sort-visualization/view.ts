@@ -87,7 +87,7 @@ export class SortMachineWidget {
   }
 
   draw() {
-    const blockSize = Size.of({
+    const blockSize = new Size({
       width: this.context.width / this.machine.values.length,
       height: this.context.height / this.machine.values.length,
     });

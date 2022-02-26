@@ -121,7 +121,7 @@ export function sketch(context: p5) {
     });
 
     model = new ApplicationModel({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       items: Arrays.concat(medicines, poisons),
       vehicles: vehicles,
       feeder: feeder,

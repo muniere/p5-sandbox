@@ -51,7 +51,7 @@ export function sketch(context: p5) {
           x: Params.LABEL_MARGIN,
           y: Params.LABEL_MARGIN,
         }),
-        size: Size.of({
+        size: new Size({
           width: context.width - Params.LABEL_MARGIN * 2,
           height: context.height - Params.LABEL_MARGIN * 2,
         }),

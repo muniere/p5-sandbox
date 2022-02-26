@@ -31,7 +31,7 @@ export function sketch(context: p5) {
     const yrange = new IntegerRange(0, Math.floor(context.height));
 
     model = new GameModel({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       snake: new SnakeModel({
         scale: Params.GAME_SCALE,
       }).also(it => {

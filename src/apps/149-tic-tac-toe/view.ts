@@ -67,7 +67,7 @@ export class BoardWidget extends Widget<BoardModel> {
       this.context.line(this.frame.left, y, this.frame.right, y);
     }
 
-    const itemSize = Size.of({
+    const itemSize = new Size({
       width: this.frame.width / model.dimen.width,
       height: this.frame.height / model.dimen.height,
     });

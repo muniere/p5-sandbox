@@ -52,12 +52,12 @@ export class MachineWidget extends Widget<Machine> {
 
     this._stack = new BoxListWidget(context).also(it => {
       it.origin = Point.of({x: 10, y: 25});
-      it.boxSize = Size.of({width: 50, height: 50});
+      it.boxSize = new Size({width: 50, height: 50});
     });
 
     this._list = new BoxListWidget(context).also(it => {
       it.origin = Point.of({x: 10, y: 105});
-      it.boxSize = Size.of({width: 50, height: 50});
+      it.boxSize = new Size({width: 50, height: 50});
     });
   }
 

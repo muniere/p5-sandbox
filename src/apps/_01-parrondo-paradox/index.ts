@@ -36,13 +36,13 @@ export function sketch(context: p5) {
           x: Params.ORIGIN_X,
           y: Params.ORIGIN_Y,
         }),
-        size: Size.of({
+        size: new Size({
           width: context.width - (Params.ORIGIN_X * 2),
           height: context.height - (Params.ORIGIN_Y * 2),
         }),
       });
 
-      it.padding = Size.of({
+      it.padding = new Size({
         width: Params.LABEL_MARGIN,
         height: Params.LABEL_MARGIN,
       });

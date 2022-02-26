@@ -27,7 +27,7 @@ export function sketch(context: p5) {
         x: Params.DISPLAY_ORIGIN,
         y: Params.DISPLAY_ORIGIN,
       }),
-      size: Size.of({
+      size: new Size({
         width: (context.height - Params.DISPLAY_ORIGIN * 2) / 2,
         height: context.height - Params.DISPLAY_ORIGIN * 2,
       }),

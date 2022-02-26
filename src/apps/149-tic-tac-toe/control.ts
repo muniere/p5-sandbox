@@ -76,7 +76,7 @@ export class GameMaster {
 
     const board = model.board;
 
-    const itemSize = Size.of({
+    const itemSize = new Size({
       width: this.frame.width / board.dimen.width,
       height: this.frame.height / board.dimen.height,
     });

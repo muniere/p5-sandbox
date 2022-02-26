@@ -41,7 +41,7 @@ export function sketch(context: p5) {
     );
 
     model = GameModel.create(it => {
-      it.bounds = Size.of(context);
+      it.bounds = new Size(context);
 
       it.shipColor = Params.SHIP_COLOR;
       it.shipRadius = Params.SHIP_RADIUS;
@@ -49,8 +49,8 @@ export function sketch(context: p5) {
 
       it.enemyColor = Params.ENEMY_COLOR;
       it.enemyOrigin = Point.of({x: Params.ENEMY_ORIGIN.x, y: Params.ENEMY_ORIGIN.y});
-      it.enemyMargin = Size.of({width: Params.ENEMY_SPACE, height: Params.ENEMY_SPACE});
-      it.enemyGrid = Size.of({width: Params.ENEMY_COLUMNS, height: Params.ENEMY_ROWS});
+      it.enemyMargin = new Size({width: Params.ENEMY_SPACE, height: Params.ENEMY_SPACE});
+      it.enemyGrid = new Size({width: Params.ENEMY_COLUMNS, height: Params.ENEMY_ROWS});
       it.enemyRadius = Params.ENEMY_RADIUS;
       it.enemySpeed = Params.ENEMY_SPEED;
 
@@ -71,7 +71,7 @@ export function sketch(context: p5) {
   context.draw = function () {
     const ctx = new GameContext({
       frameCount: context.frameCount,
-      canvasSize: Size.of(context),
+      canvasSize: new Size(context),
       direction: (() => {
         if (!context.keyIsPressed) {
           return 0;

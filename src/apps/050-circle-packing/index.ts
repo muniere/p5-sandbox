@@ -31,7 +31,7 @@ export function sketch(context: p5) {
     image.loadPixels();
 
     model = ApplicationModel.create({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       image: image,
       predicate: (pixel: number[]) => context.brightness(pixel) > 1
     }).also(it => {

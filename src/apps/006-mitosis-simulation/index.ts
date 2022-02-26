@@ -25,7 +25,7 @@ export function sketch(context: p5) {
     );
 
     model = new ApplicationModel({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       cells: Arrays.generate(Params.CELL_COUNT, () => {
         return new CellModel({
           center: Point.of({

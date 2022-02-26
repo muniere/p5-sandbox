@@ -30,7 +30,7 @@ export function sketch(context: p5) {
     const speedRange = new NumberRange(Params.CONTROL_SPEED_MIN, Params.CONTROL_SPEED_MAX);
 
     model = new ApplicationModel({
-      bounds: Size.of(context),
+      bounds: new Size(context),
       vehicles: Arrays.generate(Params.CONTROL_COUNT, () => {
         return new VehicleModel({
           radius: Params.CONTROL_RADIUS,

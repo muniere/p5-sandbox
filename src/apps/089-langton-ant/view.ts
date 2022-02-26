@@ -57,7 +57,7 @@ export class GridWidget extends Widget<GridModel> {
   public lineColor = '#888888';
 
   protected doDraw(model: GridModel) {
-    const unit = Size.of({
+    const unit = new Size({
       width: this.frame.width / model.dimen.width,
       height: this.frame.height / model.dimen.height,
     });
@@ -166,7 +166,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
   }
 
   private antFrame({ant, grid}: { ant: AntModel, grid: GridModel }): Rect {
-    const cellSize = Size.of({
+    const cellSize = new Size({
       width: this.frame.width / grid.dimen.width,
       height: this.frame.height / grid.dimen.height,
     });
@@ -195,7 +195,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
         x: 0,
         y: Math.min(this.frame.width, this.frame.height),
       }),
-      size: Size.of({
+      size: new Size({
         width: this.frame.width,
         height: 50,
       })

@@ -27,7 +27,7 @@ export function sketch(context: p5) {
 
     model = new SolverModel({
       graph: GraphModels.generate({
-        bounds: Size.of(context),
+        bounds: new Size(context),
         scale: Params.GRID_SCALE,
         kind: (spot: Spot) => {
           if (spot.row == 0 && spot.column == 0) {

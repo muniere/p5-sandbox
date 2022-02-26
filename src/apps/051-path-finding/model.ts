@@ -76,7 +76,7 @@ export module GraphModels {
       return new NodeModel({
         kind: kind(spot),
         spot: spot,
-        size: Size.of({width: itemWidth, height: itemHeight}),
+        size: new Size({width: itemWidth, height: itemHeight}),
         cost: CostModel.zero(),
       });
     });

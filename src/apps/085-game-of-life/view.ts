@@ -10,7 +10,7 @@ export class ApplicationWidget extends Widget<ApplicationModel> {
   public borderColor: string = '#000000';
 
   protected doDraw(model: ApplicationModel) {
-    const cellSize = Size.of({
+    const cellSize = new Size({
       width: this.frame.width / model.grid.width,
       height: this.frame.height / model.grid.height,
     });
