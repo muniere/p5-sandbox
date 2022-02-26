@@ -2,31 +2,6 @@ import p5, { Vector } from 'p5';
 
 export type ShapeStyle = 'open' | 'closed';
 
-export module Context {
-
-  export function scope<T>(context: p5, callback: (context: p5) => T) {
-    context.push();
-    const result = callback(context);
-    context.pop();
-    return result;
-  }
-
-  export function shape(context: p5, style: ShapeStyle, callback: (context: p5) => void) {
-    context.beginShape();
-
-    callback(context);
-
-    switch (style) {
-      case 'open':
-        context.endShape();
-        break;
-      case 'closed':
-        context.endShape(context.CLOSE);
-        break;
-    }
-  }
-}
-
 export class FrameClock {
   private readonly _context: p5;
   private readonly _speed: number;
@@ -39,15 +14,15 @@ export class FrameClock {
     this._speed = nargs.speed;
   }
 
-  time(): number {
+  public time(): number {
     return this._context.frameCount * this._speed;
   }
 
-  get speed(): number {
+  public get speed(): number {
     return this._speed;
   }
 
-  get frameCount(): number {
+  public get frameCount(): number {
     return this._context.frameCount
   }
 }
@@ -59,19 +34,33 @@ export class BaseWidget {
     //no-op
   }
 
-  draw(): void {
+  public draw(): void {
     // do nothing; must be overridden by subclasses
   }
 
-  scope<T>(callback: (context: p5) => T): T {
-    return Context.scope(this.context, callback);
+  public scope<T>(callback: (context: p5) => T): T {
+    this.context.push();
+    const result = callback(this.context);
+    this.context.pop();
+    return result;
   }
 
-  shape(style: ShapeStyle, callback: (context: p5) => void) {
-    Context.shape(this.context, style, callback);
+  public shape(style: ShapeStyle, callback: (context: p5) => void) {
+    this.context.beginShape();
+
+    callback(this.context);
+
+    switch (style) {
+      case 'open':
+        this.context.endShape();
+        break;
+      case 'closed':
+        this.context.endShape(this.context.CLOSE);
+        break;
+    }
   }
 
-  also(mutate: (widget: this) => void): this {
+  public also(mutate: (widget: this) => void): this {
     mutate(this);
     return this;
   }
@@ -88,7 +77,7 @@ export class Widget<Model> extends BaseWidget {
     this._model = model;
   }
 
-  draw() {
+  public draw() {
     const model = this._model;
     if (!model) {
       return;
