@@ -36,7 +36,7 @@ export module PathModels {
     for (let i = 0; i < n; i++) {
       const startAngle = i * division;
       const endAngle = (i + 1) * division;
-      const pointRange = PointRange.of({
+      const pointRange = new PointRange({
         start: Point.polar({radius: radius, angle: startAngle}),
         stop: Point.polar({radius: radius, angle: endAngle})
       });
@@ -136,8 +136,7 @@ export class InterpolationMorphing implements Morphing {
     const progress = this._interpolator.compute(this._progress);
 
     const points = Arrays.zip(this._src.points, this._dst.points).map(([src, dst]) => {
-      const range = new PointRange(src, dst);
-      return range.lerp(progress);
+      return new PointRange({start: src, stop: dst}).lerp(progress);
     });
 
     return new PathModel({points});

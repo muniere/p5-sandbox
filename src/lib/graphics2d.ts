@@ -102,18 +102,15 @@ export class Point {
 }
 
 export class PointRange {
-  constructor(
-    public readonly start: Point,
-    public readonly stop: Point,
-  ) {
-    // no-op
-  }
+  public readonly start: Point;
+  public readonly stop: Point;
 
-  public static of({start, stop}: {
+  constructor(nargs: {
     start: Point,
     stop: Point,
-  }): PointRange {
-    return new PointRange(start, stop);
+  }) {
+    this.start = nargs.start;
+    this.stop = nargs.stop;
   }
 
   public lerp(amount: number): Point {

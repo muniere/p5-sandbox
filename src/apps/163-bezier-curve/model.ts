@@ -85,7 +85,7 @@ export class CalculationModel {
       for (let i = 0; i < result.length - 1; i++) {
         const start = result[i];
         const stop = result[i + 1];
-        const lerp = PointRange.of({start, stop}).lerp(amount);
+        const lerp = new PointRange({start, stop}).lerp(amount);
 
         buffer.push(lerp);
 
