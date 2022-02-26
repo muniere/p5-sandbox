@@ -39,7 +39,7 @@ export function sketch(context: p5) {
     model = new ApplicationModel({
       ants: Arrays.generate(Params.ANT_COUNT, () => {
         return new AntModel({
-          spot: Spot.of({
+          spot: new Spot({
             row: range.sample(),
             column: range.sample(),
           }),

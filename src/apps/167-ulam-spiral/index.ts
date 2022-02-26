@@ -24,7 +24,7 @@ export function sketch(context: p5) {
 
     model = new ApplicationModel({
       piece: new PieceModel({
-        spot: Spot.of({
+        spot: new Spot({
           row: Math.floor(Params.SPIRAL_SIZE / 2),
           column: Math.floor(Params.SPIRAL_SIZE / 2),
         }),

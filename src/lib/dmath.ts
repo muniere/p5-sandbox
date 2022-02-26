@@ -16,15 +16,12 @@ export type SpotMaybe = {
 export type SpotCallback<T> = (spot: Spot) => T;
 
 export class Spot {
-  public constructor(
-    private _row: number,
-    private _column: number,
-  ) {
-    // no-op
-  }
+  private _row: number;
+  private _column: number;
 
-  public static of({row, column}: SpotCompat): Spot {
-    return new Spot(row, column);
+  public constructor(nargs: SpotCompat) {
+    this._row = nargs.row;
+    this._column = nargs.column;
   }
 
   static dist(a: Spot, b: Spot): number {
@@ -40,10 +37,10 @@ export class Spot {
   }
 
   shift({row, column}: SpotDelta): Spot {
-    return new Spot(
-      this._row + (row ?? 0),
-      this._column + (column ?? 0),
-    );
+    return new Spot({
+      row: this._row + (row ?? 0),
+      column: this._column + (column ?? 0),
+    });
   }
 
   shiftAssign({row, column}: SpotDelta): void {
@@ -52,10 +49,10 @@ export class Spot {
   }
 
   with({row, column}: SpotMaybe): Spot {
-    return new Spot(
-      row ?? this._row,
-      column ?? this._column,
-    );
+    return new Spot({
+      row: row ?? this._row,
+      column: column ?? this._column,
+    });
   }
 
   assign({row, column}: SpotMaybe): void {
@@ -64,7 +61,10 @@ export class Spot {
   }
 
   copy(): Spot {
-    return new Spot(this._row, this._column);
+    return new Spot({
+      row: this._row,
+      column: this._column,
+    });
   }
 }
 
@@ -155,7 +155,7 @@ export class Dimen {
       column -= this._width;
     }
 
-    return Spot.of({row, column});
+    return new Spot({row, column});
   }
 
   public copy(): Dimen {
@@ -182,7 +182,7 @@ export class Matrix<T> {
   public static create<T>(dimen: DimenCompat): Matrix<Spot> {
     const spots = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
-        (_, column) => Spot.of({row, column})
+        (_, column) => new Spot({row, column})
       )
     );
 
@@ -202,7 +202,7 @@ export class Matrix<T> {
   public static generate<T>(dimen: DimenCompat, callback: SpotCallback<T>): Matrix<T> {
     const values = [...Array(dimen.height)].map(
       (_, row) => [...Array(dimen.width)].map(
-        (_, column) => callback(Spot.of({row, column}))
+        (_, column) => callback(new Spot({row, column}))
       )
     );
 
@@ -249,7 +249,7 @@ export class Matrix<T> {
   public forEach(callback: (value: T, spot: Spot) => void) {
     this.values.forEach((values, row) => {
       values.forEach((value, column) => {
-        callback(value, Spot.of({row, column}));
+        callback(value, new Spot({row, column}));
       })
     });
   }
@@ -269,7 +269,7 @@ export class Matrix<T> {
   public map<U>(transform: (value: T, spot: Spot) => U): Matrix<U> {
     const values = this.values.map((values, row) => {
       return values.map((value, column) => {
-        return transform(value, Spot.of({row, column}));
+        return transform(value, new Spot({row, column}));
       })
     });
 

@@ -91,6 +91,6 @@ export class GameMaster {
       return undefined;
     }
 
-    return Spot.of({column, row});
+    return new Spot({column, row});
   }
 }
