@@ -79,23 +79,26 @@ export type DimenMaybe = {
 }
 
 export class Dimen {
-  public constructor(
-    private _width: number,
-    private _height: number,
-  ) {
-    // no-op
+  private _width: number;
+  private _height: number;
+
+  public constructor(nargs: DimenCompat) {
+    this._width = nargs.width;
+    this._height = nargs.height;
   }
 
   public static zero(): Dimen {
-    return new Dimen(0, 0);
+    return new Dimen({
+      width: 0,
+      height: 0,
+    });
   }
 
   public static square(size: number): Dimen {
-    return new Dimen(size, size);
-  }
-
-  public static of({width, height}: DimenCompat): Dimen {
-    return new Dimen(width, height);
+    return new Dimen({
+      width: size,
+      height: size,
+    });
   }
 
   public get width(): number {
@@ -107,10 +110,10 @@ export class Dimen {
   }
 
   public plus(delta: DimenMaybe): Dimen {
-    return new Dimen(
-      this.width + (delta.width ?? 0),
-      this.height + (delta.height ?? 0),
-    );
+    return new Dimen({
+      width: this._width + (delta.width ?? 0),
+      height: this._height + (delta.height ?? 0),
+    });
   }
 
   public plusAssign(delta: DimenMaybe): void {
@@ -119,10 +122,10 @@ export class Dimen {
   }
 
   public minus(other: DimenMaybe): Dimen {
-    return new Dimen(
-      this.width - (other.width ?? 0),
-      this.height - (other.height ?? 0),
-    );
+    return new Dimen({
+      width: this._width - (other.width ?? 0),
+      height: this._height - (other.height ?? 0),
+    });
   }
 
   public minusAssign(delta: DimenMaybe): void {
@@ -131,7 +134,10 @@ export class Dimen {
   }
 
   public times(value: number): Dimen {
-    return new Dimen(this.width * value, this.height * value);
+    return new Dimen({
+      width: this._width * value,
+      height: this._height * value,
+    });
   }
 
   public timesAssign(value: number): void {
@@ -159,11 +165,14 @@ export class Dimen {
   }
 
   public copy(): Dimen {
-    return new Dimen(this.width, this.height);
+    return new Dimen({
+      width: this._width,
+      height: this._height,
+    });
   }
 
   public equals(other: Dimen): boolean {
-    return this.width == other.width && this.height == other.height;
+    return this._width == other._width && this._height == other._height;
   }
 }
 
@@ -186,7 +195,7 @@ export class Matrix<T> {
       )
     );
 
-    return new Matrix<Spot>(Dimen.of(dimen), spots);
+    return new Matrix<Spot>(new Dimen(dimen), spots);
   }
 
   public static fill<T>(dimen: DimenCompat, value: T): Matrix<T> {
@@ -196,7 +205,7 @@ export class Matrix<T> {
       )
     );
 
-    return new Matrix<T>(Dimen.of(dimen), values);
+    return new Matrix<T>(new Dimen(dimen), values);
   }
 
   public static generate<T>(dimen: DimenCompat, callback: SpotCallback<T>): Matrix<T> {
@@ -206,7 +215,7 @@ export class Matrix<T> {
       )
     );
 
-    return new Matrix<T>(Dimen.of(dimen), values);
+    return new Matrix<T>(new Dimen(dimen), values);
   }
 
   public get width(): number {

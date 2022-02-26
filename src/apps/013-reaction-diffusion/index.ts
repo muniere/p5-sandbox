@@ -29,7 +29,7 @@ export function sketch(context: p5) {
 
     model = new ApplicationModel({
       grid: new GridModel({
-        dimen: Dimen.of(context),
+        dimen: new Dimen(context),
         factory: new DefaultGridFactory({
           drop: new Rect({
             origin: new Point({
