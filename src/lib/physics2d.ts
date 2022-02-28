@@ -336,6 +336,8 @@ export abstract class Material {
 
   public abstract update(): void;
 
+  public abstract moveTo(point: Point): void;
+
   public abstract coerceIn(bounds: Size): void;
 
   public also(mutate: (model: this) => void): this {
@@ -414,12 +416,18 @@ export class RectangularMaterial extends Material {
   }
 
   public apply(force: Force): void {
-    this._center.plusAssign(Vector.div(force.vector, this._mass));
+    const newValue = force.acceleration({mass: this._mass});
+    this._acceleration.plusAssign(newValue);
   }
 
   public update() {
     this._velocity.plusAssign(this._acceleration);
     this._center.plusAssign(this._velocity);
+    this._acceleration.setMagnitude(0);
+  }
+
+  public moveTo(point: Point) {
+    this._center.assign(point);
   }
 
   public coerceIn(bounds: Size) {
@@ -522,6 +530,10 @@ export class CircularMaterial extends Material {
     this._velocity.plusAssign(this._acceleration);
     this._center.plusAssign(this._velocity);
     this._acceleration.setMagnitude(0);
+  }
+
+  public moveTo(point: Point) {
+    this._center.assign(point);
   }
 
   public coerceIn(bounds: Size) {
