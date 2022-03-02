@@ -1,5 +1,5 @@
 import p5, { Image } from 'p5';
-import { Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { ApplicationModel } from './model';
 import { ApplicationWidget } from './view';
 
@@ -31,7 +31,10 @@ export function sketch(context: p5) {
     image.loadPixels();
 
     model = ApplicationModel.create({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context),
+      }),
       image: image,
       predicate: (pixel: number[]) => context.brightness(pixel) > 1
     }).also(it => {

@@ -1,6 +1,6 @@
 import p5 from 'p5';
 import { Arrays, NumberRange } from '../../lib/stdlib';
-import { Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { Acceleration } from '../../lib/physics2d';
 import { ApplicationModel, FireworkModel, RandomExplosionModel, RandomIgnitionModel } from './model';
 import { ApplicationWidget } from './view';
@@ -30,7 +30,10 @@ export function sketch(context: p5) {
     );
 
     model = new ApplicationModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context),
+      }),
       gravity: new Acceleration({
         x: 0,
         y: Params.GRAVITY_VALUE,

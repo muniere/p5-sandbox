@@ -1,6 +1,6 @@
 import { Vector } from 'p5';
 import { NumberRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 import { Acceleration, Force, Velocity } from '../../lib/physics2d';
 import { ItemModel, ItemType } from './model.item';
 
@@ -203,7 +203,7 @@ export class VehicleModel {
     this.applyForce(force);
   }
 
-  steerIn({bounds, padding}: { bounds: Size, padding?: number }): boolean {
+  steerIn({rect, padding}: { rect: Rect, padding?: number }): boolean {
     const inset = padding ?? 0;
 
     const currentVelocity = this._velocity;
@@ -214,13 +214,13 @@ export class VehicleModel {
       if (this._center.x < inset && currentVelocity.x < 0) {
         x = -currentVelocity.x;
       }
-      if (this._center.x > bounds.width - inset && currentVelocity.x > 0) {
+      if (this._center.x > rect.width - inset && currentVelocity.x > 0) {
         x = -currentVelocity.x;
       }
       if (this._center.y < inset && currentVelocity.y < 0) {
         y = -currentVelocity.y;
       }
-      if (this._center.y > bounds.height - inset && currentVelocity.y > 0) {
+      if (this._center.y > rect.height - inset && currentVelocity.y > 0) {
         y = -currentVelocity.y;
       }
 

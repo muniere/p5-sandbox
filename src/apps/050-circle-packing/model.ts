@@ -1,5 +1,5 @@
 import { Image } from 'p5';
-import { Point, Rect, Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 
 export class CircleModel {
   public strokeWeight: number = 1;
@@ -220,20 +220,20 @@ export class ApplicationModel {
     this._circleCrowd = nargs.circleCrowd;
   }
 
-  static create({bounds, image, predicate}: {
-    bounds: Size,
+  static create({frame, image, predicate}: {
+    frame: Rect,
     image: Image,
     predicate: (pixel: number[]) => boolean,
   }): ApplicationModel {
     const scale = Math.min(
-      bounds.width / image.width,
-      bounds.height / image.height,
+      frame.width / image.width,
+      frame.height / image.height,
     );
 
     const scaledWidth = image.width * scale;
     const scaledHeight = image.height * scale;
-    const originX = (bounds.width - scaledWidth) / 2;
-    const originY = (bounds.height - scaledHeight) / 2;
+    const originX = (frame.width - scaledWidth) / 2;
+    const originY = (frame.height - scaledHeight) / 2;
 
     const pixelCrowd = PixelCrowdModel.analyze({
       image: image,
@@ -246,7 +246,7 @@ export class ApplicationModel {
     const circleCrowd = new CircleCrowdModel({
       frame: new Rect({
         origin: Point.zero(),
-        size: bounds,
+        size: frame.size,
       }),
       circles: [],
     });

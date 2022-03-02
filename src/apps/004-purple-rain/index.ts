@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=KkyIDI6rQJI
 import * as p5 from 'p5';
 import { Arrays, Numeric } from '../../lib/stdlib';
-import { Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { ApplicationModel, DropModel } from './model';
 import { ApplicationWidget } from './view';
@@ -24,7 +24,10 @@ export function sketch(context: p5) {
     );
 
     model = new ApplicationModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context),
+      }),
       drops: Arrays.generate(Params.DROP_COUNT, () => {
         const origin = new Point3D({
           x: context.width * Math.random(),

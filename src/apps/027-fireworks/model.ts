@@ -1,6 +1,6 @@
 import { Arrays, NumberRange } from '../../lib/stdlib';
 import { Colors } from '../../lib/drawing';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 import { Acceleration, CircularMaterial, Force, Velocity } from '../../lib/physics2d';
 
 export class FireworkModel {
@@ -77,8 +77,8 @@ export class FireworkModel {
     }
   }
 
-  ensure({bounds}: { bounds: Size }) {
-    if (this.particles.every(it => it.top > bounds.height)) {
+  ensureIn(rect: Rect) {
+    if (this.particles.every(it => it.top > rect.bottom)) {
       this._die();
     }
   }
@@ -111,7 +111,7 @@ export class FireSeedModel {
 }
 
 export interface IgnitionModel {
-  perform({bounds}: { bounds: Size }): FireSeedModel
+  performIn(rect: Rect): FireSeedModel
 }
 
 export class RandomIgnitionModel implements IgnitionModel {
@@ -128,13 +128,15 @@ export class RandomIgnitionModel implements IgnitionModel {
     return this;
   }
 
-  perform({bounds}: { bounds: Size }): FireSeedModel {
+  performIn(rect: Rect): FireSeedModel {
+    const xs = new NumberRange(rect.left, rect.right);
+
     return new FireSeedModel({
       core: new CircularMaterial({
         radius: this.radiusRange.sample(),
         center: new Point({
-          x: bounds.width * Math.random(),
-          y: bounds.height,
+          x: xs.sample(),
+          y: rect.bottom,
         }),
         velocity: new Velocity({
           x: 0,
@@ -183,21 +185,27 @@ export class RandomExplosionModel implements ExplosionModel {
 }
 
 export class ApplicationModel {
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private readonly _gravity: Acceleration;
   private readonly _ignition: IgnitionModel;
   private readonly _fireworks: FireworkModel[];
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     gravity: Acceleration,
     ignition: IgnitionModel,
     fireworks: FireworkModel[],
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._gravity = nargs.gravity;
     this._ignition = nargs.ignition;
     this._fireworks = [...nargs.fireworks];
+  }
+
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   get fireworks(): FireworkModel[] {
@@ -211,12 +219,10 @@ export class ApplicationModel {
   update() {
     this._fireworks.forEach(it => {
       if (it.active) {
-        it.ensure({bounds: this._bounds});
+        it.ensureIn(this.bounds);
       }
       if (!it.active) {
-        const particle = this._ignition.perform({
-          bounds: this._bounds,
-        });
+        const particle = this._ignition.performIn(this.bounds);
         it.ignite(particle);
       }
       if (it.active) {

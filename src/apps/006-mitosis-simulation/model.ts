@@ -1,7 +1,7 @@
 import { Vector } from 'p5';
 import { Vectors } from '../../lib/process';
 import { NumberRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 
 export class CellModel {
   public fillColor: string = '#FFFFFF';
@@ -74,9 +74,9 @@ export class CellModel {
     return Point.dist(this._center, point) < this._radius;
   }
 
-  constraint(bounds: Size) {
-    const xs = new NumberRange(this.radius, bounds.width - this.radius);
-    const ys = new NumberRange(this.radius, bounds.height - this.radius);
+  constraint(rect: Rect) {
+    const xs = new NumberRange(rect.left + this.radius, rect.right - this.radius);
+    const ys = new NumberRange(rect.bottom + this.radius, rect.bottom - this.radius);
 
     this._center = this._center.with({
       x: xs.coerce(this._center.x),
@@ -86,16 +86,22 @@ export class CellModel {
 }
 
 export class ApplicationModel {
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private readonly _cells: CellModel[];
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     cells: CellModel[]
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._cells = [...nargs.cells];
     // no-op
+  }
+
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   get cells(): CellModel[] {
@@ -109,7 +115,7 @@ export class ApplicationModel {
   update() {
     this.cells.forEach(it => {
       it.update();
-      it.constraint(this._bounds);
+      it.constraint(this.bounds);
     });
   }
 

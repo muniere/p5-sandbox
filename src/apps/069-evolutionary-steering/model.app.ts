@@ -1,27 +1,33 @@
-import { Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 import { ItemFeeder, ItemModel, ItemType } from './model.item';
 import { VehicleModel } from './model.vehicle';
 import { Flags } from './debug';
 
 export class ApplicationModel {
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private readonly _items: ItemModel[];
   private readonly _vehicles: VehicleModel[];
   private readonly _feeder?: ItemFeeder;
   private readonly _stress: number;
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     items: ItemModel[],
     vehicles: VehicleModel[],
     feeder?: ItemFeeder,
     stress?: number,
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._items = [...nargs.items];
     this._vehicles = [...nargs.vehicles];
     this._feeder = nargs.feeder?.also(it => it.outlet = this._items);
     this._stress = nargs.stress ?? 0;
+  }
+
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   get items(): ItemModel[] {
@@ -45,7 +51,7 @@ export class ApplicationModel {
 
     this._vehicles.forEach(vehicle => {
       const coerced = vehicle.steerIn({
-        bounds: this._bounds,
+        rect: this.bounds,
         padding: vehicle.radius / 2,
       });
       if (coerced) {

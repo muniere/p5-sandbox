@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=aKYlikFAV4k
 import * as p5 from 'p5';
 import { Spot } from '../../lib/dmath';
-import { Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { GraphModels, ManhattanHeuristicFunction, NodeKind, SolverModel, SolverState } from './model';
 import { SolverWidget } from './view';
 
@@ -27,7 +27,10 @@ export function sketch(context: p5) {
 
     model = new SolverModel({
       graph: GraphModels.generate({
-        bounds: new Size(context),
+        rect: new Rect({
+          origin: Point.zero(),
+          size: new Size(context),
+        }),
         scale: Params.GRID_SCALE,
         kind: (spot: Spot) => {
           if (spot.row == 0 && spot.column == 0) {

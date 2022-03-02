@@ -1,5 +1,5 @@
 import p5 from 'p5';
-import { DebugMetricsWidget, Widget } from '../../lib/process';
+import { Widget } from '../../lib/process';
 import { ApplicationModel, VehicleModel } from './model';
 
 export class VehicleWidget extends Widget<VehicleModel> {

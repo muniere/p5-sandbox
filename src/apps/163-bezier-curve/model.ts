@@ -1,4 +1,4 @@
-import { Line, Point, PointRange, Size } from '../../lib/graphics2d';
+import { Line, Point, PointRange, Rect } from '../../lib/graphics2d';
 import { CircularMaterial } from '../../lib/physics2d';
 
 export class VehicleModel extends CircularMaterial {
@@ -102,19 +102,25 @@ export class CalculationModel {
 }
 
 export class ApplicationModel {
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private readonly _vehicles: VehicleModel[];
   private readonly _calculator: CalculationModel;
   private _bezier: PathModel | undefined;
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     vehicles: VehicleModel[],
     calculator: CalculationModel,
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._vehicles = nargs.vehicles;
     this._calculator = nargs.calculator;
+  }
+
+  public get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   public get vehicles(): VehicleModel[] {
@@ -128,7 +134,7 @@ export class ApplicationModel {
   update() {
     this._vehicles.forEach(it => {
       it.update();
-      it.coerceIn(this._bounds);
+      it.bounceIn(this.bounds);
     });
 
     this._calculator.controls = this._vehicles.map(it => it.center);

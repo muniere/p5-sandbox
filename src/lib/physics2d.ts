@@ -1,6 +1,6 @@
 import { Vector } from 'p5';
 import { Vectors } from './process';
-import { Point, Size } from './graphics2d';
+import { Point, Rect, Size } from './graphics2d';
 
 export type ForceCompat = {
   x: number,
@@ -338,7 +338,7 @@ export abstract class Material {
 
   public abstract moveTo(point: Point): void;
 
-  public abstract coerceIn(bounds: Size): void;
+  public abstract bounceIn(frame: Rect): void;
 
   public also(mutate: (model: this) => void): this {
     mutate(this);
@@ -430,13 +430,13 @@ export class RectangularMaterial extends Material {
     this._center.assign(point);
   }
 
-  public coerceIn(bounds: Size) {
-    if (this.left <= 0 || bounds.width <= this.right) {
+  public bounceIn(rect: Rect) {
+    if (this.left <= rect.left || rect.right <= this.right) {
       this._velocity.plusAssign(
         new Acceleration({x: -this._velocity.x * 2, y: 0})
       );
     }
-    if (this.top <= 0 || bounds.height <= this.bottom) {
+    if (this.top <= rect.top || rect.bottom <= this.bottom) {
       this._velocity.plusAssign(
         new Acceleration({x: 0, y: -this._velocity.y * 2})
       )
@@ -536,13 +536,13 @@ export class CircularMaterial extends Material {
     this._center.assign(point);
   }
 
-  public coerceIn(bounds: Size) {
-    if (this.left <= 0 || bounds.width <= this.right) {
+  public bounceIn(rect: Rect) {
+    if (this.left <= rect.left || rect.right <= this.right) {
       this._velocity.plusAssign(
         new Acceleration({x: -this._velocity.x * 2, y: 0})
       );
     }
-    if (this.top <= 0 || bounds.height <= this.bottom) {
+    if (this.top <= rect.top || rect.bottom <= this.bottom) {
       this._velocity.plusAssign(
         new Acceleration({x: 0, y: -this._velocity.y * 2})
       )

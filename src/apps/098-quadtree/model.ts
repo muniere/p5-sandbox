@@ -254,13 +254,13 @@ export class ApplicationModel {
 
   // how can we re-balance tree instead of rebuild??
   update() {
-    const bounds = this._tree.boundary.size;
+    const bounds = this._tree.boundary;
 
     this._tree.clear();
 
     this._materials.forEach(it => {
       it.update();
-      it.coerceIn(bounds);
+      it.bounceIn(bounds);
       this._tree.push(it);
     });
 

@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=AaGK-fj-BAM
 import * as p5 from 'p5';
 import { IntegerRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { FoodModel, GameModel, SnakeModel } from './model';
 import { GameMaster, GameWidget } from './view';
 
@@ -31,7 +31,10 @@ export function sketch(context: p5) {
     const yrange = new IntegerRange(0, Math.floor(context.height));
 
     model = new GameModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context),
+      }),
       snake: new SnakeModel({
         scale: Params.GAME_SCALE,
       }).also(it => {

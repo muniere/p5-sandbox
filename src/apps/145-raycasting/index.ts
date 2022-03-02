@@ -1,6 +1,6 @@
 import p5 from 'p5';
 import { DebugManager } from '../../lib/process';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { ApplicationModel, ParticleModel, WallModel } from './model';
 import { ApplicationWidget } from './view';
 
@@ -20,7 +20,10 @@ export function sketch(context: p5) {
     );
 
     model = new ApplicationModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context)
+      }),
       walls: [
         new WallModel({
           p1: new Point({x: 0, y: 0}),

@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=enNfb6p3j_g
 import p5, { Vector } from 'p5';
 import { Arrays, NumberRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { Velocity } from '../../lib/physics2d';
 import { ApplicationModel, CalculationModel, VehicleModel } from './model';
 import { ApplicationWidget, PathMode } from './view';
@@ -30,7 +30,10 @@ export function sketch(context: p5) {
     const speedRange = new NumberRange(Params.CONTROL_SPEED_MIN, Params.CONTROL_SPEED_MAX);
 
     model = new ApplicationModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context)
+      }),
       vehicles: Arrays.generate(Params.CONTROL_COUNT, () => {
         return new VehicleModel({
           radius: Params.CONTROL_RADIUS,

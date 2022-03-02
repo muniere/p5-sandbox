@@ -1,7 +1,7 @@
 import p5 from 'p5';
 import { Arrays } from '../../lib/stdlib';
 import { FrameClock } from '../../lib/process';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { ItemFeeder, ItemModel } from './model.item';
 import { BalanceGenome, SensorGenome, VehicleGenome, VehicleModel } from './model.vehicle';
 import { ApplicationModel } from './model.app';
@@ -121,7 +121,10 @@ export function sketch(context: p5) {
     });
 
     model = new ApplicationModel({
-      bounds: new Size(context),
+      frame: new Rect({
+        origin: Point.zero(),
+        size: new Size(context)
+      }),
       items: Arrays.concat(medicines, poisons),
       vehicles: vehicles,
       feeder: feeder,

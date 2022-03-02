@@ -1,7 +1,7 @@
 import { Vector } from 'p5';
 import { Vectors } from '../../lib/process';
 import { NumberRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect } from '../../lib/graphics2d';
 
 export class SnakeModel {
   public color: string = '#FFFFFF';
@@ -96,9 +96,8 @@ export class SnakeModel {
     return this.hitTest(food.point);
   }
 
-  testOvershoot(bounds: Size): boolean {
-    return (this._head.x < 0 || bounds.width <= this._head.x) ||
-      (this._head.y < 0 || bounds.height <= this._head.y);
+  testOvershoot(rect: Rect): boolean {
+    return (this._head.x < rect.left || rect.right <= this._head.x) || (this._head.y < rect.top || rect.bottom <= this._head.y);
   }
 
   testUroboros(): boolean {
@@ -151,7 +150,7 @@ export class FoodModel {
 }
 
 export class GameModel {
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private _snake: SnakeModel;
   private _food: FoodModel;
 
@@ -159,16 +158,22 @@ export class GameModel {
   private _yrange: NumberRange;
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     snake: SnakeModel,
     food: FoodModel,
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._snake = nargs.snake;
     this._food = nargs.food;
 
-    this._xrange = new NumberRange(0, nargs.bounds.width);
-    this._yrange = new NumberRange(0, nargs.bounds.height);
+    this._xrange = new NumberRange(0, nargs.frame.width);
+    this._yrange = new NumberRange(0, nargs.frame.height);
+  }
+
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   get snake(): SnakeModel {
@@ -182,7 +187,7 @@ export class GameModel {
   update() {
     this._snake.update();
 
-    if (this._snake.testOvershoot(this._bounds) || this._snake.testUroboros()) {
+    if (this._snake.testOvershoot(this.bounds) || this._snake.testUroboros()) {
       this._snake = this._snake.spawn();
     }
 

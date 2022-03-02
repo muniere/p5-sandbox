@@ -1,5 +1,5 @@
 import { NumberRange } from '../../lib/stdlib';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 
 export abstract class ObjectModel {
   public color: string = '#FFFFFF';
@@ -52,8 +52,8 @@ export abstract class ObjectModel {
     return this._active;
   }
 
-  constraint(bounds: Size) {
-    const range = new NumberRange(this._radius, bounds.width - this._radius);
+  constraint(rect: Rect) {
+    const range = new NumberRange(rect.left + this._radius, rect.right - this._radius);
     this._center.assign({x: range.coerce(this._center.x)});
   }
 
@@ -156,7 +156,7 @@ export class MissileModel extends ObjectModel {
 
 export class GameBuilder {
 
-  public bounds: Size = Size.zero();
+  public frame: Rect = Rect.zero();
 
   public shipColor: string = '#FFFFFF';
   public shipRadius: number = 0;
@@ -182,6 +182,8 @@ export class GameBuilder {
   }
 
   public build(): GameModel {
+    const frame = this.frame;
+
     const rule = new GameRule({
       enemyTick: this.enemyTick,
       enemyStep: this.enemyStep,
@@ -190,8 +192,8 @@ export class GameBuilder {
 
     const ship = new ShipModel({
       center: new Point({
-        x: this.bounds.width / 2,
-        y: this.bounds.height - this.shipRadius,
+        x: this.frame.center.x,
+        y: this.frame.height - this.shipRadius,
       }),
       radius: this.shipRadius,
       speed: this.shipSpeed,
@@ -226,22 +228,22 @@ export class GameBuilder {
       it.color = this.missileColor;
     });
 
-    return new GameModel({rule, ship, enemies, missile});
+    return new GameModel({frame, rule, ship, enemies, missile});
   }
 }
 
 export class GameContext {
   public readonly frameCount: number;
-  public readonly canvasSize: Size;
+  public readonly canvasFrame: Rect;
   public readonly direction?: number;
 
   public constructor(nargs: {
     frameCount: number,
-    canvasSize: Size,
+    canvasFrame: Rect,
     direction?: number,
   }) {
     this.frameCount = nargs.frameCount;
-    this.canvasSize = nargs.canvasSize;
+    this.canvasFrame = nargs.canvasFrame;
     this.direction = nargs.direction;
   }
 }
@@ -265,6 +267,7 @@ export class GameRule {
 export class GameModel {
   private enemyDirection: number = 1;
 
+  private readonly _frame: Rect;
   private readonly _rule: GameRule;
   private readonly _ship: ShipModel;
   private readonly _enemies: EnemyModel[];
@@ -272,11 +275,13 @@ export class GameModel {
   private readonly _missiles: MissileModel[] = [];
 
   constructor(nargs: {
+    frame: Rect,
     rule: GameRule,
     ship: ShipModel,
     enemies: EnemyModel[],
     missile: MissileBlueprint,
   }) {
+    this._frame = nargs.frame;
     this._rule = nargs.rule;
     this._ship = nargs.ship;
     this._enemies = [...nargs.enemies];
@@ -285,6 +290,10 @@ export class GameModel {
 
   static create(build: (builder: GameBuilder) => void): GameModel {
     return new GameBuilder().also(build).build();
+  }
+
+  get frame(): Rect {
+    return this._frame;
   }
 
   get ship(): ShipModel {
@@ -326,7 +335,7 @@ export class GameModel {
         break;
     }
 
-    this._ship.constraint(context.canvasSize);
+    this._ship.constraint(context.canvasFrame);
 
     // enemies
     if (context.frameCount % this._rule.enemyTick == 0) {
@@ -347,7 +356,7 @@ export class GameModel {
         const right = Math.max(...this._enemies.map((it) => it.right));
         switch (this.enemyDirection) {
           case 1:
-            return right >= context.canvasSize.width ? 0 : 1;
+            return right >= context.canvasFrame.width ? 0 : 1;
           case -1:
             return left <= 0 ? 0 : -1;
           default:

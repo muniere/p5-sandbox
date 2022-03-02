@@ -1,5 +1,5 @@
 import { Dimen, Matrix, Spot, SpotCompat } from '../../lib/dmath';
-import { Size } from '../../lib/graphics2d';
+import { Rect, Size } from '../../lib/graphics2d';
 
 export class CostModel {
   public g: number;
@@ -63,14 +63,14 @@ export class NodeModel {
 }
 
 export module GraphModels {
-  export function generate({bounds, scale, kind}: {
-    bounds: Size,
+  export function generate({rect, scale, kind}: {
+    rect: Rect,
     scale: number,
     kind: (spot: Spot) => NodeKind,
   }): GraphModel {
     const dimen = Dimen.square(scale);
-    const itemWidth = bounds.width / scale;
-    const itemHeight = bounds.height / scale;
+    const itemWidth = rect.width / scale;
+    const itemHeight = rect.height / scale;
 
     const nodes = Matrix.generate(dimen, (spot) => {
       return new NodeModel({

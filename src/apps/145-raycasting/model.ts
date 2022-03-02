@@ -1,5 +1,5 @@
 import { Vector } from 'p5';
-import { Point, Size } from '../../lib/graphics2d';
+import { Point, Rect, Size } from '../../lib/graphics2d';
 import { Acceleration, RectangularMaterial, Velocity } from '../../lib/physics2d';
 
 export class WallModel {
@@ -167,22 +167,28 @@ export class ParticleModel extends RectangularMaterial {
 
 export class ApplicationModel {
 
-  private readonly _bounds: Size;
+  private readonly _frame: Rect;
   private readonly _walls: WallModel[];
   private readonly _particle: ParticleModel;
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     walls: WallModel[],
     particle: ParticleModel,
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._walls = [...nargs.walls];
     this._particle = nargs.particle;
   }
 
-  get bounds(): Size {
-    return this._bounds;
+  get frame(): Rect {
+    return this._frame;
+  }
+
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
   }
 
   get walls(): WallModel[] {
@@ -195,7 +201,7 @@ export class ApplicationModel {
 
   update() {
     this._particle.update();
-    this._particle.coerceIn(this._bounds);
+    this._particle.bounceIn(this.bounds);
     this._particle.cast(this._walls);
   }
 

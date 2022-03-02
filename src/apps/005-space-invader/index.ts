@@ -1,6 +1,6 @@
 // https://www.youtube.com/watch?v=biN3v3ef-Y0
 import * as p5 from 'p5';
-import { Point, Size } from "../../lib/graphics2d";
+import { Point, Rect, Size } from "../../lib/graphics2d";
 import { GameContext, GameModel } from "./model";
 import { GameWidget } from "./view";
 
@@ -41,7 +41,10 @@ export function sketch(context: p5) {
     );
 
     model = GameModel.create(it => {
-      it.bounds = new Size(context);
+      it.frame = new Rect({
+        origin: Point.zero(),
+        size: new Size(context),
+      });
 
       it.shipColor = Params.SHIP_COLOR;
       it.shipRadius = Params.SHIP_RADIUS;
@@ -71,7 +74,7 @@ export function sketch(context: p5) {
   context.draw = function () {
     const ctx = new GameContext({
       frameCount: context.frameCount,
-      canvasSize: new Size(context),
+      canvasFrame: model.frame,
       direction: (() => {
         if (!context.keyIsPressed) {
           return 0;

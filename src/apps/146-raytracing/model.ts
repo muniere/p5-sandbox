@@ -206,7 +206,7 @@ export class ParticleModel extends RectangularMaterial {
       }
 
       const nearest = points.minBy(it => Point.dist(this.center, it));
-      const theta = ray.direction.heading() - this._heading ;
+      const theta = ray.direction.heading() - this._heading;
       const distance = Point.dist(this.center, nearest) * Math.cos(theta);
       return new FragmentModel({
         position: nearest,
@@ -254,6 +254,12 @@ export class ObjectivePerspectiveModel {
     return this._frame;
   }
 
+  get bounds(): Rect {
+    return this._frame.with({
+      origin: Point.zero(),
+    });
+  }
+
   get walls(): WallModel[] {
     return this._walls;
   }
@@ -264,7 +270,7 @@ export class ObjectivePerspectiveModel {
 
   update() {
     this._particle.update();
-    this._particle.coerceIn(this._frame.size);
+    this._particle.bounceIn(this.bounds);
     this._particle.cast(this._walls);
   }
 }
@@ -301,17 +307,17 @@ export class ApplicationModel {
   private readonly _subjective: SubjectivePerspectiveModel;
 
   constructor(nargs: {
-    bounds: Size,
+    frame: Rect,
     walls: WallModel[],
     particle: ParticleModel,
   }) {
     const viewSize = new Size({
-      width: nargs.bounds.width / 2,
-      height: nargs.bounds.height,
+      width: nargs.frame.width / 2,
+      height: nargs.frame.height,
     });
 
     const primaryFrame = new Rect({
-      origin: Point.zero(),
+      origin: nargs.frame.origin,
       size: viewSize.copy(),
     });
     const secondaryFrame = new Rect({

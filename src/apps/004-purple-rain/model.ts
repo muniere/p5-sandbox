@@ -1,5 +1,5 @@
 import { Numeric } from '../../lib/stdlib';
-import { Size as Size2D } from '../../lib/graphics2d';
+import { Point as Point2D, Rect as Rect2D } from '../../lib/graphics2d';
 import { Point as Point3D } from '../../lib/graphics3d';
 import { Acceleration, Velocity as Velocity3D } from '../../lib/physics3d';
 
@@ -52,15 +52,21 @@ export class DropModel {
 }
 
 export class ApplicationModel {
-  private readonly _bounds: Size2D;
+  private readonly _frame: Rect2D;
   private readonly _drops: DropModel[];
 
   public constructor(nargs: {
-    bounds: Size2D,
+    frame: Rect2D,
     drops: DropModel[],
   }) {
-    this._bounds = nargs.bounds;
+    this._frame = nargs.frame;
     this._drops = [...nargs.drops];
+  }
+
+  get bounds(): Rect2D {
+    return this._frame.with({
+      origin: Point2D.zero(),
+    });
   }
 
   get drops(): DropModel[] {
@@ -81,7 +87,7 @@ export class ApplicationModel {
     this._drops.forEach(it => {
       it.update();
 
-      if (it.point.y >= this._bounds.height) {
+      if (it.point.y >= this.bounds.height) {
         it.reset();
       }
     });
