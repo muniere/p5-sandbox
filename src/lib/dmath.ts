@@ -180,6 +180,22 @@ export interface MatrixFactory<T> {
   create(spot: Spot): T
 }
 
+export interface Comparator<T> {
+  compare(a: T, b: T): number
+}
+
+export class AnyComparator<T> implements Comparator<T> {
+  private readonly _fn: (a: T, b: T) => number;
+
+  constructor(fn: (a: T, b: T) => number) {
+    this._fn = fn;
+  }
+
+  compare(a: T, b: T): number {
+    return this._fn(a, b);
+  }
+}
+
 export class Matrix<T> {
   private constructor(
     public readonly dimen: Dimen,
@@ -261,6 +277,17 @@ export class Matrix<T> {
         callback(value, new Spot({row, column}));
       })
     });
+  }
+
+  public forEachSorted(comparator: Comparator<T>, callback: (value: T, spot: Spot) => void) {
+    const tuples = [] as Array<{ value: T, spot: Spot }>;
+
+    this.forEach((value, spot) => {
+      tuples.push({value, spot});
+    });
+
+    tuples.sort((a, b) => comparator.compare(a.value, b.value));
+    tuples.forEach(({value, spot}) => callback(value, spot));
   }
 
   public filter(predicate: (value: T, spot: Spot) => boolean): Array<T> {
